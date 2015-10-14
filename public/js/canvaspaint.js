@@ -202,6 +202,17 @@
 
     var socket = new io();
 
+    socket.on('states', function (data) {
+        for (var key in data) {
+            clientStates[key] = {};
+            clientStates[key].state = data[key];
+            clientStates[key].cursor = $('<div class="cursor">').appendTo('#cursors');
+            clientStates[key].updated = $.now();
+            clientStates[key].x = 0;
+            clientStates[key].y = 0;
+        }
+    });
+
     socket.on('move', function (packet) {
 
         if (!(packet.id in clientStates)) {
@@ -224,7 +235,7 @@
             left: packet.x,
             top: packet.y
         });
-
+        //console.log(clientStates);
         var remoteClient = clientStates[packet.id];
         var x = packet.x;
         var y = packet.y;
