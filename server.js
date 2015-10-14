@@ -47,7 +47,7 @@ io.on('connection', function (socket) {
     });
 
     socket.on('status', function (msg) {
-        if (msg.size > 20 || msg.size < 1 || msg.opacity > 1 || msg.opacity < 0) {
+        if (msg.size > 30 || msg.size < 1 || msg.opacity > 1 || msg.opacity < 0) {
             console.log("Got malicious input from user changing tool size: " + socket.request.connection.remoteAddress);
             return;
         }

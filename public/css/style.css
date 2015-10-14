@@ -95,3 +95,29 @@ body:fullscreen {
     background:url('../images/pointer.png') no-repeat -4px 0;
     z-index: 8;
 }
+
+/*********
+* get responsive */
+@media only screen and (max-width: 500px) {
+    .sidebar {
+        left: initial;
+        top: initial;
+        bottom: 0px;
+        height: 3em;
+        width: 100%;
+        right: 0px;
+    }
+
+    .sidebar div {
+        float: left;
+        margin-left: 1em;
+    }
+
+    .sidebar .panel {
+        position: relative;
+        top: -14em;
+    }
+    .fullscreen {
+        display: none;
+    }
+}

@@ -18,26 +18,42 @@
         m1Down: false
     };
 
-    $(canvas).on('mousedown', function (evt) {
+    $(canvas).on('mousedown touchstart', function (evt) {
+        if (evt.type === "touchstart") {
+            client.x = evt.originalEvent.touches[0].clientX;
+            client.y = evt.originalEvent.touches[0].clientY;
+        } else {
+            client.x = evt.offsetX;
+            client.y = evt.offsetY;
+        }
         client.m1Down = true;
-        client.x = evt.offsetX;
-        client.y = evt.offsetY;
     });
 
-    $(canvas).on('mouseup', function (evt) {
+    $(canvas).on('mouseup touchend touchcancel', function (evt) {
+        if (evt.type === "touchstart" || evt.type === "touchcancel") {
+            client.x = evt.originalEvent.touches[0].clientX;
+            client.y = evt.originalEvent.touches[0].clientY;
+        } else {
+            client.x = evt.offsetX;
+            client.y = evt.offsetY;
+        }
         client.m1Down = false;
-        client.x = evt.offsetX;
-        client.y = evt.offsetY;
     });
 
     var lastEmit = $.now();
-    $(canvas).on('mousemove', function (evt) {
+    $(canvas).on('mousemove touchmove', function (evt) {
         if (client.m1Down) {
-            var x = evt.offsetX;
-            var y = evt.offsetY;
+            var x, y;
+            if (evt.type === "touchmove") {
+                x = evt.originalEvent.touches[0].clientX;
+                y = evt.originalEvent.touches[0].clientY;
+            } else {
+                x = evt.offsetX;
+                y = evt.offsetY;
+            }
             processDrawAction(client, x, y);
-            client.x = evt.offsetX;
-            client.y = evt.offsetY;
+            client.x = x;
+            client.y = y;
         }
         if ($.now() - lastEmit > 30) {
             var message = {
@@ -235,7 +251,7 @@
             left: packet.x,
             top: packet.y
         });
-        //console.log(clientStates);
+
         var remoteClient = clientStates[packet.id];
         var x = packet.x;
         var y = packet.y;
