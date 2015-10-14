@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>udraw: Unlimited Multiplayer Drawing</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta property="og:title" content="udraw: Multiplayer Drawing" />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://udraw.me" />
+        <meta property="og:description" 
+              content="Draw in real time with others on an unlimited sized canvas" />
+        <meta property="og:image" content="https://udraw.me/static/og-image.png" />
+        <meta property="og:image:secure_url" content="http://udraw.me/static/og-image.png" />
+        <meta name="description" content="Draw in real time with others on an unlimited sized canvas">
+
+        <link rel="stylesheet" href="/static/css/ionicons.css" media="all" />
+        <link rel="stylesheet" href="/static/css/style.css" media="all" />
+    </head>
+    <body>
+        <div id="cursors"></div>
+        <canvas id="paper" width="2560" height="1440"></canvas>
+        <img id="dummyImage" src="" alt="" />
+
+        <script id="sidebar-template" type="text/template">
+            <div class="tool draw-tool active" data-name ='line' title="Draw a line!"><i class="icon ion-edit"></i></div>
+            <div class="tool paint-tool" data-name ='brush' title="Paintbrush!"><i class="icon ion-paintbrush"></i></div>
+            <div class="tool move-tool" data-name ='move' title="Move around the canvas not yet :(!"><i class="icon ion-arrow-move"></i></div>
+            <div class="tool region-tool" data-name ='region' title="???!"><i class="icon ion-ios-world"></i></div>
+            <div class="tool eraser-tool" data-name ='eraser' title="Erase!"><i class="icon ion-bookmark"></i></div>
+            <div class="colourpicker">
+            <input type="color" value="#4480c2" />
+            </div>
+            <div class="panel-tool brush-tools" title="Brush Tools!"><i class="icon ion-ios-settings-strong"></i></div>
+            <div class="panel-tool fullscreen" title="Full Screen!"><i class="icon ion-arrow-expand"></i></div>
+        </script>
+
+        <script id="brush-tools-template" type="text/template">
+            <h2>Brush Tools</h2>
+            <p>Opacity: <input class="opacity-range" type="range" max="1" min="0.01" step="0.01" value="0.8" /></p>
+            <p>Size: <input class="size-range" type="range" max="20" min="1" step="1" value="1" /></p>
+        </script>
+
+        <script type="text/javascript" src="/static/js/libs/jquery.js"></script>
+        <script type="text/javascript" src="/static/js/libs/underscore.js"></script>
+        <script type="text/javascript" src="/static/js/libs/backbone.js"></script>
+        <script type="text/javascript" src="/socket.io/socket.io.js"></script>
+        <script type="text/javascript" src="/static/js/canvaspaint.js"></script>
+    </body>
+</html>
