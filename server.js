@@ -1,6 +1,7 @@
 /* global __dirname */
 var fs = require('fs');
 var express = require('express');
+var redisIO = require('socket.io-redis');
 var app = express();
 var http, https, io;
 var secure = false;
@@ -19,6 +20,7 @@ try {
     io = require('socket.io')(http);
 }
 
+io.adapter(redisIO({host: 'localhost', port: 6379}));
 app.use('/static', express.static(__dirname + '/public'));
 
 app.get('/', function (req, res) {
@@ -30,7 +32,7 @@ var clientStates = {};
 io.on('connection', function (socket) {
     var ip = socket.request.connection.remoteAddress;
     console.log('a user connected: ' + ip);
-    
+
     socket.emit('states', clientStates);
 
     socket.on('disconnect', function () {
@@ -57,13 +59,16 @@ io.on('connection', function (socket) {
     });
 });
 
+var port = process.env.PORT || 3000;
+var securePort = process.env.SECUREPORT || process.env.PORT || 3443;
+
 if (secure) {
-    https.listen(3443, function () {
-        console.log('HTTPS listening on *:3443');
+    https.listen(securePort, function () {
+        console.log('HTTPS listening on *:' + securePort);
     });
 } else {
-    http.listen(3000, function () {
-        console.log('http listening on *:3000');
+    http.listen(port, function () {
+        console.log('http listening on *:' + port);
     });
 }
 
