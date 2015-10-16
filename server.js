@@ -1,7 +1,8 @@
 /* global __dirname */
 var fs = require('fs');
 var express = require('express');
-var redisIO = require('socket.io-redis');
+var redis = require('redis').createClient;
+var adapter = require('socket.io-redis');
 var app = express();
 var http, https, io;
 var secure = false;
@@ -19,8 +20,12 @@ try {
     http = require('http').Server(app);
     io = require('socket.io')(http);
 }
-
-io.adapter(redisIO({host: 'localhost', port: 6379}));
+var pass = "superbugoutshonehereofdraughtretrocedeMeyerbeer";
+var port = 6379;
+var host = 'sf.timatooth.com';
+var pub = redis(port, host, { auth_pass: pass});
+var sub = redis(port, host, { detect_buffers: true, auth_pass: pass });
+io.adapter(adapter({ pubClient: pub, subClient: sub }));
 app.use('/static', express.static(__dirname + '/public'));
 
 app.get('/', function (req, res) {
