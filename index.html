@@ -38,7 +38,9 @@
     </head>
     <body>
         <div id="cursors"></div>
-        <canvas id="paper" width="2560" height="1440"></canvas>
+        <div id="fakeextent"></div>
+        <canvas id="paper" width="512" height="512"></canvas>
+        
         <img id="dummyImage" src="" alt="" />
 
         <script id="sidebar-template" type="text/template">
@@ -52,6 +54,7 @@
             </div>
             <div class="panel-tool brush-tools" title="Brush Tools!"><i class="icon ion-ios-settings-strong"></i></div>
             <div class="panel-tool fullscreen" title="Full Screen!"><i class="icon ion-arrow-expand"></i></div>
+            <div id="offset-label" title="offset!">0,0</div>
         </script>
 
         <script id="brush-tools-template" type="text/template">

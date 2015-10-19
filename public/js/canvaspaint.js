@@ -5,6 +5,14 @@
     var canvas = $('canvas');
     var ctx = canvas[0].getContext('2d');
     var clientStates = {};
+    var tileCollection = {};
+    var tileSize = 128;
+
+    //The visible region on screen the user sees
+    var extent = {
+        width: 256,
+        height: 256
+    };
 
     var client = {
         state: {
@@ -15,7 +23,9 @@
         },
         x: 0,
         y: 0,
-        m1Down: false
+        m1Down: false,
+        offsetX: 0,
+        offsetY: 0
     };
 
     $(canvas).on('mousedown touchstart', function (evt) {
@@ -23,46 +33,70 @@
             client.x = evt.originalEvent.touches[0].clientX;
             client.y = evt.originalEvent.touches[0].clientY;
         } else {
+            if (evt.which === 2) {
+                client.m3Down = true;
+            } else {
+                client.m1Down = true;
+            }
             client.x = evt.offsetX;
             client.y = evt.offsetY;
         }
-        client.m1Down = true;
+
     });
 
-    $(canvas).on('mouseup touchend touchcancel', function (evt) {
+    $(canvas).on('mouseup mouseleave touchend touchcancel', function (evt) {
         if (evt.type === "touchstart" || evt.type === "touchcancel") {
             client.x = evt.originalEvent.touches[0].clientX;
             client.y = evt.originalEvent.touches[0].clientY;
         } else {
+            if (evt.which === 2) {
+                client.m3Down = false;
+            } else {
+                client.m1Down = false;
+                updateDirtyTiles();
+            }
             client.x = evt.offsetX;
             client.y = evt.offsetY;
         }
-        client.m1Down = false;
+
     });
 
     var lastEmit = $.now();
     $(canvas).on('mousemove touchmove', function (evt) {
+        var x, y;
+        if (evt.type === "touchmove") {
+            x = evt.originalEvent.touches[0].clientX;
+            y = evt.originalEvent.touches[0].clientY;
+        } else {
+            x = evt.offsetX;
+            y = evt.offsetY;
+        }
+
         if (client.m1Down) {
-            var x, y;
-            if (evt.type === "touchmove") {
-                x = evt.originalEvent.touches[0].clientX;
-                y = evt.originalEvent.touches[0].clientY;
-            } else {
-                x = evt.offsetX;
-                y = evt.offsetY;
-            }
             processDrawAction(client, x, y);
+
+            //set the 'tile' to be recached
+            var tileX = Math.floor((x + client.offsetX - extent.width / 2) / tileSize);
+            var tileY = Math.floor((y + client.offsetY - extent.height / 2) / tileSize);
+            var key = tileX + '/' + tileY;
+            tileCollection[key].dirty = true;
+
             client.x = x;
             client.y = y;
-        }
-        if ($.now() - lastEmit > 30) {
-            var message = {
-                x: evt.offsetX,
-                y: evt.offsetY,
-                d1: client.m1Down
-            };
-            socket.emit('move', message);
-            lastEmit = $.now();
+
+            if ($.now() - lastEmit > 30) {
+                var message = {
+                    x: evt.offsetX,
+                    y: evt.offsetY,
+                    d1: client.m1Down
+                };
+                socket.emit('move', message);
+                lastEmit = $.now();
+            }
+        } else if (client.m3Down) {
+            processMoveAction(client, evt.offsetX, evt.offsetY);
+            client.x = x;
+            client.y = y;
         }
 
     });
@@ -293,4 +327,82 @@
             clearCircle(ctx, x, y, state.size);
         }
     }
+
+    function processMoveAction(client, x, y) {
+        var dx = client.x - x;
+        var dy = client.y - y;
+        client.offsetX = client.offsetX + dx;
+        client.offsetY = client.offsetY + dy;
+        $('#offset-label').text(client.offsetX + ',' + client.offsetY);
+        drawTiles();
+    }
+
+    function drawTiles() {
+        ctx.clearRect(0, 0, canvas.width(), canvas.height());
+
+        for (var y = client.offsetY; y < client.offsetY + extent.height + tileSize; y += tileSize) {
+            for (var x = client.offsetX; x < client.offsetX + extent.width + tileSize; x += tileSize) {
+                var xTile = Math.floor(x / tileSize);
+                var yTile = Math.floor(y / tileSize);
+                var tileCanvas = loadTileAt(xTile, yTile).canvas;
+                var dX = (xTile * tileSize) - client.offsetX + extent.width / 2;
+                var dY = (yTile * tileSize) - client.offsetY + extent.height / 2;
+                ctx.drawImage(tileCanvas, 0, 0, tileSize, tileSize, dX, dY, tileSize, tileSize);
+            }
+        }
+    }
+
+    function loadTileAt(x, y) {
+        //console.log("Tile " + x + " ," + y + " was requested");
+
+        var key = x + '/' + y;
+        if (key in tileCollection) {
+            return tileCollection[key];
+        }
+
+        var tile = document.createElement("canvas");
+        var tCtx = tile.getContext('2d');
+        tCtx.beginPath();
+        tCtx.lineWidth = "1";
+        tCtx.strokeStyle = "#AACCEE";
+        tCtx.rect(0, 0, 300, 300);
+        tCtx.stroke();
+        tCtx.fillText("(" + x + "," + y + ")", 10, 10);
+        tCtx.closePath();
+
+        var tileStruct = {
+            canvas: tile,
+            dirty: false,
+            x: x,
+            y: y
+        };
+
+        tileCollection[key] = tileStruct; //cache tile
+        return tileStruct;
+    }
+
+    function initTheBusiness() {
+        drawTiles();
+    }
+    
+    function updateDirtyTiles(){
+        for(var tileKey in tileCollection){
+            if(tileCollection[tileKey].dirty){
+                var tile = tileCollection[tileKey];
+                //find it onscreen
+                var posx = tile.x * tileSize - client.offsetX + extent.width / 2;
+                var posy = tile.y * tileSize - client.offsetY + extent.height / 2;
+                var ofc = document.createElement("canvas");
+                ofc.width = tileSize;
+                ofc.height = tileSize;
+                var oCtx = ofc.getContext('2d');
+                oCtx.drawImage(canvas[0], posx, posy, tileSize, tileSize, 0, 0, tileSize, tileSize); //fixme remove jquery wrapping
+                //swap
+                tileCollection[tileKey].canvas = ofc;
+                tileCollection[tileKey].dirty = false;
+            }
+        }
+    }
+
+    initTheBusiness();
 })();
