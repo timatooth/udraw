@@ -11,18 +11,9 @@ html, body {
     background-color: #FFF;
 }
 #paper {
-    background-color: #ffffcc;
-}
-
-#fakeextent {
-    position: absolute;
-    width: 256px;
-    height: 256px;
-    left: 128px;
-    top: 128px;
-    border: solid 1px #000;
-    user-select: none;
-    pointer-events: none;
+    position: relative;
+    top: -256px;
+    left: -256px;
 }
 
 #offset-label {
@@ -40,18 +31,14 @@ body:fullscreen {
 }
 
 
-#paper {
-    display: block;
-}
-
 #dummyImage {
     visibility: hidden;
 }
 
 .sidebar {
     position: fixed;
-    right: 0;
-    top: 0;
+    left: 0px;
+    top: 0px;
     width: 4em;
     height: 100%;
     background-color: #464646;
@@ -60,7 +47,8 @@ body:fullscreen {
     font-weight: 300;
     font-size: 0.8em;
     text-align: center;
-    box-shadow: #464646 0px 0px 20px; }
+    box-shadow: #464646 0px 0px 20px;
+}
 
 .active {
     text-shadow: 1px 1px 10px #0099ff;
@@ -104,6 +92,7 @@ body:fullscreen {
 
 #cursors {
     position:relative;
+    pointer-events: none; /* the irony */
 }
 
 #cursors .cursor {

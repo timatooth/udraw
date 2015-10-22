@@ -2,16 +2,19 @@
 
 (function () {
     'use strict';
-    var canvas = $('canvas');
-    var ctx = canvas[0].getContext('2d');
+    var tileSize = 256;
+    var debug = true;
+    var canvas = document.getElementById("paper");
+    canvas.width = $(window).width() + tileSize;
+    canvas.height = $(window).height() + tileSize;
+    var ctx = canvas.getContext('2d');
     var clientStates = {};
     var tileCollection = {};
-    var tileSize = 128;
 
     //The visible region on screen the user sees
     var extent = {
-        width: 256,
-        height: 256
+        width: $(window).width(),
+        height: $(window).height()
     };
 
     var client = {
@@ -76,8 +79,8 @@
             processDrawAction(client, x, y);
 
             //set the 'tile' to be recached
-            var tileX = Math.floor((x + client.offsetX - extent.width / 2) / tileSize);
-            var tileY = Math.floor((y + client.offsetY - extent.height / 2) / tileSize);
+            var tileX = Math.floor((x + client.offsetX) / tileSize);
+            var tileY = Math.floor((y + client.offsetY) / tileSize);
             var key = tileX + '/' + tileY;
             tileCollection[key].dirty = true;
 
@@ -97,6 +100,17 @@
             processMoveAction(client, evt.offsetX, evt.offsetY);
             client.x = x;
             client.y = y;
+        } else {
+            //just a regular mouse move? //refactor 
+            if ($.now() - lastEmit > 30) {
+                var message = {
+                    x: evt.offsetX,
+                    y: evt.offsetY,
+                    d1: client.m1Down
+                };
+                socket.emit('move', message);
+                lastEmit = $.now();
+            }
         }
 
     });
@@ -282,8 +296,8 @@
 
         //update the cursor
         $(clientStates[packet.id].cursor).css({
-            left: packet.x,
-            top: packet.y
+            left: packet.x - tileSize, //correct offset
+            top: packet.y - tileSize
         });
 
         var remoteClient = clientStates[packet.id];
@@ -338,37 +352,36 @@
     }
 
     function drawTiles() {
-        ctx.clearRect(0, 0, canvas.width(), canvas.height());
-
-        for (var y = client.offsetY; y < client.offsetY + extent.height + tileSize; y += tileSize) {
-            for (var x = client.offsetX; x < client.offsetX + extent.width + tileSize; x += tileSize) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        for (var y = client.offsetY; y < client.offsetY + extent.height + tileSize * 2; y += tileSize) {
+            for (var x = client.offsetX; x < client.offsetX + extent.width + tileSize * 2; x += tileSize) {
                 var xTile = Math.floor(x / tileSize);
                 var yTile = Math.floor(y / tileSize);
                 var tileCanvas = loadTileAt(xTile, yTile).canvas;
-                var dX = (xTile * tileSize) - client.offsetX + extent.width / 2;
-                var dY = (yTile * tileSize) - client.offsetY + extent.height / 2;
-                ctx.drawImage(tileCanvas, 0, 0, tileSize, tileSize, dX, dY, tileSize, tileSize);
+                var destinationX = (xTile * tileSize) - client.offsetX;
+                var destinationY = (yTile * tileSize) - client.offsetY;
+                ctx.drawImage(tileCanvas, 0, 0, tileSize, tileSize, destinationX, destinationY, tileSize, tileSize);
             }
         }
     }
 
     function loadTileAt(x, y) {
-        //console.log("Tile " + x + " ," + y + " was requested");
-
         var key = x + '/' + y;
         if (key in tileCollection) {
             return tileCollection[key];
         }
 
         var tile = document.createElement("canvas");
-        var tCtx = tile.getContext('2d');
-        tCtx.beginPath();
-        tCtx.lineWidth = "1";
-        tCtx.strokeStyle = "#AACCEE";
-        tCtx.rect(0, 0, 300, 300);
-        tCtx.stroke();
-        tCtx.fillText("(" + x + "," + y + ")", 10, 10);
-        tCtx.closePath();
+        tile.width = tileSize;
+        tile.height = tileSize;
+        if (debug) {
+            var tCtx = tile.getContext('2d');
+            tCtx.lineWidth = "1";
+            tCtx.strokeStyle = "#AACCEE";
+            tCtx.rect(0, 0, tileSize, tileSize);
+            tCtx.stroke();
+            tCtx.fillText("(" + x + "," + y + ")", 10, 10);
+        }
 
         var tileStruct = {
             canvas: tile,
@@ -384,19 +397,19 @@
     function initTheBusiness() {
         drawTiles();
     }
-    
-    function updateDirtyTiles(){
-        for(var tileKey in tileCollection){
-            if(tileCollection[tileKey].dirty){
+
+    function updateDirtyTiles() {
+        for (var tileKey in tileCollection) {
+            if (tileCollection[tileKey].dirty) {
                 var tile = tileCollection[tileKey];
                 //find it onscreen
-                var posx = tile.x * tileSize - client.offsetX + extent.width / 2;
-                var posy = tile.y * tileSize - client.offsetY + extent.height / 2;
+                var posx = tile.x * tileSize - client.offsetX;
+                var posy = tile.y * tileSize - client.offsetY;
                 var ofc = document.createElement("canvas");
                 ofc.width = tileSize;
                 ofc.height = tileSize;
                 var oCtx = ofc.getContext('2d');
-                oCtx.drawImage(canvas[0], posx, posy, tileSize, tileSize, 0, 0, tileSize, tileSize); //fixme remove jquery wrapping
+                oCtx.drawImage(canvas, posx, posy, tileSize, tileSize, 0, 0, tileSize, tileSize); //fixme remove jquery wrapping
                 //swap
                 tileCollection[tileKey].canvas = ofc;
                 tileCollection[tileKey].dirty = false;
