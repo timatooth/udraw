@@ -1,6 +1,8 @@
 /* global __dirname */
 var fs = require('fs');
 var express = require('express');
+var morgan = require('morgan');
+var bodyParser = require('body-parser');
 var redis = require('redis').createClient;
 var adapter = require('socket.io-redis');
 var app = express();
@@ -11,7 +13,7 @@ try {
     var options = {
         key: fs.readFileSync(__dirname + '/udraw.key'),
         cert: fs.readFileSync(__dirname + '/udraw.crt')
-        };
+    };
     https = require('https').Server(options, app);
     io = require('socket.io')(https);
     secure = true;
@@ -23,13 +25,41 @@ try {
 var pass = "superbugoutshonehereofdraughtretrocedeMeyerbeer";
 var port = 6379;
 var host = 'localhost'; //problems here with going over the net stick with localhost for now
-var pub = redis(port, host, {auth_pass: pass});
-var sub = redis(port, host, {detect_buffers: true, auth_pass: pass});
+var pub = redis(port, host, {return_buffers: true, auth_pass: pass}); //FIXME
+var sub = redis(port, host, {return_buffers: true, auth_pass: pass});
 io.adapter(adapter({pubClient: pub, subClient: sub}));
+
+//Express Middleware
 app.use('/static', express.static(__dirname + '/public'));
+app.use(morgan('combined'));
+app.use(bodyParser.raw({type: 'image/png'}));
 
 app.get('/', function (req, res) {
     res.sendFile(__dirname + '/index.html');
+});
+
+app.put('/canvases/:name/:zoom/:x/:y', function (req, res) {
+    var key = req.params.name + ':' + req.params.zoom + ':' + req.params.x + ':' + req.params.y;
+    console.log(req.body.length);
+    pub.set(key, req.body);
+    res.sendStatus(201);
+});
+
+app.get('/canvases/:name/:zoom/:x/:y', function (req, res) {
+    var key = req.params.name + ':' + req.params.zoom + ':' + req.params.x + ':' + req.params.y;
+    pub.get(key, function (err, reply) {
+        if (err !== null) {
+            console.log(err);
+            res.sendStatus(500);
+        } else if (reply === null) {
+            res.sendStatus(404); //eh?
+        } else {
+            //console.log(reply);
+            console.log("res size is " + reply.length);
+            res.set('Content-Type', 'image/png');
+            res.send(reply);
+        }
+    });
 });
 
 var clientStates = {};

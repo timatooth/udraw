@@ -398,6 +398,21 @@
         drawTiles();
     }
 
+    function saveTileAt(x, y, tileCanvas) {
+        var key = x + '/' + y;
+        var tileString = tileCanvas.toDataURL();
+        var endpoint = '/canvases/main/1/' + key;
+        //post tile at coordinate:
+        var blob = b64toBlob(tileString.substr(22), 'image/png');
+        var oReq = new XMLHttpRequest();
+        oReq.open("PUT", endpoint, true); //FIXME private api
+        oReq.onload = function (oEvent) {
+            // Uploaded.
+            console.log("PUT SUCCESS tile PNG blob for " + key);
+        };
+        oReq.send(blob);
+    }
+
     function updateDirtyTiles() {
         for (var tileKey in tileCollection) {
             if (tileCollection[tileKey].dirty) {
@@ -413,8 +428,30 @@
                 //swap
                 tileCollection[tileKey].canvas = ofc;
                 tileCollection[tileKey].dirty = false;
+                //post tile to persistance layer
+                saveTileAt(tile.x, tile.y, ofc);
             }
         }
+    }
+
+    //http://stackoverflow.com/questions/16245767/creating-a-blob-from-a-base64-string-in-javascript
+    function b64toBlob(b64Data, contentType, sliceSize) {
+        contentType = contentType || '';
+        sliceSize = sliceSize || 512;
+        var byteCharacters = atob(b64Data);
+        var byteArrays = [];
+        for (var offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+            var slice = byteCharacters.slice(offset, offset + sliceSize);
+            var byteNumbers = new Array(slice.length);
+            for (var i = 0; i < slice.length; i++) {
+                byteNumbers[i] = slice.charCodeAt(i);
+            }
+            var byteArray = new Uint8Array(byteNumbers);
+            byteArrays.push(byteArray);
+        }
+
+        var blob = new Blob(byteArrays, {type: contentType});
+        return blob;
     }
 
     initTheBusiness();
