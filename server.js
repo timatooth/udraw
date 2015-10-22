@@ -11,7 +11,7 @@ try {
     var options = {
         key: fs.readFileSync(__dirname + '/udraw.key'),
         cert: fs.readFileSync(__dirname + '/udraw.crt')
-    };
+        };
     https = require('https').Server(options, app);
     io = require('socket.io')(https);
     secure = true;
@@ -22,10 +22,10 @@ try {
 }
 var pass = "superbugoutshonehereofdraughtretrocedeMeyerbeer";
 var port = 6379;
-var host = 'sf.timatooth.com';
-var pub = redis(port, host, { auth_pass: pass});
-var sub = redis(port, host, { detect_buffers: true, auth_pass: pass });
-io.adapter(adapter({ pubClient: pub, subClient: sub }));
+var host = 'localhost'; //problems here with going over the net stick with localhost for now
+var pub = redis(port, host, {auth_pass: pass});
+var sub = redis(port, host, {detect_buffers: true, auth_pass: pass});
+io.adapter(adapter({pubClient: pub, subClient: sub}));
 app.use('/static', express.static(__dirname + '/public'));
 
 app.get('/', function (req, res) {
