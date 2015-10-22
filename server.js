@@ -52,10 +52,9 @@ app.get('/canvases/:name/:zoom/:x/:y', function (req, res) {
             console.log(err);
             res.sendStatus(500);
         } else if (reply === null) {
-            res.sendStatus(404); //eh?
+            res.sendStatus(204); //make them create the tile
         } else {
             //console.log(reply);
-            console.log("res size is " + reply.length);
             res.set('Content-Type', 'image/png');
             res.send(reply);
         }

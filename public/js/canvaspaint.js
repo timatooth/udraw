@@ -75,7 +75,7 @@
             y = evt.offsetY;
         }
 
-        if (client.m1Down) {
+        if (client.m1Down && client.state.tool !== 'move') {
             processDrawAction(client, x, y);
 
             //set the 'tile' to be recached
@@ -96,7 +96,7 @@
                 socket.emit('move', message);
                 lastEmit = $.now();
             }
-        } else if (client.m3Down) {
+        } else if (client.m3Down || (client.m1Down && client.state.tool === 'move')) {
             processMoveAction(client, evt.offsetX, evt.offsetY);
             client.x = x;
             client.y = y;
@@ -357,41 +357,82 @@
             for (var x = client.offsetX; x < client.offsetX + extent.width + tileSize * 2; x += tileSize) {
                 var xTile = Math.floor(x / tileSize);
                 var yTile = Math.floor(y / tileSize);
-                var tileCanvas = loadTileAt(xTile, yTile).canvas;
                 var destinationX = (xTile * tileSize) - client.offsetX;
                 var destinationY = (yTile * tileSize) - client.offsetY;
-                ctx.drawImage(tileCanvas, 0, 0, tileSize, tileSize, destinationX, destinationY, tileSize, tileSize);
+                //this should be replaced with a render queue.
+                (function (dx, dy) {
+                    loadTileAt(xTile, yTile, function (tile) {
+                        ctx.drawImage(tile.canvas, 0, 0, tileSize, tileSize, dx, dy, tileSize, tileSize);
+                    });
+                })(destinationX, destinationY);
             }
         }
     }
 
-    function loadTileAt(x, y) {
+    //TODO: optimise and re-factor
+    function loadTileAt(x, y, cb) {
         var key = x + '/' + y;
+        var endpoint = '/canvases/main/1/' + key;
+        var done = false;
+
         if (key in tileCollection) {
-            return tileCollection[key];
+            return cb(tileCollection[key]);
         }
 
         var tile = document.createElement("canvas");
         tile.width = tileSize;
         tile.height = tileSize;
-        if (debug) {
-            var tCtx = tile.getContext('2d');
-            tCtx.lineWidth = "1";
-            tCtx.strokeStyle = "#AACCEE";
-            tCtx.rect(0, 0, tileSize, tileSize);
-            tCtx.stroke();
-            tCtx.fillText("(" + x + "," + y + ")", 10, 10);
-        }
+        var tCtx = tile.getContext('2d');
 
-        var tileStruct = {
-            canvas: tile,
-            dirty: false,
-            x: x,
-            y: y
+        var oReq = new XMLHttpRequest();
+        oReq.responseType = "blob";
+        oReq.open("GET", endpoint, true); //FIXME private api
+
+        oReq.onload = function (evt) {
+            if (evt.target.status === 200) {
+                //var imgData = new Blob(ir, {type: 'image/png'});
+                var imgData = evt.target.response;
+                var img = new Image();
+                img.onload = function () {
+                    tCtx.drawImage(img, 0, 0);
+
+                    var tileStruct = {
+                        canvas: tile,
+                        dirty: false,
+                        x: x,
+                        y: y
+                    };
+
+                    tileCollection[key] = tileStruct; //cache tile
+                    cb(tileStruct);
+                    done = true;
+                };
+                img.src = window.URL.createObjectURL(imgData); //file api experimental
+
+
+            } else if (evt.target.status === 204) {
+                if (debug) {
+                    tCtx.lineWidth = "1";
+                    tCtx.strokeStyle = "#AACCEE";
+                    tCtx.rect(0, 0, tileSize, tileSize);
+                    tCtx.stroke();
+                    tCtx.fillText("(" + x + "," + y + ")", 10, 10);
+                }
+            }
+
+            if (!done) {
+                var tileStruct = {
+                    canvas: tile,
+                    dirty: false,
+                    x: x,
+                    y: y
+                };
+
+                tileCollection[key] = tileStruct; //cache tile
+                cb(tileStruct);
+            }
         };
-
-        tileCollection[key] = tileStruct; //cache tile
-        return tileStruct;
+        oReq.send();
     }
 
     function initTheBusiness() {
@@ -405,11 +446,7 @@
         //post tile at coordinate:
         var blob = b64toBlob(tileString.substr(22), 'image/png');
         var oReq = new XMLHttpRequest();
-        oReq.open("PUT", endpoint, true); //FIXME private api
-        oReq.onload = function (oEvent) {
-            // Uploaded.
-            console.log("PUT SUCCESS tile PNG blob for " + key);
-        };
+        oReq.open("PUT", endpoint, true);
         oReq.send(blob);
     }
 
