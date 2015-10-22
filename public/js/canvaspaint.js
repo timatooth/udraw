@@ -373,7 +373,6 @@
     function loadTileAt(x, y, cb) {
         var key = x + '/' + y;
         var endpoint = '/canvases/main/1/' + key;
-        var done = false;
 
         if (key in tileCollection) {
             return cb(tileCollection[key]);
@@ -386,7 +385,16 @@
 
         var oReq = new XMLHttpRequest();
         oReq.responseType = "blob";
-        oReq.open("GET", endpoint, true); //FIXME private api
+        oReq.open("GET", endpoint, true);
+        var tileStruct = {
+            canvas: tile,
+            dirty: false,
+            x: x,
+            y: y,
+            ready: false
+        };
+
+        tileCollection[key] = tileStruct; //cache tile
 
         oReq.onload = function (evt) {
             if (evt.target.status === 200) {
@@ -395,17 +403,8 @@
                 var img = new Image();
                 img.onload = function () {
                     tCtx.drawImage(img, 0, 0);
-
-                    var tileStruct = {
-                        canvas: tile,
-                        dirty: false,
-                        x: x,
-                        y: y
-                    };
-
-                    tileCollection[key] = tileStruct; //cache tile
+                    tileStruct.ready = true;
                     cb(tileStruct);
-                    done = true;
                 };
                 img.src = window.URL.createObjectURL(imgData); //file api experimental
 
@@ -417,22 +416,14 @@
                     tCtx.rect(0, 0, tileSize, tileSize);
                     tCtx.stroke();
                     tCtx.fillText("(" + x + "," + y + ")", 10, 10);
+                    tileStruct.ready = true;
+                    cb(tileStruct);
                 }
             }
-
-            if (!done) {
-                var tileStruct = {
-                    canvas: tile,
-                    dirty: false,
-                    x: x,
-                    y: y
-                };
-
-                tileCollection[key] = tileStruct; //cache tile
-                cb(tileStruct);
-            }
         };
-        oReq.send();
+        if (!tileStruct.ready) {
+            oReq.send();
+        }
     }
 
     function initTheBusiness() {
