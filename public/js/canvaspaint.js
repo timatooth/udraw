@@ -107,6 +107,7 @@
             var tileY = Math.floor((y + client.offsetY) / tileSize);
             var key = tileX + '/' + tileY;
             tileCollection[key].dirty = true;
+            tileCollection[key].filthy = true; //locally created dirty watchdog flag
 
             client.x = x;
             client.y = y;
@@ -330,8 +331,11 @@
         var remoteClient = clientStates[packet.id];
         var x = packet.x - client.offsetX;
         var y = packet.y - client.offsetY;
-        if (true) { //TODO
-            //is the user in our viewport extent?
+        //is the user in our viewport extent?
+        if (packet.x > client.offsetX + tileSize &&
+                packet.x < extent.width + client.offsetX + tileSize &&
+                packet.y > client.offsetY + tileSize &&
+                packet.y < extent.height + client.offsetY + tileSize) {
 
             //update the cursor
             $(clientStates[packet.id].cursor).css({
@@ -341,10 +345,18 @@
 
             if (packet.d1) { //mouse1 down
                 processDrawAction(remoteClient, x, y);
+
+                //dirty the tile
+                //set the 'tile' to be recached
+                var tileX = Math.floor((x + client.offsetX) / tileSize);
+                var tileY = Math.floor((y + client.offsetY) / tileSize);
+                var key = tileX + '/' + tileY;
+                tileCollection[key].dirty = true;
+                updateDirtyTiles();
             }
 
         } else {
-            //they are not in viewable region. Place cursor in direction
+            //they are not in viewable region. Place cursor in general direction TODO
         }
 
         clientStates[packet.id].x = x;
@@ -483,7 +495,7 @@
         oReq.send(blob);
     }
 
-    function updateDirtyTiles() {
+    var updateDirtyTiles = _.throttle(function () {
         for (var tileKey in tileCollection) {
             if (tileCollection[tileKey].dirty) {
                 var tile = tileCollection[tileKey];
@@ -494,15 +506,18 @@
                 ofc.width = tileSize;
                 ofc.height = tileSize;
                 var oCtx = ofc.getContext('2d');
-                oCtx.drawImage(canvas, posx, posy, tileSize, tileSize, 0, 0, tileSize, tileSize); //fixme remove jquery wrapping
+                oCtx.drawImage(canvas, posx, posy, tileSize, tileSize, 0, 0, tileSize, tileSize);
                 //swap
                 tileCollection[tileKey].canvas = ofc;
                 tileCollection[tileKey].dirty = false;
                 //post tile to persistance layer
-                saveTileAt(tile.x, tile.y, ofc);
+                if (tile.filthy) {
+                    saveTileAt(tile.x, tile.y, ofc);
+                    tile.filthy = false;
+                }
             }
         }
-    }
+    }, 500);
 
     //http://stackoverflow.com/questions/16245767/creating-a-blob-from-a-base64-string-in-javascript
     function b64toBlob(b64Data, contentType, sliceSize) {
