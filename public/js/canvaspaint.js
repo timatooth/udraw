@@ -27,6 +27,7 @@
         canvas.style.height = oldHeight + 'px';
     }
 
+
     var clientStates = {};
     var tileCollection = {};
 
@@ -112,8 +113,8 @@
 
             if ($.now() - lastEmit > 30) {
                 var message = {
-                    x: evt.offsetX,
-                    y: evt.offsetY,
+                    x: evt.offsetX + client.offsetX,
+                    y: evt.offsetY + client.offsetY,
                     d1: client.m1Down
                 };
                 socket.emit('move', message);
@@ -121,14 +122,20 @@
             }
         } else if (client.m3Down || (client.m1Down && client.state.tool === 'move')) {
             processMoveAction(client, x, y);
-            //client.x = x;
-            //client.y = y;
+            if ($.now() - lastEmit > 60) { //only send pan message every 60ms
+                var message = {
+                    x: client.offsetX,
+                    y: client.offsetY
+                };
+                socket.emit('pan', message);
+                lastEmit = $.now();
+            }
         } else {
             //just a regular mouse move? //refactor 
             if ($.now() - lastEmit > 30) {
                 var message = {
-                    x: evt.offsetX,
-                    y: evt.offsetY,
+                    x: evt.offsetX + client.offsetX,
+                    y: evt.offsetY + client.offsetY,
                     d1: client.m1Down
                 };
                 socket.emit('move', message);
@@ -182,7 +189,9 @@
             tool: client.state.tool,
             color: client.state.color,
             size: client.state.size,
-            opacity: client.state.opacity
+            opacity: client.state.opacity,
+            offsetX: client.offsetX,
+            offsetY: client.offsetY
         };
 
         socket.emit('status', message);
@@ -311,27 +320,35 @@
                     size: 1,
                     opacity: 0.8
                 },
-                updated: $.now()
+                updated: $.now(),
+                offset: {x: 0, y: 0}
             };
         } else {
             clientStates[packet.id].updated = $.now();
         }
 
-        //update the cursor
-        $(clientStates[packet.id].cursor).css({
-            left: packet.x - tileSize, //correct offset
-            top: packet.y - tileSize
-        });
-
         var remoteClient = clientStates[packet.id];
-        var x = packet.x;
-        var y = packet.y;
+        var x = packet.x - client.offsetX;
+        var y = packet.y - client.offsetY;
+        if (true) { //TODO
+            //is the user in our viewport extent?
 
-        if (packet.d1) { //mouse1 down
-            processDrawAction(remoteClient, x, y);
+            //update the cursor
+            $(clientStates[packet.id].cursor).css({
+                left: packet.x - tileSize - client.offsetX,
+                top: packet.y - tileSize - client.offsetY
+            });
+
+            if (packet.d1) { //mouse1 down
+                processDrawAction(remoteClient, x, y);
+            }
+
+        } else {
+            //they are not in viewable region. Place cursor in direction
         }
-        clientStates[packet.id].x = packet.x;
-        clientStates[packet.id].y = packet.y;
+
+        clientStates[packet.id].x = x;
+        clientStates[packet.id].y = y;
 
     });
 
