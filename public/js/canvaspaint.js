@@ -8,13 +8,32 @@
     canvas.width = $(window).width() + tileSize;
     canvas.height = $(window).height() + tileSize;
     var ctx = canvas.getContext('2d');
+    //hdpi support
+    var devicePixelRatio = window.devicePixelRatio || 1;
+    var backingStoreRatio = ctx.webkitBackingStorePixelRatio ||
+            ctx.mozBackingStorePixelRatio ||
+            ctx.msBackingStorePixelRatio ||
+            ctx.oBackingStorePixelRatio ||
+            ctx.backingStorePixelRatio || 1;
+
+    var ratio = devicePixelRatio / backingStoreRatio;
+
+    if (devicePixelRatio !== backingStoreRatio) {
+        var oldWidth = canvas.width;
+        var oldHeight = canvas.height;
+        canvas.width = oldWidth * ratio;
+        canvas.height = oldHeight * ratio;
+        canvas.style.width = oldWidth + 'px';
+        canvas.style.height = oldHeight + 'px';
+    }
+
     var clientStates = {};
     var tileCollection = {};
 
     //The visible region on screen the user sees
     var extent = {
-        width: $(window).width(),
-        height: $(window).height()
+        width: $(window).width() * ratio,
+        height: $(window).height() * ratio
     };
 
     var client = {
@@ -33,8 +52,10 @@
 
     $(canvas).on('mousedown touchstart', function (evt) {
         if (evt.type === "touchstart") {
-            client.x = evt.originalEvent.touches[0].clientX;
-            client.y = evt.originalEvent.touches[0].clientY;
+            evt.preventDefault();
+            client.x = evt.originalEvent.touches[0].clientX * ratio;
+            client.y = evt.originalEvent.touches[0].clientY * ratio;
+            client.m1Down = true;
         } else {
             if (evt.which === 2) {
                 client.m3Down = true;
@@ -48,9 +69,10 @@
     });
 
     $(canvas).on('mouseup mouseleave touchend touchcancel', function (evt) {
-        if (evt.type === "touchstart" || evt.type === "touchcancel") {
-            client.x = evt.originalEvent.touches[0].clientX;
-            client.y = evt.originalEvent.touches[0].clientY;
+        if (evt.type === "touchend" || evt.type === "touchcancel") {
+            evt.preventDefault();
+            //client.x = evt.originalEvent.touches[0].clientX;
+            //client.y = evt.originalEvent.touches[0].clientY;
         } else {
             if (evt.which === 2) {
                 client.m3Down = false;
@@ -68,11 +90,12 @@
     $(canvas).on('mousemove touchmove', function (evt) {
         var x, y;
         if (evt.type === "touchmove") {
-            x = evt.originalEvent.touches[0].clientX;
-            y = evt.originalEvent.touches[0].clientY;
+            evt.preventDefault();
+            x = evt.originalEvent.touches[0].clientX * ratio;
+            y = evt.originalEvent.touches[0].clientY * ratio;
         } else {
-            x = evt.offsetX;
-            y = evt.offsetY;
+            x = evt.offsetX * ratio;
+            y = evt.offsetY * ratio;
         }
 
         if (client.m1Down && client.state.tool !== 'move') {
@@ -97,9 +120,9 @@
                 lastEmit = $.now();
             }
         } else if (client.m3Down || (client.m1Down && client.state.tool === 'move')) {
-            processMoveAction(client, evt.offsetX, evt.offsetY);
-            client.x = x;
-            client.y = y;
+            processMoveAction(client, x, y);
+            //client.x = x;
+            //client.y = y;
         } else {
             //just a regular mouse move? //refactor 
             if ($.now() - lastEmit > 30) {
@@ -349,6 +372,8 @@
         client.offsetY = client.offsetY + dy;
         $('#offset-label').text(client.offsetX + ',' + client.offsetY);
         drawTiles();
+        client.x = x;
+        client.y = y;
     }
 
     function drawTiles() {
