@@ -5,8 +5,8 @@
     var tileSize = 256;
     var debug = true;
     var canvas = document.getElementById("paper");
-    canvas.width = $(window).width() + tileSize;
-    canvas.height = $(window).height() + tileSize;
+    canvas.width = $(window).width() + tileSize * 2;
+    canvas.height = $(window).height() + tileSize * 2;
     var ctx = canvas.getContext('2d');
     //hdpi support
     var devicePixelRatio = window.devicePixelRatio || 1;
@@ -198,6 +198,10 @@
         socket.emit('status', message);
     }
 
+    setInterval(function () {
+        updateToolState();
+    }, 1000 * 1);
+
     var img = $('#dummyImage');
     $(img).attr('src', '/static/svg/leaves.svg');
     $(img).attr('width', 50);
@@ -333,9 +337,9 @@
         var y = packet.y - client.offsetY;
         //is the user in our viewport extent?
         if (packet.x > client.offsetX + tileSize &&
-                packet.x < extent.width + client.offsetX + tileSize &&
-                packet.y > client.offsetY + tileSize &&
-                packet.y < extent.height + client.offsetY + tileSize) {
+                packet.x < extent.width + client.offsetX + tileSize * 2 &&
+                packet.y > client.offsetY &&
+                packet.y < extent.height + client.offsetY + tileSize * 2) {
 
             //update the cursor
             $(clientStates[packet.id].cursor).css({
@@ -366,6 +370,7 @@
 
     socket.on('status', function (packet) {
         clientStates[packet.id].state = packet;
+        clientStates[packet.id].updated = $.now();
     });
 
     // Remove inactive clients after 30 seconds of inactivity
@@ -518,6 +523,23 @@
             }
         }
     }, 500);
+
+    function clearTileCache() {
+        for (var tileKey in tileCollection) {
+            var tile = tileCollection[tileKey];
+            var xMin = Math.floor((client.offsetX - tileSize) / tileSize);
+            var xMax = Math.floor((client.offsetX + tileSize + extent.width) / tileSize) + 1;
+            var yMin = Math.floor((client.offsetY - tileSize) / tileSize);
+            var yMax = Math.floor((client.offsetY + tileSize + extent.height) / tileSize) + 1;
+            if (tile.x < xMin - 1 || tile.x > xMax || tile.y < yMin - 1 || tile.y > yMax) {
+                delete tileCollection[tileKey];
+            }
+        }
+    }
+
+    setInterval(function () {
+        clearTileCache();
+    }, 5000);
 
     //http://stackoverflow.com/questions/16245767/creating-a-blob-from-a-base64-string-in-javascript
     function b64toBlob(b64Data, contentType, sliceSize) {

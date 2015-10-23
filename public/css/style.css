@@ -48,6 +48,7 @@ body:fullscreen {
     font-size: 0.8em;
     text-align: center;
     box-shadow: #464646 0px 0px 20px;
+    z-index: 9;
 }
 
 .active {
