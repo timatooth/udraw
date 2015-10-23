@@ -369,8 +369,10 @@
     });
 
     socket.on('status', function (packet) {
-        clientStates[packet.id].state = packet;
-        clientStates[packet.id].updated = $.now();
+        if (packet.id in clientStates) {
+            clientStates[packet.id].state = packet;
+            clientStates[packet.id].updated = $.now();
+        }
     });
 
     // Remove inactive clients after 30 seconds of inactivity
