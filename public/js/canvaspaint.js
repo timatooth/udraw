@@ -427,6 +427,10 @@
         drawTiles();
         client.x = x;
         client.y = y;
+        if (!!(window.history && history.pushState)) {
+            history.replaceState(null, null, "#!/" + client.offsetX + "/" + client.offsetY);
+        }
+
     }
 
     function drawTiles() {
@@ -509,12 +513,18 @@
     }
 
     function initTheBusiness() {
+        var givenOffsets = parseHashBangArgs();
+
+        if (givenOffsets !== null) {
+            client.offsetX = givenOffsets[0];
+            client.offsetY = givenOffsets[1];
+        }
         drawTiles();
         if (ratio > 1) {
             notify("Retina Support", "You seem to be using a fancy HDPI screen. Expect bugs.", "");
         }
         if (debug) {
-            console.log("= Debug Info =")
+            console.log("= Debug Info =");
             console.log("Window: " + $(window).width() + " x " + $(window).height());
             console.log("Extent: " + extent.width + " x " + extent.height);
         }
@@ -627,6 +637,23 @@
 
         var blob = new Blob(byteArrays, {type: contentType});
         return blob;
+    }
+
+    function parseHashBangArgs() {
+        var aURL = window.location.href;
+        var vars = aURL.slice(aURL.indexOf('#') + 3).split('/');
+        if (vars.length === 2) {
+            var parsedX = parseInt(vars[0]);
+            var parsedY = parseInt(vars[1]);
+            var l = 150 * tileSize;
+            if (!isNaN(parsedX) && !isNaN(parsedY)) {
+                if (parsedX < -l || parsedX > l || parsedY < -l || parsedY > l) {
+                    return null;
+                }
+                return [parsedX, parsedY];
+            }
+        }
+        return null;
     }
 
     initTheBusiness();
