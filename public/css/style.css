@@ -16,6 +16,32 @@ html, body {
     left: -256px;
 }
 
+/* @2x Offset */
+@media 
+only screen and (-webkit-min-device-pixel-ratio: 2),
+only screen and (min--moz-device-pixel-ratio: 2),
+only screen and (min-device-pixel-ratio: 2),
+only screen and (min-resolution: 2dppx) {
+    #paper {
+        position: relative;
+        top: -128px;
+        left: -128px;
+    }
+}
+
+/* @3x Offset. Untested */
+@media 
+only screen and (-webkit-min-device-pixel-ratio: 3),
+only screen and (min--moz-device-pixel-ratio: 3),
+only screen and (min-device-pixel-ratio: 3),
+only screen and (min-resolution: 3dppx) {
+    #paper {
+        position: relative;
+        top: -85px;
+        left: -85px;
+    }
+}
+
 #offset-label {
     font-size: 0.6em;
 }

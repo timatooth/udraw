@@ -54,17 +54,24 @@
     $(canvas).on('mousedown touchstart', function (evt) {
         if (evt.type === "touchstart") {
             evt.preventDefault();
-            client.x = evt.originalEvent.touches[0].clientX * ratio;
-            client.y = evt.originalEvent.touches[0].clientY * ratio;
+            client.x = evt.originalEvent.touches[0].clientX * ratio + tileSize; //caveat adding tilesize?
+            client.y = evt.originalEvent.touches[0].clientY * ratio + tileSize;
             client.m1Down = true;
+            //send a move setting drawing to true to say where they draw from
+            var message = {
+                x: ((client.x / ratio) * ratio) + client.offsetX,
+                y: ((client.y / ratio) * ratio) + client.offsetY,
+                d1: false //they aren't really drawing yet...
+            };
+            socket.emit('move', message);
         } else {
             if (evt.which === 2) {
                 client.m3Down = true;
             } else {
                 client.m1Down = true;
             }
-            client.x = evt.offsetX;
-            client.y = evt.offsetY;
+            client.x = evt.offsetX * ratio; // CHECKME: maybe factor hdpi here too
+            client.y = evt.offsetY * ratio;
         }
 
     });
@@ -72,8 +79,18 @@
     $(canvas).on('mouseup mouseleave touchend touchcancel', function (evt) {
         if (evt.type === "touchend" || evt.type === "touchcancel") {
             evt.preventDefault();
+            console.log(evt);
             //client.x = evt.originalEvent.touches[0].clientX;
             //client.y = evt.originalEvent.touches[0].clientY;
+            client.m1Down = false;
+            updateDirtyTiles();
+            //send a move setting drawing to false
+            var message = {
+                x: ((client.x / ratio) * ratio) + client.offsetX,
+                y: ((client.y / ratio) * ratio) + client.offsetY,
+                d1: client.m1Down
+            };
+            socket.emit('move', message);
         } else {
             if (evt.which === 2) {
                 client.m3Down = false;
@@ -92,10 +109,10 @@
         var x, y;
         if (evt.type === "touchmove") {
             evt.preventDefault();
-            x = evt.originalEvent.touches[0].clientX * ratio;
-            y = evt.originalEvent.touches[0].clientY * ratio;
+            x = evt.originalEvent.touches[0].clientX * ratio + tileSize; //improve?
+            y = evt.originalEvent.touches[0].clientY * ratio + tileSize;
         } else {
-            x = evt.offsetX * ratio;
+            x = evt.offsetX * ratio; //check retina on mac
             y = evt.offsetY * ratio;
         }
 
@@ -114,8 +131,8 @@
 
             if ($.now() - lastEmit > 30) {
                 var message = {
-                    x: evt.offsetX + client.offsetX,
-                    y: evt.offsetY + client.offsetY,
+                    x: ((x / ratio) * ratio) + client.offsetX,
+                    y: ((y / ratio) * ratio) + client.offsetY,
                     d1: client.m1Down
                 };
                 socket.emit('move', message);
@@ -343,8 +360,8 @@
 
             //update the cursor
             $(clientStates[packet.id].cursor).css({
-                left: packet.x - tileSize - client.offsetX,
-                top: packet.y - tileSize - client.offsetY
+                left: (packet.x - (tileSize) - client.offsetX) / ratio, //cool
+                top: (packet.y - (tileSize) - client.offsetY) / ratio
             });
 
             if (packet.d1) { //mouse1 down
@@ -490,9 +507,9 @@
     function initTheBusiness() {
         drawTiles();
         if (ratio > 1) {
-            notify("HDPI Support", "You seem to be using fancy HDPI screen. Expect bugs.", "");
+            notify("Retina Support", "You seem to be using a fancy HDPI screen. Expect bugs.", "");
         }
-        if(debug){
+        if (debug) {
             console.log("= Debug Info =")
             console.log("Window: " + $(window).width() + " x " + $(window).height());
             console.log("Extent: " + extent.width + " x " + extent.height);
