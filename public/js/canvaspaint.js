@@ -1,4 +1,4 @@
-/* global Backbone, _ */
+/* global Backbone, _, PNotify */
 
 (function () {
     'use strict';
@@ -489,6 +489,26 @@
 
     function initTheBusiness() {
         drawTiles();
+        if (ratio > 1) {
+            notify("HDPI Support", "You seem to be using fancy HDPI screen. Expect bugs.", "");
+        }
+        if(debug){
+            console.log("= Debug Info =")
+            console.log("Window: " + $(window).width() + " x " + $(window).height());
+            console.log("Extent: " + extent.width + " x " + extent.height);
+        }
+    }
+
+    function notify(title, message, type) {
+        new PNotify({
+            title: title,
+            text: message,
+            nonblock: {
+                nonblock: true,
+                nonblock_opacity: .1
+            },
+            type: type
+        });
     }
 
     function saveTileAt(x, y, tileCanvas) {
@@ -498,6 +518,25 @@
         //post tile at coordinate:
         var blob = b64toBlob(tileString.substr(22), 'image/png');
         var oReq = new XMLHttpRequest();
+        oReq.onload = function (res) {
+            var xhr = res.target;
+            switch (xhr.status) {
+                case 201:
+                    break;
+                case 413:
+                    notify("Too Large", "Error 413 is the tile" + x + ", " + y + " too large?", "error");
+                    break;
+                case 404:
+                    notify("Error 404", "Server playing up?", "error");
+                    break;
+                case 500:
+                    notify("Error 500", "Server isn't feeling well right now.", "error");
+                    break;
+                default:
+                    notify("Hmm", "Unhandled status code " + xhr.status + " for tile " + x + ", " + y, "error");
+                    break;
+            }
+        };
         oReq.open("PUT", endpoint, true);
         oReq.send(blob);
     }
