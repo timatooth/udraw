@@ -99,7 +99,7 @@ app.get('/canvases/:name/:zoom/:x/:y', function (req, res) {
 });
 
 var clientStates = {};
-
+tileRedis.set("current connections", 0); //reset on boot
 io.on('connection', function (socket) {
     var ip = socket.request.connection.remoteAddress;
     tileRedis.incr("total connections");

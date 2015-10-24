@@ -656,5 +656,29 @@
         return null;
     }
 
+    // Create the listener function
+    var resizeLayout = _.debounce(function (e) {
+        canvas.width = $(window).width() + tileSize * 2;
+        canvas.height = $(window).height() + tileSize * 2;
+
+        extent = {
+            width: $(window).width() * ratio,
+            height: $(window).height() * ratio
+        };
+
+        if (devicePixelRatio !== backingStoreRatio) {
+            var oldWidth = canvas.width;
+            var oldHeight = canvas.height;
+            canvas.width = oldWidth * ratio;
+            canvas.height = oldHeight * ratio;
+            canvas.style.width = oldWidth + 'px';
+            canvas.style.height = oldHeight + 'px';
+        }
+
+        drawTiles();
+    }, 500); // Maximum run of once per 500 milliseconds
+
+    window.addEventListener("resize", resizeLayout, false);
+
     initTheBusiness();
 })();
