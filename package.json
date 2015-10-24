@@ -19,6 +19,7 @@
   "dependencies": {
     "body-parser": "^1.14.1",
     "express": "^4.13.3",
+    "express-rate-limit": "^2.0.2",
     "morgan": "^1.6.1",
     "redis": "^2.2.3",
     "socket.io": "^1.3.7",

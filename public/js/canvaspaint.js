@@ -497,6 +497,10 @@
                     tileStruct.ready = true;
                     cb(tileStruct);
                 }
+            } else if (evt.target.status === 416) {
+                tCtx.fillStyle = "#0F0";
+                tCtx.fillRect(0, 0, tileSize, tileSize);
+                notify("Tile Fetch Error", "Have you gone too far?", "error");
             }
         };
         if (!tileStruct.ready) {
@@ -542,6 +546,12 @@
                     break;
                 case 413:
                     notify("Too Large", "Error 413 is the tile" + x + ", " + y + " too large?", "error");
+                    break;
+                case 416:
+                    notify("Range Excedded", "Canvas boundary limit. You have gone too far.", "error");
+                    break;
+                case 429:
+                    notify("Slow Down", "Drawing fast? Server rejected tile save at " + x + ", " + y + " try again shortly.", "error");
                     break;
                 case 404:
                     notify("Error 404", "Server playing up?", "error");

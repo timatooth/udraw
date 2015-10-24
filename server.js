@@ -3,11 +3,13 @@ var fs = require('fs');
 var express = require('express');
 var morgan = require('morgan');
 var bodyParser = require('body-parser');
+var rateLimit = require('express-rate-limit');
 var redis = require('redis');
 var adapter = require('socket.io-redis');
 var app = express();
 var http, https, io;
 var secure = false;
+var tileRadius = 300;
 
 try {
     var options = {
@@ -28,16 +30,38 @@ var tileRedis = redis.createClient(port, host, {return_buffers: true});
 
 io.adapter(adapter(redis.createClient({host: 'localhost', port: 6379})));
 
+//rate limit trust nginx
+app.enable('trust proxy');
+
+var putLimiter = rateLimit({
+    /* config */
+    delayAfter: 0,
+    max: 150
+});
+
 //Express Middleware
 app.use('/static', express.static(__dirname + '/public'));
 app.use(morgan('combined'));
-app.use(bodyParser.raw({type: 'image/png'}));
+app.use(bodyParser.raw({type: 'image/png', limit: '250kb'}));
+//app.use('/canvases', limiter);
 
 app.get('/', function (req, res) {
     res.sendFile(__dirname + '/index.html');
 });
 
-app.put('/canvases/:name/:zoom/:x/:y', function (req, res) {
+app.put('/canvases/:name/:zoom/:x/:y', putLimiter, function (req, res) {
+    var p = req.params;
+    if (p.name !== "main") {
+        return res.sendStatus(404);
+    } else if (Number(p.zoom) !== 1) {
+        return res.sendStatus(404);
+    } else if (Number(p.x) < -(tileRadius / 2) ||
+            Number(p.x) > tileRadius / 2 ||
+            Number(p.y) < -(tileRadius / 2) ||
+            Number(p.y) > tileRadius / 2) {
+        return res.sendStatus(416); //requested outside range
+    }
+
     var key = req.params.name + ':' + req.params.zoom + ':' + req.params.x + ':' + req.params.y;
     console.log(req.body.length);
     tileRedis.set(key, req.body);
@@ -45,6 +69,18 @@ app.put('/canvases/:name/:zoom/:x/:y', function (req, res) {
 });
 
 app.get('/canvases/:name/:zoom/:x/:y', function (req, res) {
+    var p = req.params;
+    if (p.name !== "main") {
+        return res.sendStatus(404);
+    } else if (Number(p.zoom) !== 1) {
+        return res.sendStatus(404);
+    } else if (Number(p.x) < -(tileRadius / 2) ||
+            Number(p.x) > tileRadius / 2 ||
+            Number(p.y) < -(tileRadius / 2) ||
+            Number(p.y) > tileRadius / 2) {
+        return res.sendStatus(416); //requested outside range
+    }
+
     var key = req.params.name + ':' + req.params.zoom + ':' + req.params.x + ':' + req.params.y;
     tileRedis.get(key, function (err, reply) {
         if (err !== null) {
