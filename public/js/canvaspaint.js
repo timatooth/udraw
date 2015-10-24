@@ -3,7 +3,7 @@
 (function () {
     'use strict';
     var tileSize = 256;
-    var debug = true;
+    var debug = false;
     var canvas = document.getElementById("paper");
     canvas.width = $(window).width() + tileSize * 2;
     canvas.height = $(window).height() + tileSize * 2;
@@ -40,7 +40,7 @@
     var client = {
         state: {
             tool: 'line',
-            color: '#4480c2',
+            color: '#222222',
             size: 1,
             opacity: 0.8
         },
@@ -338,7 +338,7 @@
                 cursor: $('<div class="cursor">').appendTo('#cursors'),
                 state: {
                     tool: 'line',
-                    color: '#4480c2',
+                    color: '#222222',
                     size: 1,
                     opacity: 0.8
                 },
@@ -679,6 +679,11 @@
     }, 500); // Maximum run of once per 500 milliseconds
 
     window.addEventListener("resize", resizeLayout, false);
+
+    $('#spectrumcolorpicker').spectrum({
+        color: "#f00",
+        clickoutFiresChange: true
+    });
 
     initTheBusiness();
 })();

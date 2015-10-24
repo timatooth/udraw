@@ -8,7 +8,9 @@ html, body {
     padding: 0px;
     font-family: 'Helvetica Neue', 'Helvetica', 'Open Sans', sans-serif;
     overflow: hidden;
-    background-color: #FFF;
+    background-color: #EFEDE0;
+    background-image: url('/static/images/seamlesspaper.jpg');
+    background-repeat: repeat;
 }
 #paper {
     position: relative;
@@ -100,14 +102,6 @@ body:fullscreen {
     text-shadow: 1px 1px 10px #ffffff;
     color: rgba(0, 0, 0, 0.6);
     font-size: 3em; 
-}
-
-.colourpicker input[type='color']{
-    background-color: #464646;
-    border: none;
-    padding: 0px;
-    height: 3.5em;
-    width: 4em;
 }
 
 .panel {
