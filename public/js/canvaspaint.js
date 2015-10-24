@@ -219,11 +219,6 @@
         updateToolState();
     }, 1000 * 20);
 
-    var img = $('#dummyImage');
-    $(img).attr('src', '/static/svg/leaves.svg');
-    $(img).attr('width', 50);
-    $(img).attr('height', 50);
-
     var SidebarView = Backbone.View.extend({
         template: _.template($("#sidebar-template").html()),
         className: "sidebar",
