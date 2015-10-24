@@ -66,6 +66,8 @@ app.put('/canvases/:name/:zoom/:x/:y', putLimiter, function (req, res) {
     console.log(req.body.length);
     tileRedis.set(key, req.body);
     res.sendStatus(201);
+    tileRedis.incr('total puts');
+    tileRedis.hincrby("user:" + req.ip, "putcount", 1);
 });
 
 app.get('/canvases/:name/:zoom/:x/:y', function (req, res) {
@@ -89,7 +91,7 @@ app.get('/canvases/:name/:zoom/:x/:y', function (req, res) {
         } else if (reply === null) {
             res.sendStatus(204); //make them create the tile
         } else {
-            //console.log(reply);
+            tileRedis.incr('total gets');
             res.set('Content-Type', 'image/png');
             res.send(reply);
         }
@@ -100,7 +102,10 @@ var clientStates = {};
 
 io.on('connection', function (socket) {
     var ip = socket.request.connection.remoteAddress;
-    console.log('a user connected: ' + ip);
+    tileRedis.incr("total connections");
+    tileRedis.incr("current connections");
+    tileRedis.hsetnx("user:" + ip, "lastconnect", Date.now() / 1000 | 0);
+    tileRedis.hincrby("user:" + ip, "connectcount", 1);
 
     socket.emit('states', clientStates);
 
@@ -108,8 +113,7 @@ io.on('connection', function (socket) {
         if (socket.id in clientStates) {
             delete clientStates[socket.id];
         }
-
-        console.log('user disconnected: ' + ip);
+        tileRedis.decr("current connections");
     });
 
     socket.on('move', function (msg) {
@@ -119,7 +123,7 @@ io.on('connection', function (socket) {
 
     socket.on('status', function (msg) {
         if (msg.size > 30 || msg.size < 1 || msg.opacity > 1 || msg.opacity < 0) {
-            console.log("Got malicious input from user changing tool size: " + socket.request.connection.remoteAddress);
+            tileRedis.sadd("malicious", ip);
             return;
         }
         clientStates[socket.id] = msg;

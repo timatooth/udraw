@@ -217,7 +217,7 @@
 
     setInterval(function () {
         updateToolState();
-    }, 1000 * 1);
+    }, 1000 * 20);
 
     var img = $('#dummyImage');
     $(img).attr('src', '/static/svg/leaves.svg');
