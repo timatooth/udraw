@@ -40,7 +40,7 @@ var putLimiter = rateLimit({
 });
 
 //Express Middleware
-app.use('/static', express.static(__dirname + '/public'));
+app.use('/static', express.static(__dirname + '/dist'));
 app.use(morgan('combined'));
 app.use(bodyParser.raw({type: 'image/png', limit: '250kb'}));
 //app.use('/canvases', limiter);

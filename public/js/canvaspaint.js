@@ -118,13 +118,20 @@
 
         if (client.m1Down && client.state.tool !== 'move') {
             processDrawAction(client, x, y);
-
-            //set the 'tile' to be recached
-            var tileX = Math.floor((x + client.offsetX) / tileSize);
-            var tileY = Math.floor((y + client.offsetY) / tileSize);
-            var key = tileX + '/' + tileY;
-            tileCollection[key].dirty = true;
-            tileCollection[key].filthy = true; //locally created dirty watchdog flag
+            var shadow = 0;
+            if (client.state.tool === 'brush') {
+                var shadow = client.state.size * 0.8;
+            }
+            // we need to factor in the size of the brush which might overlap
+            // more than one tile
+            for (var i = -(client.state.size / 2) - shadow; i < (client.state.size / 2) + shadow; i++) {
+                //set the 'tile' to be recached
+                var tileX = Math.floor((x + client.offsetX + i) / tileSize);
+                var tileY = Math.floor((y + client.offsetY + i) / tileSize);
+                var key = tileX + '/' + tileY;
+                tileCollection[key].dirty = true;
+                tileCollection[key].filthy = true; //locally created dirty watchdog flag
+            }
 
             client.x = x;
             client.y = y;
@@ -205,7 +212,7 @@
         ctx.lineWidth = size;
         ctx.lineCap = "round";
         //shadow
-        ctx.shadowBlur = size * 0.1;
+        ctx.shadowBlur = size * 0.6;
         ctx.shadowColor = "black";
         //
         ctx.moveTo(fromx, fromy);
