@@ -40,7 +40,7 @@ var putLimiter = rateLimit({
 });
 
 //Express Middleware
-app.use('/static', express.static(__dirname + '/dist'));
+app.use('/static', express.static(__dirname + '/public'));
 app.use(morgan('combined'));
 app.use(bodyParser.raw({type: 'image/png', limit: '250kb'}));
 //app.use('/canvases', limiter);
@@ -122,7 +122,7 @@ io.on('connection', function (socket) {
     });
 
     socket.on('status', function (msg) {
-        if (msg.size > 30 || msg.size < 1 || msg.opacity > 1 || msg.opacity < 0) {
+        if (msg.size > 60 || msg.size < 1 || msg.opacity > 1 || msg.opacity < 0) {
             tileRedis.sadd("malicious", ip);
             return;
         }

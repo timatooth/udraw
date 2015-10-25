@@ -167,6 +167,12 @@
         ctx.beginPath(); //need to enclose in begin/close for colour settings to work
         ctx.strokeStyle = color;
         ctx.lineWidth = size;
+        //console.log(ctx.lineCap);
+        ctx.lineCap = 'butt';
+        //shadow
+        ctx.shadowBlur = 0;
+        //ctx.shadowColor = null;
+        //
         ctx.moveTo(fromx, fromy);
         ctx.lineTo(tox, toy);
         ctx.stroke();
@@ -196,6 +202,22 @@
         ctx.arc(x, y, radius, 0, 2 * Math.PI);
         ctx.fillStyle = color;
         ctx.fill();
+    }
+
+    function drawBrush(ctx, fromx, fromy, tox, toy, color, size) {
+        ctx.beginPath(); //need to enclose in begin/close for colour settings to work
+        ctx.strokeStyle = color;
+        ctx.lineWidth = size;
+        ctx.lineCap = "round";
+        //shadow
+        ctx.shadowBlur = size * 0.1;
+        ctx.shadowColor = "black";
+        //
+        ctx.moveTo(fromx, fromy);
+        ctx.lineTo(tox, toy);
+        ctx.stroke();
+        ctx.closePath();
+        ctx.shadowBlur = 0; //set back to 0 othewise all drawings are shadowed?
     }
 
     function clearCircle(ctx, x, y, radius) {
@@ -407,7 +429,8 @@
         } else if (state.tool === 'region') {
             paintImage(ctx, x, y);
         } else if (state.tool === 'brush') {
-            drawCircle(ctx, x, y, cs, state.size / 2);
+            //drawCircle(ctx, x, y, cs, state.size / 2);
+            drawBrush(ctx, remoteClient.x, remoteClient.y, x, y, cs, state.size);
         } else if (state.tool === 'eraser') {
             clearCircle(ctx, x, y, state.size);
         }
