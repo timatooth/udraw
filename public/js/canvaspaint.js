@@ -66,6 +66,7 @@
             socket.emit('move', message);
         } else {
             if (evt.which === 2) {
+                evt.preventDefault(); // remove up/down cursor.
                 client.m3Down = true;
             } else {
                 client.m1Down = true;
@@ -79,7 +80,6 @@
     $(canvas).on('mouseup mouseleave touchend touchcancel', function (evt) {
         if (evt.type === "touchend" || evt.type === "touchcancel") {
             evt.preventDefault();
-            console.log(evt);
             //client.x = evt.originalEvent.touches[0].clientX;
             //client.y = evt.originalEvent.touches[0].clientY;
             client.m1Down = false;
@@ -167,12 +167,7 @@
         ctx.beginPath(); //need to enclose in begin/close for colour settings to work
         ctx.strokeStyle = color;
         ctx.lineWidth = size;
-        //console.log(ctx.lineCap);
         ctx.lineCap = 'butt';
-        //shadow
-        ctx.shadowBlur = 0;
-        //ctx.shadowColor = null;
-        //
         ctx.moveTo(fromx, fromy);
         ctx.lineTo(tox, toy);
         ctx.stroke();
@@ -233,6 +228,7 @@
             offsetX: client.offsetX,
             offsetY: client.offsetY
         };
+        localStorage.setItem("toolsettings", JSON.stringify(client.state));
 
         socket.emit('status', message);
     }
@@ -334,6 +330,57 @@
 
     var sidebar = new SidebarView();
     $('body').append(sidebar.render().el);
+
+    //key Bindings
+    $(document).on('keydown keypress', function (evt) {
+        var s = 30;
+        switch (evt.keyCode) {
+            //move keys
+            case 37:
+            case 97:
+                panScreen(-s, 0);
+                break;
+            case 39:
+            case 100:
+                panScreen(s, 0);
+                break;
+            case 38:
+            case 115:
+                panScreen(0, -s);
+                break;
+            case 40:
+            case 119:
+                panScreen(0, s);
+                break;
+                //tools
+            case 98:
+                $('.paint-tool').click();
+                break;
+            case 108:
+                $('.draw-tool').click();
+                break;
+            case 109:
+                $('.move-tool').click();
+                break;
+            case 120:
+                $('.eraser-tool').click();
+                break;
+            case 61:
+                //+
+                //$('.size-range').first().val($('.size-range').first().val() + 1);
+                break;
+            case 45:
+                //-
+                //$('.size-range').first().val($('.size-range').first().val() - 1);
+                break;
+        }
+    });
+
+    function panScreen(dx, dy) {
+        client.offsetX += dx;
+        client.offsetY += dy;
+        drawTiles();
+    }
 
     var socket = new io();
 
@@ -531,21 +578,54 @@
     }
 
     function initTheBusiness() {
+
+        if (debug) {
+            localStorage.clear();
+        }
+
         var givenOffsets = parseHashBangArgs();
 
         if (givenOffsets !== null) {
             client.offsetX = givenOffsets[0];
             client.offsetY = givenOffsets[1];
+            $('#offset-label').text(client.offsetX + ',' + client.offsetY);
         }
         drawTiles();
-        if (ratio > 1) {
-            notify("Retina Support", "You seem to be using a fancy HDPI screen. Expect bugs.", "");
+
+        if (localStorage.getItem('walkthrough') === null) {
+            //setup tutorial
+            notify("Welcome", "Draw anywhere on a massive canvas in real time. Drawings are saved. Expect bugs.", "");
+
+            setTimeout(function () {
+                notify("Tips", "B = brush, L = Line, M = Move. To quickly move around use WASD or arrow keys or Middle Mouse Button if you have one.", "info");
+            }, 10000);
+
+            setTimeout(function () {
+                notify("Boss Tips", "The URL points to your current location to share.", "info");
+            }, 35000);
+
+            setTimeout(function () {
+                notify("Thoughts so far?", "Send me an email for bug reports and suggestions. sulti642@student.otago.ac.nz", "info");
+            }, 60 * 1000 * 2);
+
+            if (ratio > 1) {
+                notify("Retina Support", "Tile loading is temperamental bug. Pan lots re-load missing ones.", "");
+            }
+            localStorage.setItem('walkthrough', 1);
         }
+
+        if (localStorage.getItem('toolsettings') !== null) {
+            var tools = JSON.parse(localStorage.getItem('toolsettings'));
+            client.state = tools;
+            $('#spectrumcolor').val(client.state.color);
+        }
+
         if (debug) {
             console.log("= Debug Info =");
             console.log("Window: " + $(window).width() + " x " + $(window).height());
             console.log("Extent: " + extent.width + " x " + extent.height);
         }
+        $("#paper").focus();
     }
 
     function notify(title, message, type) {
