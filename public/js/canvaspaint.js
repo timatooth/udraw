@@ -40,7 +40,7 @@
 
     var client = {
         state: {
-            tool: 'line',
+            tool: 'move',
             color: '#222222',
             size: 4,
             opacity: 1
@@ -252,6 +252,7 @@
         className: "sidebar",
         events: {
             "click .tool": "onToolClick",
+            "click .move-tool": "onMoveToolClick",
             "click .brush-tools": "onBrushToolsClick",
             "click .fullscreen": "onFullScreenClick",
             "change .colourpicker input": "onColourChange",
@@ -266,9 +267,17 @@
             return this;
         },
         onToolClick: function (evt) {
+            this.$el.find('.active').removeClass('active');
             client.state.tool = $(evt.currentTarget).data('name');
+            $('.tool-button').addClass('active');
             $('.tool-rack').toggleClass('hidden');
             $('.tool-button').html($(evt.currentTarget).html());
+            updateToolState();
+        },
+        onMoveToolClick: function (evt) {
+            this.$el.find('.active').removeClass('active');
+            client.state.tool = $(evt.currentTarget).data('name');
+            $(evt.currentTarget).addClass('active');
             updateToolState();
         },
         onBrushToolsClick: function () {
