@@ -726,7 +726,7 @@
         });
     }
 
-    var saveTileAt = _.throttle(function (x, y, tileCanvas) {
+    var saveTileAt = function (x, y, tileCanvas) {
         var key = x + '/' + y;
         var tileString = tileCanvas.toDataURL();
         var endpoint = '/canvases/main/1/' + key;
@@ -760,7 +760,7 @@
         };
         oReq.open("PUT", endpoint, true);
         oReq.send(blob);
-    }, 2000); //limit saves to every 2s
+    };
 
     var updateDirtyTiles = _.throttle(function () {
         for (var tileKey in tileCollection) {
