@@ -112,6 +112,12 @@ body:fullscreen {
     width: 20em;
     border-top-right-radius: 10px;
     border-bottom-right-radius: 10px;
+    text-align: left;
+    padding: 0.5em;
+}
+
+.panel a, .panel a:active, .panel a:visited {
+    color: #FFF;
 }
 
 #cursors {

@@ -40,7 +40,7 @@ var putLimiter = rateLimit({
 });
 
 var staticDir = '/dist';
-if(process.argv.length > 2){
+if (process.argv.length > 2) {
     console.warn("Serving dev files!");
     staticDir = '/public';
 }
@@ -125,6 +125,15 @@ io.on('connection', function (socket) {
     socket.on('move', function (msg) {
         msg.id = socket.id;
         socket.broadcast.emit('move', msg);
+    });
+
+    socket.on('pan', function (msg) {
+        msg.id = socket.id;
+        socket.broadcast.emit('pan', msg);
+    });
+
+    socket.on('ping', function () {
+        socket.emit('pong');
     });
 
     socket.on('status', function (msg) {

@@ -4,6 +4,7 @@
     'use strict';
     var tileSize = 256;
     var debug = false;
+    var lastPing = $.now();
     var canvas = document.getElementById("paper");
     canvas.width = $(window).width() + tileSize * 2;
     canvas.height = $(window).height() + tileSize * 2;
@@ -253,10 +254,12 @@
             "click .tool": "onToolClick",
             "click .brush-tools": "onBrushToolsClick",
             "click .fullscreen": "onFullScreenClick",
-            "change .colourpicker input": "onColourChange"
+            "change .colourpicker input": "onColourChange",
+            "click .status-info": "onStatusClick"
         },
         initialize: function () {
             this.toolsPanel = null;
+            this.statusPanel = null;
         },
         render: function () {
             this.$el.append(this.template());
@@ -307,6 +310,42 @@
                 } else if (document.webkitExitFullscreen) {
                     document.webkitExitFullscreen();
                 }
+            }
+        },
+        onStatusClick: function () {
+            if (this.statusPanel === null) {
+                this.statusPanel = new StatusView();
+                this.$el.append(this.statusPanel.render().el);
+                var sp = this.statusPanel;
+                setInterval(function () {
+                    lastPing = $.now();
+                    socket.emit('ping');
+                    sp.updateLabels();
+                }, 1500);
+            } else {
+                this.statusPanel.$el.toggle();
+            }
+            this.statusPanel.updateLabels();
+        }
+    });
+
+    var StatusView = Backbone.View.extend({
+        template: _.template($("#status-template").html()),
+        className: "panel status-panel",
+        events: {
+        },
+        render: function () {
+            this.$el.append(this.template());
+            return this;
+        },
+        updateLabels: function () {
+            this.$el.find('.users').empty();
+            //fill table of users
+            for (var key in clientStates) {
+                var x = clientStates[key].offset.x;
+                var y = clientStates[key].offset.y;
+                var text = "<li><a href='#!/" + x + "/" + y + "'>" + "User" + "</a> (" + x + ", " + y + ")</li>";
+                this.$el.find('.users').append(text);
             }
         }
     });
@@ -397,6 +436,15 @@
         updateToolState();
     });
 
+    socket.on('ping', function () {
+        socket.emit('pong');
+    });
+
+    socket.on('pong', function () {
+        var latency = $.now() - lastPing;
+        $('#latency-label').text(latency + 'ms');
+    });
+
     socket.on('states', function (data) {
         for (var key in data) {
             clientStates[key] = {};
@@ -405,6 +453,7 @@
             clientStates[key].updated = $.now();
             clientStates[key].x = 0;
             clientStates[key].y = 0;
+            clientStates[key].offset = {x: 0, y: 0};
         }
     });
 
@@ -417,6 +466,8 @@
                 size: 1,
                 opacity: 0.8
             },
+            x: 0,
+            y: 0,
             updated: $.now(),
             offset: {x: 0, y: 0}
         };
@@ -476,6 +527,15 @@
         clientStates[packet.id].updated = $.now();
     });
 
+    socket.on('pan', function (packet) {
+        if (!(packet.id in clientStates)) {
+            addClient(packet);
+        }
+        clientStates[packet.id].offset.x = packet.x;
+        clientStates[packet.id].offset.y = packet.y;
+        clientStates[packet.id].updated = $.now();
+    });
+
     // Remove inactive clients after 30 seconds of inactivity
     setInterval(function () {
         for (var eachClient in clientStates) {
@@ -528,14 +588,12 @@
             for (var x = client.offsetX; x < client.offsetX + extent.width + tileSize * 2; x += tileSize) {
                 var xTile = Math.floor(x / tileSize);
                 var yTile = Math.floor(y / tileSize);
-                var destinationX = (xTile * tileSize) - client.offsetX;
-                var destinationY = (yTile * tileSize) - client.offsetY;
-                //this should be replaced with a render queue.
-                (function (dx, dy) {
-                    loadTileAt(xTile, yTile, function (tile) {
-                        ctx.drawImage(tile.canvas, 0, 0, tileSize, tileSize, dx, dy, tileSize, tileSize);
-                    });
-                })(destinationX, destinationY);
+
+                loadTileAt(xTile, yTile, function (tile) {
+                    var destinationX = (tile.x * tileSize) - client.offsetX;
+                    var destinationY = (tile.y * tileSize) - client.offsetY;
+                    ctx.drawImage(tile.canvas, 0, 0, tileSize, tileSize, destinationX, destinationY, tileSize, tileSize);
+                });
             }
         }
     }
@@ -569,7 +627,6 @@
 
         oReq.onload = function (evt) {
             if (evt.target.status === 200) {
-                //var imgData = new Blob(ir, {type: 'image/png'});
                 var imgData = evt.target.response;
                 var img = new Image();
                 img.onload = function () {
@@ -806,6 +863,17 @@
     }, 500); // Maximum run of once per 500 milliseconds
 
     window.addEventListener("resize", resizeLayout, false);
+
+    window.onpopstate = function (e) {
+        var givenOffsets = parseHashBangArgs();
+
+        if (givenOffsets !== null) {
+            client.offsetX = givenOffsets[0];
+            client.offsetY = givenOffsets[1];
+            $('#offset-label').text(client.offsetX + ',' + client.offsetY);
+        }
+        drawTiles();
+    };
 
     $('.colorbutton').spectrum({
         color: "#f00",
