@@ -39,8 +39,14 @@ var putLimiter = rateLimit({
     max: 150
 });
 
+var staticDir = '/dist';
+if(process.argv.length > 2){
+    console.warn("Serving dev files!");
+    staticDir = '/public';
+}
+
 //Express Middleware
-app.use('/static', express.static(__dirname + '/dist'));
+app.use('/static', express.static(__dirname + staticDir));
 app.use(morgan('combined'));
 app.use(bodyParser.raw({type: 'image/png', limit: '250kb'}));
 //app.use('/canvases', limiter);

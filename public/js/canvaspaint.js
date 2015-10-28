@@ -1,4 +1,4 @@
-/* global Backbone, _, PNotify */
+/* global Backbone, _, PNotify, FastClick */
 
 (function () {
     'use strict';
@@ -633,6 +633,10 @@
             console.log("Extent: " + extent.width + " x " + extent.height);
         }
         $("#paper").focus();
+
+        //mobile fast touching
+
+        FastClick.attach(document.body);
     }
 
     function notify(title, message, type) {

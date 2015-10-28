@@ -70,12 +70,13 @@ body:fullscreen {
     width: 4em;
     height: 100%;
     background-color: #464646;
+    background-color: rgba(60,60,60,0.9);
     color: #FFF;
     font-family: 'Helvetica Neue', 'Open Sans', sans-serif;
     font-weight: 300;
     font-size: 0.8em;
     text-align: center;
-    box-shadow: #464646 0px 0px 20px;
+    /*box-shadow: #464646 0px 0px 20px;*/
     z-index: 9;
 }
 
@@ -84,7 +85,7 @@ body:fullscreen {
 }
 
 .panel-tool {
-    font-size: 2em;
+    font-size: 2.5em;
     margin-top: 0.2em;
     margin-bottom: 0.2em;
     color: #0099ff
@@ -92,7 +93,7 @@ body:fullscreen {
 
 
 .tool {
-    font-size: 2em;
+    font-size: 2.5em;
     margin-top: 0.2em;
     margin-bottom: 0.2em;
 }
@@ -131,9 +132,18 @@ body:fullscreen {
         left: initial;
         top: initial;
         bottom: 0px;
-        height: 3em;
+        height: 4em;
         width: 100%;
         right: 0px;
+    }
+
+    .panel {
+        position: relative;
+        background-color: #363636;
+        width: 20em;
+        height: auto;
+        box-shadow: #363636 1px 1px 10px;
+        top: -50em;
     }
 
     .sidebar div {
