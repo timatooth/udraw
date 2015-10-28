@@ -41,8 +41,8 @@
         state: {
             tool: 'line',
             color: '#222222',
-            size: 3,
-            opacity: 0.8
+            size: 4,
+            opacity: 1
         },
         x: 0,
         y: 0,
@@ -214,7 +214,7 @@
         ctx.lineWidth = size;
         ctx.lineCap = "round";
         //shadow
-        ctx.shadowBlur = size * 0.6;
+        ctx.shadowBlur = size * 0.0;
         ctx.shadowColor = "black";
         //
         ctx.moveTo(fromx, fromy);
@@ -393,6 +393,10 @@
 
     var socket = new io();
 
+    socket.on('connect', function () {
+        updateToolState();
+    });
+
     socket.on('states', function (data) {
         for (var key in data) {
             clientStates[key] = {};
@@ -404,20 +408,24 @@
         }
     });
 
+    function addClient(packet) {
+        clientStates[packet.id] = {
+            cursor: $('<div class="cursor">').appendTo('#cursors'),
+            state: {
+                tool: 'line',
+                color: '#222222',
+                size: 1,
+                opacity: 0.8
+            },
+            updated: $.now(),
+            offset: {x: 0, y: 0}
+        };
+    }
+
     socket.on('move', function (packet) {
 
         if (!(packet.id in clientStates)) {
-            clientStates[packet.id] = {
-                cursor: $('<div class="cursor">').appendTo('#cursors'),
-                state: {
-                    tool: 'line',
-                    color: '#222222',
-                    size: 1,
-                    opacity: 0.8
-                },
-                updated: $.now(),
-                offset: {x: 0, y: 0}
-            };
+            addClient(packet);
         } else {
             clientStates[packet.id].updated = $.now();
         }
@@ -430,11 +438,12 @@
                 packet.x < extent.width + client.offsetX + tileSize * 2 &&
                 packet.y > client.offsetY &&
                 packet.y < extent.height + client.offsetY + tileSize * 2) {
-
+            var screenX = (packet.x - (tileSize) - client.offsetX) / ratio;
+            var screenY = (packet.y - (tileSize) - client.offsetY) / ratio;
             //update the cursor
+            $(clientStates[packet.id].cursor).show(); //if was hidden
             $(clientStates[packet.id].cursor).css({
-                left: (packet.x - (tileSize) - client.offsetX) / ratio, //cool
-                top: (packet.y - (tileSize) - client.offsetY) / ratio
+                transform: "translate(" + screenX + "px, " + (screenY) + "px)"
             });
 
             if (packet.d1) { //mouse1 down
@@ -451,6 +460,7 @@
 
         } else {
             //they are not in viewable region. Place cursor in general direction TODO
+            $(clientStates[packet.id].cursor).hide();
         }
 
         clientStates[packet.id].x = x;
@@ -459,10 +469,11 @@
     });
 
     socket.on('status', function (packet) {
-        if (packet.id in clientStates) {
-            clientStates[packet.id].state = packet;
-            clientStates[packet.id].updated = $.now();
+        if (!(packet.id in clientStates)) {
+            addClient(packet);
         }
+        clientStates[packet.id].state = packet;
+        clientStates[packet.id].updated = $.now();
     });
 
     // Remove inactive clients after 30 seconds of inactivity
@@ -502,10 +513,14 @@
         client.x = x;
         client.y = y;
         if (!!(window.history && history.pushState)) {
-            history.replaceState(null, null, "#!/" + client.offsetX + "/" + client.offsetY);
+            updateUrl("#!/" + client.offsetX + "/" + client.offsetY);
         }
 
     }
+
+    var updateUrl = _.debounce(function (key) {
+        history.replaceState(null, null, key);
+    }, 500);
 
     function drawTiles() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -654,7 +669,7 @@
         });
     }
 
-    function saveTileAt(x, y, tileCanvas) {
+    var saveTileAt = _.throttle(function (x, y, tileCanvas) {
         var key = x + '/' + y;
         var tileString = tileCanvas.toDataURL();
         var endpoint = '/canvases/main/1/' + key;
@@ -688,7 +703,7 @@
         };
         oReq.open("PUT", endpoint, true);
         oReq.send(blob);
-    }
+    }, 2000); //limit saves to every 2s
 
     var updateDirtyTiles = _.throttle(function () {
         for (var tileKey in tileCollection) {

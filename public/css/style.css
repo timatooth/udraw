@@ -117,10 +117,11 @@ body:fullscreen {
 #cursors {
     position:relative;
     pointer-events: none; /* the irony */
+    z-index: 2;
 }
 
 #cursors .cursor {
-    position:absolute;
+    position: absolute;
     width:15px;
     height:22px;
     background:url('../images/pointer.png') no-repeat -4px 0;
