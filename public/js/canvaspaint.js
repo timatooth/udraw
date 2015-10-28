@@ -41,7 +41,7 @@
         state: {
             tool: 'line',
             color: '#222222',
-            size: 1,
+            size: 3,
             opacity: 0.8
         },
         x: 0,
@@ -52,6 +52,8 @@
     };
 
     $(canvas).on('mousedown touchstart', function (evt) {
+        $('.panel').hide();
+        //$('.colorbutton').children()..hide();
         if (evt.type === "touchstart") {
             evt.preventDefault();
             client.x = evt.originalEvent.touches[0].clientX * ratio + tileSize; //caveat adding tilesize?
@@ -261,11 +263,9 @@
             return this;
         },
         onToolClick: function (evt) {
-            this.$el.find('.active').each(function () {
-                $(this).removeClass('active');
-            });
-            $(evt.target).addClass('active');
             client.state.tool = $(evt.currentTarget).data('name');
+            $('.tool-rack').toggleClass('hidden');
+            $('.tool-button').html($(evt.currentTarget).html());
             updateToolState();
         },
         onBrushToolsClick: function () {
@@ -323,6 +323,8 @@
         },
         render: function () {
             this.$el.append(this.template());
+            this.$el.find('.size-range').val(client.state.size);
+            this.$el.find('.opacity-range').val(client.state.opacity);
             return this;
         },
         onOpacityChange: function (evt, value) {
@@ -340,7 +342,7 @@
 
     //key Bindings
     $(document).on('keydown keypress', function (evt) {
-        var s = 30;
+        var s = 40;
         switch (evt.keyCode) {
             //move keys
             case 37:
@@ -352,11 +354,11 @@
                 panScreen(s, 0);
                 break;
             case 38:
-            case 115:
+            case 119:
                 panScreen(0, -s);
                 break;
             case 40:
-            case 119:
+            case 115:
                 panScreen(0, s);
                 break;
                 //tools
@@ -364,7 +366,7 @@
                 $('.paint-tool').click();
                 break;
             case 108:
-                $('.draw-tool').click();
+                $('.line-tool').click();
                 break;
             case 109:
                 $('.move-tool').click();
@@ -624,7 +626,8 @@
         if (localStorage.getItem('toolsettings') !== null) {
             var tools = JSON.parse(localStorage.getItem('toolsettings'));
             client.state = tools;
-            $('#spectrumcolor').val(client.state.color);
+            $('.colorbutton').css({color: client.state.color});
+            $('.tool-button').html($('.' + client.state.tool + '-tool').html());
         }
 
         if (debug) {
@@ -789,9 +792,17 @@
 
     window.addEventListener("resize", resizeLayout, false);
 
-    $('#spectrumcolorpicker').spectrum({
+    $('.colorbutton').spectrum({
         color: "#f00",
-        clickoutFiresChange: true
+        clickoutFiresChange: true,
+        move: function (color) {
+            client.state.color = color.toHexString();
+            $('.colorbutton').css({color: color.toHexString()});
+        },
+        change: function (color) {
+            client.state.color = color.toHexString();
+            updateToolState();
+        }
     });
 
     initTheBusiness();

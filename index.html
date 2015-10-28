@@ -45,20 +45,21 @@
         <canvas id="paper" width="640" height="640"></canvas>
 
         <script id="sidebar-template" type="text/template">
-            <div class="tool draw-tool active" data-name ='line' title="Messed up line tool!"><i class="icon ion-edit"></i></div>
-            <div class="tool paint-tool" data-name ='brush' title="Wrecked Paintbrush!"><i class="icon ion-paintbrush"></i></div>
-            <div class="tool move-tool" data-name ='move' title="Mighty move tool!"><i class="icon ion-arrow-move"></i></div>
-            <div class="tool eraser-tool" data-name ='eraser' title="Dodgy Eraser!"><i class="icon ion-bookmark"></i></div>
-            <div class="colourpicker">
-            <input id="spectrumcolor" type="color" value="#222222" />
+            <div class="tool tool-button draw-tool active" data-name ='line' title="Tools!"><i class="icon ion-edit"></i></div>
+            <div class="tool-rack hidden">
+                <div class="tool line-tool" data-name ='line' title="Tools!"><i class="icon ion-edit"></i></div>
+                <div class="tool brush-tool" data-name ='brush' title="Wrecked Paintbrush!"><i class="icon ion-paintbrush"></i></div>
+                <div class="tool move-tool" data-name ='move' title="Mighty move tool!"><i class="icon ion-arrow-move"></i></div>
+                <div class="tool eraser-tool" data-name ='eraser' title="Dodgy Eraser!"><i class="icon ion-bookmark"></i></div>
             </div>
+            
+            <div class="colorbutton"><i class="icon ion-ios-circle-filled"></i></div>
             <div class="panel-tool brush-tools" title="Brush Tools!"><i class="icon ion-ios-settings-strong"></i></div>
             <div class="panel-tool fullscreen" title="Full Screen!"><i class="icon ion-arrow-expand"></i></div>
             <div id="offset-label" title="offset!">0,0</div>
         </script>
 
         <script id="brush-tools-template" type="text/template">
-            <h2>Brush Tools</h2>
             <p>Size: <input class="size-range" type="range" max="60" min="1" step="1" value="1" /></p>
             <p>Opacity: <input class="opacity-range" type="range" max="1" min="0.01" step="0.005" value="0.8" /></p>
         </script>
