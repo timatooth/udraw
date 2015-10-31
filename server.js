@@ -10,6 +10,7 @@ var app = express();
 var http, https, io;
 var secure = false;
 var tileRadius = 300;
+var patchPass = 'meh patch pass yo';
 
 try {
     var options = {
@@ -49,6 +50,7 @@ if (process.argv.length > 2) {
 app.use('/static', express.static(__dirname + staticDir));
 app.use(morgan('combined'));
 app.use(bodyParser.raw({type: 'image/png', limit: '250kb'}));
+app.use(bodyParser.json({type: 'application/json', limit: '250kb'}));
 //app.use('/canvases', limiter);
 
 app.get('/', function (req, res) {
@@ -68,13 +70,34 @@ app.put('/canvases/:name/:zoom/:x/:y', putLimiter, function (req, res) {
         return res.sendStatus(416); //requested outside range
     }
 
-    var key = req.params.name + ':' + req.params.zoom + ':' + req.params.x + ':' + req.params.y;
-    console.log(req.body.length);
-    tileRedis.set(key, req.body);
-    res.sendStatus(201);
-    tileRedis.incr('total puts');
-    tileRedis.hincrby("user:" + req.ip, "putcount", 1);
+    var key = "tile:" + req.params.name + ':' + req.params.zoom + ':' + req.params.x + ':' + req.params.y;
+
+    tileRedis.hget(key, "protection", function (err, data) {
+        if (Number(data) === 0) {
+            saveTile(key, req, res);
+        } else {
+            tileRedis.hget(key, "lastuser", function (err, user) {
+                console.log(String(user));
+                if (String(user) === req.ip) {
+                    saveTile(key, req, res);
+                } else {
+                    res.sendStatus(403);
+                }
+            });
+        }
+    });
 });
+
+var saveTile = function (key, req, res) {
+    tileRedis.hset(key, "data", req.body);
+    tileRedis.hset(key, "lastuser", req.ip);
+    tileRedis.hset(key, "lastupdate", Date.now() / 1000);
+    tileRedis.hset(key, "protection", 0);
+
+    res.sendStatus(201);
+    tileRedis.incr('putcount');
+    tileRedis.hincrby("user:" + req.ip, "putcount", 1);
+};
 
 app.get('/canvases/:name/:zoom/:x/:y', function (req, res) {
     var p = req.params;
@@ -90,27 +113,43 @@ app.get('/canvases/:name/:zoom/:x/:y', function (req, res) {
     }
 
     var key = req.params.name + ':' + req.params.zoom + ':' + req.params.x + ':' + req.params.y;
-    tileRedis.get(key, function (err, reply) {
+    tileRedis.hget("tile:" + key, "data", function (err, reply) {
         if (err !== null) {
             console.log(err);
             res.sendStatus(500);
         } else if (reply === null) {
             res.sendStatus(204); //make them create the tile
         } else {
-            tileRedis.incr('total gets');
+            tileRedis.incr('getcount');
+            tileRedis.hincrby("user:" + req.ip, "getcount", 1);
             res.set('Content-Type', 'image/png');
             res.send(reply);
         }
     });
 });
 
+app.patch('/canvases/:name/:zoom/:x/:y', function (req, res) {
+    if (('creds' in req.body) && req.body.creds === patchPass) {
+        var key = "tile:" + req.params.name + ':' + req.params.zoom + ':' + req.params.x + ':' + req.params.y;
+        tileRedis.hset(key, "protection", 1, function (err) {
+            if (err === null) {
+                res.sendStatus(200);
+            } else {
+                res.sendStatus(500);
+            }
+        });
+    } else {
+        res.sendStatus(401);
+    }
+});
+
 var clientStates = {};
 tileRedis.set("current connections", 0); //reset on boot
 io.on('connection', function (socket) {
     var ip = socket.request.connection.remoteAddress;
-    tileRedis.incr("total connections");
-    tileRedis.incr("current connections");
-    tileRedis.hsetnx("user:" + ip, "lastconnect", Date.now() / 1000 | 0);
+    tileRedis.incr("totalconnections");
+    tileRedis.incr("currentconnections");
+    tileRedis.hset("user:" + ip, "lastconnect", Date.now() / 1000 | 0);
     tileRedis.hincrby("user:" + ip, "connectcount", 1);
 
     socket.emit('states', clientStates);

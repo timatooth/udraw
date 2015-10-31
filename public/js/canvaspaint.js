@@ -8,6 +8,7 @@
     var canvas = document.getElementById("paper");
     canvas.width = $(window).width() + tileSize * 2;
     canvas.height = $(window).height() + tileSize * 2;
+    window.credsyo = "";
     var ctx = canvas.getContext('2d');
     //hdpi support
     var devicePixelRatio = window.devicePixelRatio || 1;
@@ -78,6 +79,13 @@
             client.y = evt.offsetY * ratio;
         }
 
+        //admin protection
+        if (client.m1Down && client.state.tool === 'wand') {
+            var tileX = Math.floor((client.x + client.offsetX) / tileSize);
+            var tileY = Math.floor((client.y + client.offsetY) / tileSize);
+            protectTileAt(tileX, tileY);
+        }
+
     });
 
     $(canvas).on('mouseup mouseleave touchend touchcancel', function (evt) {
@@ -119,7 +127,7 @@
             y = evt.offsetY * ratio;
         }
 
-        if (client.m1Down && client.state.tool !== 'move') {
+        if (client.m1Down && client.state.tool !== 'move' && client.state.tool !== 'wand') {
             processDrawAction(client, x, y);
             var shadow = 0;
             if (client.state.tool === 'brush') {
@@ -215,7 +223,7 @@
         ctx.lineWidth = size;
         ctx.lineCap = "round";
         //shadow
-        ctx.shadowBlur = size * 0.0;
+        ctx.shadowBlur = size * 0.25;
         ctx.shadowColor = "black";
         //
         ctx.moveTo(fromx, fromy);
@@ -723,7 +731,7 @@
         FastClick.attach(document.body);
     }
 
-    function notify(title, message, type) {
+    var notify = _.debounce(function (title, message, type) {
         new PNotify({
             title: title,
             text: message,
@@ -733,7 +741,7 @@
             },
             type: type
         });
-    }
+    }, 500);
 
     var saveTileAt = function (x, y, tileCanvas) {
         var key = x + '/' + y;
@@ -759,6 +767,11 @@
                 case 404:
                     notify("Error 404", "Server playing up?", "error");
                     break;
+                case 403:
+                    notify("Protected Region", "This region is protected. (" + key + ") Move over a bit!", "error");
+                    delete tileCollection[key];
+                    drawTiles();
+                    break;
                 case 500:
                     notify("Error 500", "Server isn't feeling well right now.", "error");
                     break;
@@ -769,6 +782,26 @@
         };
         oReq.open("PUT", endpoint, true);
         oReq.send(blob);
+    };
+
+    var protectTileAt = function (xTile, yTile) {
+        var endpoint = '/canvases/main/1/' + xTile + '/' + yTile;
+        var oReq = new XMLHttpRequest();
+        oReq.onload = function (res) {
+            var xhr = res.target;
+            switch (xhr.status) {
+                case 200:
+                    notify("Done", "tile (" + xTile + ", " + yTile + ") got the patch of approval", 'info');
+                    break;
+                case 401:
+                    notify("Wand Error", "There is no such thing as magic.");
+                    break;
+            }
+        };
+
+        oReq.open("PATCH", endpoint, true);
+        oReq.setRequestHeader("Content-Type", "application/json");
+        oReq.send(JSON.stringify({creds: window.credsyo}));
     };
 
     var updateDirtyTiles = _.throttle(function () {

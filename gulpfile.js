@@ -13,6 +13,8 @@ gulp.task('copystatic', function () {
             .pipe(gulp.dest('dist/fonts'));
     gulp.src('public/images/**/')
             .pipe(gulp.dest('dist/images'));
+    gulp.src('index.html')
+            .pipe(gulp.dest('dist'));
 });
 
 gulp.task('minify-css', function () {
