@@ -109,7 +109,7 @@ body:fullscreen {
     color: #f884a7
 }
 
-.colorbutton {
+#colorbutton {
     color: rgba(0, 0, 0, 0.6);
     font-size: 4em; 
 }

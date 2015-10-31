@@ -55,7 +55,6 @@
 
     $(canvas).on('mousedown touchstart', function (evt) {
         $('.panel').hide();
-        //$('.colorbutton').children()..hide();
         if (evt.type === "touchstart") {
             evt.preventDefault();
             client.x = evt.originalEvent.touches[0].clientX * ratio + tileSize; //caveat adding tilesize?
@@ -223,7 +222,7 @@
         ctx.lineWidth = size;
         ctx.lineCap = "round";
         //shadow
-        ctx.shadowBlur = size * 0.25;
+        ctx.shadowBlur = size * 0; //disable shadow
         ctx.shadowColor = "black";
         //
         ctx.moveTo(fromx, fromy);
@@ -397,37 +396,37 @@
     $('body').append(sidebar.render().el);
 
     //key Bindings
-    $(document).on('keydown keypress', function (evt) {
+    $(document).on('keydown keypress keyup', function (evt) {
         var s = 40;
         switch (evt.keyCode) {
             //move keys
             case 37:
-            case 97:
-                panScreen(-s, 0);
+            case 65:
+                panScreen(-s, 0); //left
                 break;
             case 39:
-            case 100:
-                panScreen(s, 0);
+            case 68:
+                panScreen(s, 0); //right
                 break;
             case 38:
-            case 119:
-                panScreen(0, -s);
+            case 87:
+                panScreen(0, -s); //up
                 break;
             case 40:
-            case 115:
-                panScreen(0, s);
+            case 83:
+                panScreen(0, s); //down
                 break;
                 //tools
-            case 98:
-                $('.paint-tool').click();
+            case 66: //b
+                $('.brush-tool').click();
                 break;
-            case 108:
+            case 76: //l
                 $('.line-tool').click();
                 break;
-            case 109:
+            case 77: //m
                 $('.move-tool').click();
                 break;
-            case 120:
+            case 88: //x
                 $('.eraser-tool').click();
                 break;
             case 61:
@@ -715,8 +714,9 @@
         if (localStorage.getItem('toolsettings') !== null) {
             var tools = JSON.parse(localStorage.getItem('toolsettings'));
             client.state = tools;
-            $('.colorbutton').css({color: client.state.color});
-            $('.tool-button').html($('.' + client.state.tool + '-tool').html());
+            $('.move-tool').click();
+            $('#colorbutton').css({color: client.state.color});
+            //$('.tool-button').html($('.' + client.state.tool + '-tool').html());
         }
 
         if (debug) {
@@ -917,12 +917,14 @@
         drawTiles();
     };
 
-    $('.colorbutton').spectrum({
-        color: "#f00",
+    initTheBusiness();
+
+    $('#colorbutton').spectrum({
+        color: client.state.color,
         clickoutFiresChange: true,
         move: function (color) {
             client.state.color = color.toHexString();
-            $('.colorbutton').css({color: color.toHexString()});
+            $('#colorbutton').css({color: color.toHexString()});
         },
         change: function (color) {
             client.state.color = color.toHexString();
@@ -930,5 +932,5 @@
         }
     });
 
-    initTheBusiness();
+
 })();
