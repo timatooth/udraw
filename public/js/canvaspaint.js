@@ -174,6 +174,12 @@ $(document).ready(function () {
         }
     }
 
+    function drawTile(tile) {
+        var destinationX = (tile.x * tileSize) - client.offsetX;
+        var destinationY = (tile.y * tileSize) - client.offsetY;
+        ctx.drawImage(tile.canvas, 0, 0, tileSize, tileSize, destinationX, destinationY, tileSize, tileSize);
+    }
+
     function drawTiles() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         var x, y, xTile, yTile;
@@ -181,12 +187,7 @@ $(document).ready(function () {
             for (x = client.offsetX; x < client.offsetX + extent.width + tileSize * 2; x += tileSize) {
                 xTile = Math.floor(x / tileSize);
                 yTile = Math.floor(y / tileSize);
-
-                loadTileAt(xTile, yTile, function (tile) {
-                    var destinationX = (tile.x * tileSize) - client.offsetX;
-                    var destinationY = (tile.y * tileSize) - client.offsetY;
-                    ctx.drawImage(tile.canvas, 0, 0, tileSize, tileSize, destinationX, destinationY, tileSize, tileSize);
-                });
+                loadTileAt(xTile, yTile, drawTile);
             }
         }
     }
@@ -672,6 +673,20 @@ $(document).ready(function () {
         },
         render: function () {
             this.$el.append(this.template());
+            this.$el.find('#colorbutton').spectrum({
+                color: client.state.color,
+                clickoutFiresChange: true,
+                preferredFormat: "hex3",
+                showInput: true,
+                move: function (color) {
+                    client.state.color = color.toHexString();
+                    $('#colorbutton').css({color: color.toHexString()});
+                },
+                change: function (color) {
+                    client.state.color = color.toHexString();
+                    updateToolState();
+                }
+            });
             return this;
         },
         onToolClick: function (evt) {
@@ -939,19 +954,4 @@ $(document).ready(function () {
     $('body').append(sidebar.render().el);
     //fire it up
     initTheBusiness();
-
-    $('#colorbutton').spectrum({//tod
-        color: client.state.color,
-        clickoutFiresChange: true,
-        preferredFormat: "hex3",
-        showInput: true,
-        move: function (color) {
-            client.state.color = color.toHexString();
-            $('#colorbutton').css({color: color.toHexString()});
-        },
-        change: function (color) {
-            client.state.color = color.toHexString();
-            updateToolState();
-        }
-    });
 });

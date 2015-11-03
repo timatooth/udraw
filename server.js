@@ -31,8 +31,9 @@ var tileRedis = redis.createClient(port, host, {return_buffers: true});
 
 io.adapter(adapter(redis.createClient({host: 'localhost', port: 6379})));
 
-//rate limit trust nginx
-app.enable('trust proxy');
+app.set('trust proxy', 'loopback');
+app.set('x-powered-by', false);
+app.set('etag', 'strong');
 
 var putLimiter = rateLimit({
     /* config */
@@ -190,12 +191,12 @@ var port = process.env.PORT || 3000;
 var securePort = process.env.SECUREPORT || process.env.PORT || 3443;
 
 if (secure) {
-    https.listen(securePort, function () {
-        console.log('HTTPS listening on *:' + securePort);
+    https.listen(securePort, 'localhost', function () {
+        console.log('HTTPS listening on :' + securePort);
     });
 } else {
-    http.listen(port, function () {
-        console.log('http listening on *:' + port);
+    http.listen(port, 'localhost', function () {
+        console.log('http listening on :' + port);
     });
 }
 
