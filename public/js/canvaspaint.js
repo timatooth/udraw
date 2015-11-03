@@ -1,6 +1,6 @@
 /* global Backbone, _, PNotify, FastClick */
 
-(function () {
+$(document).ready(function () {
     'use strict';
     var tileSize = 256;
     var debug = false;
@@ -10,25 +10,8 @@
     canvas.height = $(window).height() + tileSize * 2;
     window.credsyo = "";
     var ctx = canvas.getContext('2d');
-    //hdpi support
-    var devicePixelRatio = window.devicePixelRatio || 1;
-    var backingStoreRatio = ctx.webkitBackingStorePixelRatio ||
-            ctx.mozBackingStorePixelRatio ||
-            ctx.msBackingStorePixelRatio ||
-            ctx.oBackingStorePixelRatio ||
-            ctx.backingStorePixelRatio || 1;
-
-    var ratio = devicePixelRatio / backingStoreRatio;
-
-    if (devicePixelRatio !== backingStoreRatio) {
-        var oldWidth = canvas.width;
-        var oldHeight = canvas.height;
-        canvas.width = oldWidth * ratio;
-        canvas.height = oldHeight * ratio;
-        canvas.style.width = oldWidth + 'px';
-        canvas.style.height = oldHeight + 'px';
-    }
-
+    var ratio = 1;
+    var socket = io();
 
     var clientStates = {};
     var tileCollection = {};
@@ -97,12 +80,12 @@
             client.m1Down = false;
             updateDirtyTiles();
             //send a move setting drawing to false
-            var message = {
+            var moveMessage = {
                 x: ((client.x / ratio) * ratio) + client.offsetX,
                 y: ((client.y / ratio) * ratio) + client.offsetY,
                 d1: client.m1Down
             };
-            socket.emit('move', message);
+            socket.emit('move', moveMessage);
         } else {
             if (evt.which === 2) {
                 client.m3Down = false;
@@ -118,6 +101,7 @@
 
     var lastEmit = $.now();
     $(canvas).on('mousemove touchmove', function (evt) {
+        var moveMessage;
         var x, y;
         if (evt.type === "touchmove") {
             evt.preventDefault();
@@ -132,15 +116,15 @@
             processDrawAction(client, x, y);
             var shadow = 0;
             if (client.state.tool === 'brush') {
-                var shadow = client.state.size * 0.8;
+                shadow = client.state.size * 0.8;
             }
-            // we need to factor in the size of the brush which might overlap
-            // more than one tile
-            for (var i = -(client.state.size / 2) - shadow; i < (client.state.size / 2) + shadow; i++) {
+            // we need to factor in the size of the brush which might overlap more than one tile
+            var i, tileX, tileY, key;
+            for (i = -(client.state.size / 2) - shadow; i < (client.state.size / 2) + shadow; i += 1) {
                 //set the 'tile' to be recached
-                var tileX = Math.floor((x + client.offsetX + i) / tileSize);
-                var tileY = Math.floor((y + client.offsetY + i) / tileSize);
-                var key = tileX + '/' + tileY;
+                tileX = Math.floor((x + client.offsetX + i) / tileSize);
+                tileY = Math.floor((y + client.offsetY + i) / tileSize);
+                key = tileX + '/' + tileY;
                 tileCollection[key].dirty = true;
                 tileCollection[key].filthy = true; //locally created dirty watchdog flag
             }
@@ -149,35 +133,35 @@
             client.y = y;
 
             if ($.now() - lastEmit > 30) {
-                var message = {
+                moveMessage = {
                     x: ((x / ratio) * ratio) + client.offsetX,
                     y: ((y / ratio) * ratio) + client.offsetY,
                     d1: client.m1Down
                 };
-                socket.emit('move', message);
+                socket.emit('move', moveMessage);
                 lastEmit = $.now();
             }
         } else if (client.m3Down || (client.m1Down && client.state.tool === 'move')) {
             processMoveAction(client, x, y);
             if ($.now() - lastEmit > 60) { //only send pan message every 60ms
-                var message = {
+                moveMessage = {
                     x: client.offsetX,
                     y: client.offsetY
                 };
-                socket.emit('pan', message);
+                socket.emit('pan', moveMessage);
                 lastEmit = $.now();
             }
         } else if (client.m1Down && client.state.tool === 'eyedropper') {
             updatePixelColor(x, y);
         } else {
-            //just a regular mouse move? //refactor 
+            //just a regular mouse move? this needs refactoring
             if ($.now() - lastEmit > 30) {
-                var message = {
+                moveMessage = {
                     x: evt.offsetX + client.offsetX,
                     y: evt.offsetY + client.offsetY,
                     d1: client.m1Down
                 };
-                socket.emit('move', message);
+                socket.emit('move', moveMessage);
                 lastEmit = $.now();
             }
         }
@@ -202,22 +186,11 @@
             return r + r + g + g + b + b;
         });
         var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-        return result ? {
+        return {
             r: parseInt(result[1], 16),
             g: parseInt(result[2], 16),
             b: parseInt(result[3], 16)
-        } : null;
-    }
-
-//    function paintImage(ctx, x, y) {
-//        ctx.drawImage(img[0], x, y);
-//    }
-
-    function drawCircle(ctx, x, y, color, radius) {
-        ctx.beginPath();
-        ctx.arc(x, y, radius, 0, 2 * Math.PI);
-        ctx.fillStyle = color;
-        ctx.fill();
+        };
     }
 
     function drawBrush(ctx, fromx, fromy, tox, toy, color, size) {
@@ -314,6 +287,8 @@
                     document.documentElement.msRequestFullscreen();
                 } else if (document.documentElement.mozRequestFullScreen) {
                     document.documentElement.mozRequestFullScreen();
+                } else if (document.documentElement.webkitRequestFullscreen) {
+                    document.documentElement.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
                 }
             } else {
                 $('.fullscreen i').removeClass('ion-arrow-shrink');
@@ -359,12 +334,12 @@
         updateLabels: function () {
             this.$el.find('.users').empty();
             //fill table of users
-            for (var key in clientStates) {
+            Object.keys(clientStates).forEach(function (key) {
                 var x = clientStates[key].offset.x;
                 var y = clientStates[key].offset.y;
                 var text = "<li><a href='#!/" + x + "/" + y + "'>" + "User" + "</a> (" + x + ", " + y + ")</li>";
                 this.$el.find('.users').append(text);
-            }
+            }, this);
         }
     });
 
@@ -384,11 +359,11 @@
             this.$el.find('.opacity-range').val(client.state.opacity);
             return this;
         },
-        onOpacityChange: function (evt, value) {
+        onOpacityChange: function (evt) {
             client.state.opacity = Number(evt.target.value);
             updateToolState();
         },
-        onSizeChange: function (evt, value) {
+        onSizeChange: function (evt) {
             client.state.size = Number(evt.target.value);
             updateToolState();
         }
@@ -453,8 +428,6 @@
         drawTiles();
     }
 
-    var socket = new io();
-
     socket.on('connect', function () {
         updateToolState();
     });
@@ -469,7 +442,7 @@
     });
 
     socket.on('states', function (data) {
-        for (var key in data) {
+        Object.keys(data).forEach(function (key) {
             clientStates[key] = {};
             clientStates[key].state = data[key];
             clientStates[key].cursor = $('<div class="cursor">').appendTo('#cursors');
@@ -477,7 +450,7 @@
             clientStates[key].x = 0;
             clientStates[key].y = 0;
             clientStates[key].offset = {x: 0, y: 0};
-        }
+        });
     });
 
     function addClient(packet) {
@@ -497,8 +470,7 @@
     }
 
     socket.on('move', function (packet) {
-
-        if (!(packet.id in clientStates)) {
+        if (!clientStates.hasOwnProperty(packet.id)) {
             addClient(packet);
         } else {
             clientStates[packet.id].updated = $.now();
@@ -543,7 +515,7 @@
     });
 
     socket.on('status', function (packet) {
-        if (!(packet.id in clientStates)) {
+        if (!clientStates.hasOwnProperty(packet.id)) {
             addClient(packet);
         }
         clientStates[packet.id].state = packet;
@@ -551,7 +523,7 @@
     });
 
     socket.on('pan', function (packet) {
-        if (!(packet.id in clientStates)) {
+        if (!clientStates.hasOwnProperty(packet.id)) {
             addClient(packet);
         }
         clientStates[packet.id].offset.x = packet.x;
@@ -561,13 +533,26 @@
 
     // Remove inactive clients after 30 seconds of inactivity
     setInterval(function () {
-        for (var eachClient in clientStates) {
-            if ($.now() - clientStates[eachClient].updated > 1000 * 30) {
-                clientStates[eachClient].cursor.remove(); //remove cursor
-                delete clientStates[eachClient]; //remove states
+        Object.keys(clientStates).forEach(function (key) {
+            if ($.now() - clientStates[key].updated > 1000 * 30) {
+                clientStates[key].cursor.remove(); //remove cursor
+                delete clientStates[key]; //remove states
             }
-        }
+        });
     }, 1000);
+
+    var notify = _.debounce(function (title, message, type) {
+        new PNotify({
+            title: title,
+            text: message,
+            nonblock: {
+                nonblock: true,
+                nonblock_opacity: 0.1
+            },
+            type: type
+        });
+    }, 500);
+
 
     function processDrawAction(remoteClient, x, y) {
         var state = remoteClient.state;
@@ -576,8 +561,6 @@
 
         if (state.tool === 'line') {
             drawLine(ctx, remoteClient.x, remoteClient.y, x, y, cs, state.size);
-        } else if (state.tool === 'region') {
-            paintImage(ctx, x, y);
         } else if (state.tool === 'brush') {
             //drawCircle(ctx, x, y, cs, state.size / 2);
             drawBrush(ctx, remoteClient.x, remoteClient.y, x, y, cs, state.size);
@@ -630,10 +613,11 @@
 
     function drawTiles() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        for (var y = client.offsetY; y < client.offsetY + extent.height + tileSize * 2; y += tileSize) {
-            for (var x = client.offsetX; x < client.offsetX + extent.width + tileSize * 2; x += tileSize) {
-                var xTile = Math.floor(x / tileSize);
-                var yTile = Math.floor(y / tileSize);
+        var x, y, xTile, yTile;
+        for (y = client.offsetY; y < client.offsetY + extent.height + tileSize * 2; y += tileSize) {
+            for (x = client.offsetX; x < client.offsetX + extent.width + tileSize * 2; x += tileSize) {
+                xTile = Math.floor(x / tileSize);
+                yTile = Math.floor(y / tileSize);
 
                 loadTileAt(xTile, yTile, function (tile) {
                     var destinationX = (tile.x * tileSize) - client.offsetX;
@@ -649,7 +633,7 @@
         var key = x + '/' + y;
         var endpoint = '/canvases/main/1/' + key;
 
-        if (key in tileCollection) {
+        if (tileCollection.hasOwnProperty(key)) {
             return cb(tileCollection[key]);
         }
 
@@ -717,7 +701,8 @@
             client.offsetY = givenOffsets[1];
             $('#offset-label').text(client.offsetX + ',' + client.offsetY);
         }
-        drawTiles();
+        //drawTiles();
+        resizeLayout(); //calls drawTiles()
 
         if (localStorage.getItem('walkthrough') === null) {
             //setup tutorial
@@ -760,18 +745,6 @@
 
         FastClick.attach(document.body);
     }
-
-    var notify = _.debounce(function (title, message, type) {
-        new PNotify({
-            title: title,
-            text: message,
-            nonblock: {
-                nonblock: true,
-                nonblock_opacity: .1
-            },
-            type: type
-        });
-    }, 500);
 
     var saveTileAt = function (x, y, tileCanvas) {
         var key = x + '/' + y;
@@ -835,7 +808,7 @@
     };
 
     var updateDirtyTiles = _.throttle(function () {
-        for (var tileKey in tileCollection) {
+        Object.keys(tileCollection).forEach(function (tileKey) {
             if (tileCollection[tileKey].dirty) {
                 var tile = tileCollection[tileKey];
                 //find it onscreen
@@ -855,11 +828,11 @@
                     tile.filthy = false;
                 }
             }
-        }
-    }, 500);
+        });
+    }, 200);
 
     function clearTileCache() {
-        for (var tileKey in tileCollection) {
+        Object.keys(tileCollection).forEach(function (tileKey) {
             var tile = tileCollection[tileKey];
             var xMin = Math.floor((client.offsetX - tileSize) / tileSize);
             var xMax = Math.floor((client.offsetX + tileSize + extent.width) / tileSize) + 1;
@@ -868,7 +841,7 @@
             if (tile.x < xMin - 1 || tile.x > xMax || tile.y < yMin - 1 || tile.y > yMax) {
                 delete tileCollection[tileKey];
             }
-        }
+        });
     }
 
     setInterval(function () {
@@ -880,14 +853,14 @@
         contentType = contentType || '';
         sliceSize = sliceSize || 512;
         var byteCharacters = atob(b64Data);
-        var byteArrays = [];
-        for (var offset = 0; offset < byteCharacters.length; offset += sliceSize) {
-            var slice = byteCharacters.slice(offset, offset + sliceSize);
-            var byteNumbers = new Array(slice.length);
-            for (var i = 0; i < slice.length; i++) {
+        var byteArrays = [], offset, slice, byteNumbers, i, byteArray;
+        for (offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+            slice = byteCharacters.slice(offset, offset + sliceSize);
+            byteNumbers = new Array(slice.length);
+            for (i = 0; i < slice.length; i += 1) {
                 byteNumbers[i] = slice.charCodeAt(i);
             }
-            var byteArray = new Uint8Array(byteNumbers);
+            byteArray = new Uint8Array(byteNumbers);
             byteArrays.push(byteArray);
         }
 
@@ -913,7 +886,17 @@
     }
 
     // Create the listener function
-    var resizeLayout = _.debounce(function (e) {
+    var resizeLayout = _.debounce(function () {
+        //hdpi support
+        var devicePixelRatio = window.devicePixelRatio || 1;
+        var backingStoreRatio = ctx.webkitBackingStorePixelRatio ||
+                ctx.mozBackingStorePixelRatio ||
+                ctx.msBackingStorePixelRatio ||
+                ctx.oBackingStorePixelRatio ||
+                ctx.backingStorePixelRatio || 1;
+
+        ratio = devicePixelRatio / backingStoreRatio;
+
         canvas.width = $(window).width() + tileSize * 2;
         canvas.height = $(window).height() + tileSize * 2;
 
@@ -936,7 +919,7 @@
 
     window.addEventListener("resize", resizeLayout, false);
 
-    window.onpopstate = function (e) {
+    window.onpopstate = function () {
         var givenOffsets = parseHashBangArgs();
 
         if (givenOffsets !== null) {
@@ -963,6 +946,4 @@
             updateToolState();
         }
     });
-
-
-})();
+});
