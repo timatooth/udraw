@@ -83,6 +83,8 @@
             var tileX = Math.floor((client.x + client.offsetX) / tileSize);
             var tileY = Math.floor((client.y + client.offsetY) / tileSize);
             protectTileAt(tileX, tileY);
+        } else if (client.m1Down && client.state.tool === 'eyedropper') {
+            updatePixelColor(client.x, client.y);
         }
 
     });
@@ -126,7 +128,7 @@
             y = evt.offsetY * ratio;
         }
 
-        if (client.m1Down && client.state.tool !== 'move' && client.state.tool !== 'wand') {
+        if (client.m1Down && client.state.tool !== 'move' && client.state.tool !== 'wand' && client.state.tool !== 'eyedropper') {
             processDrawAction(client, x, y);
             var shadow = 0;
             if (client.state.tool === 'brush') {
@@ -165,6 +167,8 @@
                 socket.emit('pan', message);
                 lastEmit = $.now();
             }
+        } else if (client.m1Down && client.state.tool === 'eyedropper') {
+            updatePixelColor(x, y);
         } else {
             //just a regular mouse move? //refactor 
             if ($.now() - lastEmit > 30) {
@@ -205,9 +209,9 @@
         } : null;
     }
 
-    function paintImage(ctx, x, y) {
-        ctx.drawImage(img[0], x, y);
-    }
+//    function paintImage(ctx, x, y) {
+//        ctx.drawImage(img[0], x, y);
+//    }
 
     function drawCircle(ctx, x, y, color, radius) {
         ctx.beginPath();
@@ -236,7 +240,7 @@
         ctx.clearRect(x - radius, y - radius, radius, radius);
     }
 
-    function updateToolState() {
+    var updateToolState = _.debounce(function () {
         var message = {
             tool: client.state.tool,
             color: client.state.color,
@@ -248,7 +252,7 @@
         localStorage.setItem("toolsettings", JSON.stringify(client.state));
 
         socket.emit('status', message);
-    }
+    }, 200);
 
     setInterval(function () {
         updateToolState();
@@ -310,8 +314,6 @@
                     document.documentElement.msRequestFullscreen();
                 } else if (document.documentElement.mozRequestFullScreen) {
                     document.documentElement.mozRequestFullScreen();
-                } else if (document.documentElement.webkitRequestFullscreen) {
-                    document.documentElement.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
                 }
             } else {
                 $('.fullscreen i').removeClass('ion-arrow-shrink');
@@ -420,6 +422,9 @@
             case 66: //b
                 $('.brush-tool').click();
                 break;
+            case 69:
+                $('.eyedropper-tool').click();
+                break;
             case 76: //l
                 $('.line-tool').click();
                 break;
@@ -429,13 +434,15 @@
             case 88: //x
                 $('.eraser-tool').click();
                 break;
-            case 61:
+            case 187:
                 //+
-                //$('.size-range').first().val($('.size-range').first().val() + 1);
+                $('.size-range').first().val(Number($('.size-range').first().val()) + 1);
+                $('.size-range').trigger('change');
                 break;
-            case 45:
+            case 189:
                 //-
-                //$('.size-range').first().val($('.size-range').first().val() - 1);
+                $('.size-range').first().val(Number($('.size-range').first().val()) - 1);
+                $('.size-range').trigger('change');
                 break;
         }
     });
@@ -578,6 +585,29 @@
             clearCircle(ctx, x, y, state.size);
         }
     }
+
+    function updatePixelColor(x, y) {
+        var pxData = ctx.getImageData(x, y, 1, 1);
+        var colorString = "rgb(" + pxData.data[0] + "," + pxData.data[1] + "," + pxData.data[2] + ")";
+        $('#colorbutton').spectrum("set", colorString);
+        $('#colorbutton').css({color: colorString});
+
+        function componentToHex(c) {
+            var hex = c.toString(16);
+            return hex.length === 1 ? "0" + hex : hex;
+        }
+
+        function rgbToHex(r, g, b) {
+            return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+        }
+        client.state.color = rgbToHex(pxData.data[0], pxData.data[1], pxData.data[2]);
+        var opacity = pxData.data[3] / 255;
+        client.state.opacity = opacity;
+        $('.opacity-range').val(opacity);
+        updateToolState();
+        return colorString;
+    }
+
 
     function processMoveAction(client, x, y) {
         var dx = client.x - x;
@@ -922,6 +952,8 @@
     $('#colorbutton').spectrum({
         color: client.state.color,
         clickoutFiresChange: true,
+        preferredFormat: "hex3",
+        showInput: true,
         move: function (color) {
             client.state.color = color.toHexString();
             $('#colorbutton').css({color: color.toHexString()});

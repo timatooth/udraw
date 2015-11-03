@@ -94,7 +94,7 @@ body:fullscreen {
 
 
 .tool {
-    font-size: 2.5em;
+    font-size: 3em;
     margin-top: 0.2em;
     margin-bottom: 0.2em;
 }
@@ -144,7 +144,7 @@ body:fullscreen {
     z-index: 8;
 }
 .tool-rack {
-    width: 20em;
+    width: 22em;
     background-color: rgba(60,60,60,0.9);
     position: absolute;
     left: 4em;
@@ -156,8 +156,8 @@ body:fullscreen {
 
 .tool-rack .tool {
     float: left;
-    margin-right: 0.4em;
-    margin-left: 0.4em;
+    margin-right: 0.5em;
+    margin-left: 0.5em;
 }
 
 .hidden {
@@ -195,6 +195,12 @@ body:fullscreen {
         border-radius: 6px;
         box-shadow: #363636 1px 1px 4px;
         background-color: rgba(60,60,60,1.0);
+        width: 30em;
+        left: -0.5em;
+    }
+    .tool-rack .tool {
+        font-size: 3.5em;
+        margin-right: 0.5em;
     }
 
     .tool {
