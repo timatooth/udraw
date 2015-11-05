@@ -295,11 +295,13 @@ $(document).ready(function () {
                 break;
             case 187:
                 //+
+                $('.brush-tools').show();
                 $('.size-range').first().val(Number($('.size-range').first().val()) + 1);
                 $('.size-range').trigger('change');
                 break;
             case 189:
                 //-
+                $('.brush-tools').show();
                 $('.size-range').first().val(Number($('.size-range').first().val()) - 1);
                 $('.size-range').trigger('change');
                 break;
@@ -632,7 +634,7 @@ $(document).ready(function () {
 
     var BrushToolsView = Backbone.View.extend({
         template: _.template($("#brush-tools-template").html()),
-        className: "panel",
+        className: "panel brush-tools",
         events: {
             "change .opacity-range": "onOpacityChange",
             "change .size-range": "onSizeChange"
@@ -658,7 +660,7 @@ $(document).ready(function () {
 
     var SidebarView = Backbone.View.extend({
         template: _.template($("#sidebar-template").html()),
-        className: "sidebar",
+        className: "sidebar noselect",
         events: {
             "click .tool": "onToolClick",
             "click .move-tool": "onMoveToolClick",
@@ -687,14 +689,20 @@ $(document).ready(function () {
                     updateToolState();
                 }
             });
+            this.toolsPanel = new BrushToolsView();
+            this.$el.append(this.toolsPanel.render().el);
+            this.toolsPanel.$el.hide();
             return this;
         },
         onToolClick: function (evt) {
             this.$el.find('.active').removeClass('active');
             client.state.tool = $(evt.currentTarget).data('name');
             $('.tool-button').addClass('active');
-            $('.tool-rack').toggleClass('hidden');
+            $('.tool-rack').toggle();
             $('.tool-button').html($(evt.currentTarget).html());
+            $('.tool-button').data('name', $(evt.currentTarget).data('name'));
+            $('.tool-rack div').show();
+            $('.tool-rack').find('.' + $(evt.currentTarget).data('name') + '-tool').hide();
             updateToolState();
         },
         onMoveToolClick: function (evt) {
@@ -704,12 +712,7 @@ $(document).ready(function () {
             updateToolState();
         },
         onBrushToolsClick: function () {
-            if (this.toolsPanel === null) {
-                this.toolsPanel = new BrushToolsView();
-                this.$el.append(this.toolsPanel.render().el);
-            } else {
-                this.toolsPanel.$el.toggle();
-            }
+            this.toolsPanel.$el.toggle();
         },
         onColourChange: function (evt) {
             client.state.color = evt.target.value;
@@ -767,6 +770,7 @@ $(document).ready(function () {
 
     $(canvas).on('mousedown touchstart', function (evt) {
         $('.panel').hide();
+        $('.tool-rack').hide();
         if (evt.type === "touchstart") {
             evt.preventDefault();
             client.x = evt.originalEvent.touches[0].clientX * ratio + tileSize; //caveat adding tilesize?
@@ -919,14 +923,6 @@ $(document).ready(function () {
             setTimeout(function () {
                 notify("Boss Tips", "The URL points to your current location to share.", "info");
             }, 35000);
-
-            setTimeout(function () {
-                notify("Thoughts so far?", "Send me an email for bug reports and suggestions. sulti642@student.otago.ac.nz", "info");
-            }, 60 * 1000 * 2);
-
-            if (ratio > 1) {
-                notify("Retina Support", "Tile loading is temperamental bug. Pan lots re-load missing ones.", "");
-            }
             localStorage.setItem('walkthrough', 1);
         }
 
@@ -935,7 +931,6 @@ $(document).ready(function () {
             client.state = tools;
             $('.move-tool').click();
             $('#colorbutton').css({color: client.state.color});
-            //$('.tool-button').html($('.' + client.state.tool + '-tool').html());
         }
 
         if (debug) {
@@ -949,7 +944,7 @@ $(document).ready(function () {
         FastClick.attach(document.body);
     }
 
-    //load views
+    //loadn UI views
     var sidebar = new SidebarView();
     $('body').append(sidebar.render().el);
     //fire it up
