@@ -58,6 +58,14 @@ app.get('/', function (req, res) {
     res.sendFile(__dirname + '/index.html');
 });
 
+app.get('/:x/:y', function (req, res) {
+    res.sendFile(__dirname + '/index.html');
+});
+
+app.get('/ogimage/:x/:y', function (req, res) {
+    res.sendFile(__dirname + '/index.html');
+});
+
 app.put('/canvases/:name/:zoom/:x/:y', putLimiter, function (req, res) {
     var p = req.params;
     if (p.name !== "main") {

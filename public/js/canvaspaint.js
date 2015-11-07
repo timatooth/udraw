@@ -249,7 +249,7 @@ $(document).ready(function () {
         client.x = x;
         client.y = y;
         if (!!(window.history && history.pushState)) {
-            updateUrl("#!/" + client.offsetX + "/" + client.offsetY);
+            updateUrl("/" +client.offsetX + "/" + client.offsetY);
         }
 
     }
@@ -432,10 +432,11 @@ $(document).ready(function () {
 
     function parseHashBangArgs() {
         var aURL = window.location.href;
-        var vars = aURL.slice(aURL.indexOf('#') + 3).split('/');
-        if (vars.length === 2) {
-            var parsedX = parseInt(vars[0]);
-            var parsedY = parseInt(vars[1]);
+        var vars = aURL.slice(aURL.indexOf('/') + 2).split('/');
+        console.log(vars);
+        if (vars.length === 3) {
+            var parsedX = parseInt(vars[1]);
+            var parsedY = parseInt(vars[2]);
             var l = 150 * tileSize;
             if (!isNaN(parsedX) && !isNaN(parsedY)) {
                 if (parsedX < -l || parsedX > l || parsedY < -l || parsedY > l) {
