@@ -495,7 +495,6 @@ $(document).ready(function () {
             clientStates[key].updated = $.now();
             clientStates[key].x = 0;
             clientStates[key].y = 0;
-            clientStates[key].offset = {x: 0, y: 0};
         });
     });
 
@@ -556,8 +555,8 @@ $(document).ready(function () {
         if (!clientStates.hasOwnProperty(packet.id)) {
             addClient(packet);
         }
-        clientStates[packet.id].offset.x = packet.x;
-        clientStates[packet.id].offset.y = packet.y;
+        clientStates[packet.id].state.offsetX = packet.offsetX;
+        clientStates[packet.id].state.offsetY = packet.offsetY;
         clientStates[packet.id].updated = $.now();
     });
 
@@ -637,9 +636,9 @@ $(document).ready(function () {
             this.$el.find('.users').empty();
             //fill table of users
             Object.keys(clientStates).forEach(function (key) {
-                var x = clientStates[key].offset.x;
-                var y = clientStates[key].offset.y;
-                var text = "<li><a href='#!/" + x + "/" + y + "'>" + "User" + "</a> (" + x + ", " + y + ")</li>";
+                var x = clientStates[key].state.offsetX;
+                var y = clientStates[key].state.offsetY;
+                var text = "<li><a href='/" + x + "/" + y + "'>" + "User" + "</a> (" + x + ", " + y + ")</li>";
                 this.$el.find('.users').append(text);
             }, this);
         }
@@ -891,8 +890,8 @@ $(document).ready(function () {
             processMoveAction(client, x, y);
             if ($.now() - lastEmit > 60) { //only send pan message every 60ms
                 moveMessage = {
-                    x: client.offsetX,
-                    y: client.offsetY
+                    offsetX: client.offsetX,
+                    offsetY: client.offsetY
                 };
                 socket.emit('pan', moveMessage);
                 lastEmit = $.now();
@@ -927,10 +926,10 @@ $(document).ready(function () {
         resizeLayout(); //calls drawTiles()
         if (localStorage.getItem('walkthrough') === null) {
             //setup tutorial
-            notify("Welcome", "Draw anywhere on a massive canvas in real time. Drawings are saved. Expect bugs.", "");
+            notify("Welcome", "Draw anywhere in real time. Drawings are saved. Expect bugs.", "");
 
             setTimeout(function () {
-                notify("Tips", "B = brush, L = Line, M = Move. To quickly move around use WASD or arrow keys or Middle Mouse Button if you have one.", "info");
+                notify("Tips", "<ul><li>B - brush</li><li>L - Line</li><li>M - Move</li><li>E - Eyedropper</li><li>Use Middle Mouse, WASD, Arrows to pan.</li></ul>", "info");
             }, 10000);
 
             setTimeout(function () {

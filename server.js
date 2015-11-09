@@ -1,6 +1,7 @@
 /* eslint no-console: 0*/
 /* eslint-env node */
 /* global __dirname */
+'use strict';
 var fs = require('fs');
 var express = require('express');
 var morgan = require('morgan');
@@ -180,6 +181,10 @@ io.on('connection', function (socket) {
     socket.on('pan', function (msg) {
         msg.id = socket.id;
         socket.broadcast.emit('pan', msg);
+        if (socket.id in clientStates) {
+            clientStates[socket.id].offsetX = msg.offsetX;
+            clientStates[socket.id].offsetY = msg.offsetY;
+        }
     });
 
     socket.on('ping', function () {
