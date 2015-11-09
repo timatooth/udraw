@@ -1,3 +1,5 @@
+/* eslint no-console: 0*/
+/* eslint-env node */
 /* global __dirname */
 var fs = require('fs');
 var express = require('express');
@@ -25,11 +27,11 @@ try {
     http = require('http').Server(app);
     io = require('socket.io')(http);
 }
-var port = 6379;
+var redisPort = 6379;
 var host = 'localhost'; //problems here with going over the net stick with localhost for now
-var tileRedis = redis.createClient(port, host, {return_buffers: true});
+var tileRedis = redis.createClient(redisPort, host, {return_buffers: true});
 
-io.adapter(adapter(redis.createClient({host: 'localhost', port: 6379})));
+io.adapter(adapter(redis.createClient({host: 'localhost', port: redisPort})));
 
 app.set('trust proxy', 'loopback');
 app.set('x-powered-by', false);
@@ -199,12 +201,25 @@ var port = process.env.PORT || 3000;
 var securePort = process.env.SECUREPORT || process.env.PORT || 3443;
 
 if (secure) {
-    https.listen(securePort, 'localhost', function () {
-        console.log('HTTPS listening on :' + securePort);
-    });
+    if (process.argv.length > 2) {
+        https.listen(securePort, function () {
+            console.log('HTTPS listening on *:' + securePort);
+        });
+    } else {
+        https.listen(securePort, 'localhost', function () {
+            console.log('HTTPS listening on localhost:' + securePort);
+        });
+    }
+
 } else {
-    http.listen(port, 'localhost', function () {
-        console.log('http listening on :' + port);
-    });
+    if (process.argv.length > 2) {
+        http.listen(port, function () {
+            console.log('http listening on *:' + port);
+        });
+    } else {
+        http.listen(port, 'localhost', function () {
+            console.log('http listening on localhost:' + port);
+        });
+    }
 }
 

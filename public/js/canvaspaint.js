@@ -1,13 +1,14 @@
+/*eslint-env browser */
 /* global $, Backbone, io, _, PNotify, FastClick */
 
 $(document).ready(function () {
     'use strict';
     var tileSize = 256;
-    var debug = false;
+    var debug = false; //shows tile boundaries and extra console output
     var lastPing = $.now();
     var canvas = document.getElementById("paper");
-    canvas.width = $(window).width() + tileSize * 2;
-    canvas.height = $(window).height() + tileSize * 2;
+    canvas.width = window.innerWidth + tileSize * 2;
+    canvas.height = window.innerHeight + tileSize * 2;
     window.credsyo = "";
     var ctx = canvas.getContext('2d');
     var ratio = 1;
@@ -17,8 +18,8 @@ $(document).ready(function () {
 
     //The visible region on screen the user sees
     var extent = {
-        width: $(window).width() * ratio,
-        height: $(window).height() * ratio
+        width: window.innerWidth * ratio,
+        height: window.innerHeight * ratio
     };
 
     //hold all global state about the client
@@ -48,6 +49,14 @@ $(document).ready(function () {
         });
     }, 500);
 
+
+    function inIframe() {
+        try {
+            return window.self !== window.top;
+        } catch (e) {
+            return true;
+        }
+    }
 
     function drawLine(ctx, fromx, fromy, tox, toy, color, size) {
         ctx.beginPath(); //need to enclose in begin/close for colour settings to work
@@ -248,8 +257,8 @@ $(document).ready(function () {
         drawTiles();
         client.x = x;
         client.y = y;
-        if (!!(window.history && history.pushState)) {
-            updateUrl("/" +client.offsetX + "/" + client.offsetY);
+        if ((window.history && history.pushState)) {
+            updateUrl("/" + client.offsetX + "/" + client.offsetY);
         }
 
     }
@@ -433,7 +442,6 @@ $(document).ready(function () {
     function parseHashBangArgs() {
         var aURL = window.location.href;
         var vars = aURL.slice(aURL.indexOf('/') + 2).split('/');
-        console.log(vars);
         if (vars.length === 3) {
             var parsedX = parseInt(vars[1]);
             var parsedY = parseInt(vars[2]);
@@ -573,14 +581,15 @@ $(document).ready(function () {
                 ctx.oBackingStorePixelRatio ||
                 ctx.backingStorePixelRatio || 1;
 
+
         ratio = devicePixelRatio / backingStoreRatio;
 
-        canvas.width = $(window).width() + tileSize * 2;
-        canvas.height = $(window).height() + tileSize * 2;
+        canvas.width = window.innerWidth + tileSize * 2;
+        canvas.height = window.innerHeight + tileSize * 2;
 
         extent = {
-            width: $(window).width() * ratio,
-            height: $(window).height() * ratio
+            width: window.innerWidth * ratio,
+            height: window.innerHeight * ratio
         };
 
         if (devicePixelRatio !== backingStoreRatio) {
@@ -594,7 +603,10 @@ $(document).ready(function () {
 
         drawTiles();
     }, 500); // Maximum run of once per 500 milliseconds
-    window.addEventListener("resize", resizeLayout, false);
+    //disable resizing inside iframe. Buggy on iphone
+    if (!inIframe()) {
+        window.addEventListener("resize", resizeLayout, false);
+    }
 
     /* History URI API */
     window.onpopstate = function () {
@@ -932,13 +944,11 @@ $(document).ready(function () {
             client.state = tools;
             $('.move-tool').click();
             $('#colorbutton').css({color: client.state.color});
+            //set size, opacity range values
+            $('.size-range').val(client.state.size);
+            $('.opacity-range').val(client.state.opacity);
         }
 
-        if (debug) {
-            console.log("= Debug Info =");
-            console.log("Window: " + $(window).width() + " x " + $(window).height());
-            console.log("Extent: " + extent.width + " x " + extent.height);
-        }
         $("#paper").focus(); // key events in canvas
 
         //mobile fast touching
