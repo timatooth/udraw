@@ -900,7 +900,7 @@ $(document).ready(function () {
             updatePixelColor(x, y);
         } else {
             //just a regular mouse move? this needs refactoring
-            if ($.now() - lastEmit > 30) {
+            if ($.now() - lastEmit > 60) {
                 moveMessage = {
                     x: evt.offsetX + client.offsetX,
                     y: evt.offsetY + client.offsetY,

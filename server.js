@@ -167,21 +167,37 @@ io.on('connection', function (socket) {
     socket.emit('states', clientStates);
 
     socket.on('disconnect', function () {
-        if (socket.id in clientStates) {
+        if (clientStates.hasOwnProperty(socket.id)) {
             delete clientStates[socket.id];
         }
-        tileRedis.decr("current connections");
+        tileRedis.decr("currentconnections");
     });
+
+    function inRadius(diamater, x, y, client) {
+        var r = diamater / 2;
+        if (x > -r + client.offsetX && x < r + client.offsetX && y > -r + client.offsetY && r + client.offsetY) {
+            return true;
+        }
+        return false;
+    }
 
     socket.on('move', function (msg) {
         msg.id = socket.id;
-        socket.broadcast.emit('move', msg);
+        Object.keys(clientStates).forEach(function (key) {
+            if (socket.id === key) {
+                return;
+            }
+            //when someone is 3000px or more from the client don't relay the move
+            if (inRadius(6000, msg.x, msg.y, clientStates[key]) === true) {
+                io.to(key).emit('move', msg);
+            }
+        });
     });
 
     socket.on('pan', function (msg) {
         msg.id = socket.id;
         socket.broadcast.emit('pan', msg);
-        if (socket.id in clientStates) {
+        if (clientStates.hasOwnProperty(socket.id)) {
             clientStates[socket.id].offsetX = msg.offsetX;
             clientStates[socket.id].offsetY = msg.offsetY;
         }
