@@ -254,7 +254,7 @@ $(document).ready(function () {
         client.offsetX = client.offsetX + dx;
         client.offsetY = client.offsetY + dy;
         $('#offset-label').text(client.offsetX + ',' + client.offsetY);
-        drawTiles();
+        requestAnimationFrame(drawTiles);
         client.x = x;
         client.y = y;
         if ((window.history && history.pushState)) {
@@ -420,7 +420,7 @@ $(document).ready(function () {
                 }
             }
         });
-    }, 200);
+    }, 400);
 
     function clearTileCache() {
         Object.keys(tileCollection).forEach(function (tileKey) {
