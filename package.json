@@ -1,5 +1,5 @@
 {
-  "name": "node-udraw",
+  "name": "udraw",
   "version": "1.0.0",
   "description": "Multiplayer tiled canvas drawing platform",
   "main": "server.js",

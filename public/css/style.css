@@ -175,7 +175,7 @@ body:fullscreen {
 
 /*********
 * get responsive */
-@media only screen and (max-width: 500px) {
+@media only screen and (max-width: 640px) {
     .sidebar {
         left: initial;
         top: initial;
@@ -183,6 +183,10 @@ body:fullscreen {
         height: 4.5em;
         width: 100%;
         right: 0px;
+    }
+
+    #offset-label {
+        display: none;
     }
 
     .panel {
