@@ -1,7 +1,7 @@
 {
   "name": "node-udraw",
   "version": "1.0.0",
-  "description": "udraw application server",
+  "description": "Multiplayer tiled canvas drawing platform",
   "main": "server.js",
   "readme": "README.md",
   "repository": "https://bitbucket.org/tsullivan/node-udraw",
@@ -13,7 +13,8 @@
   "keywords": [
     "websocket",
     "redis",
-    "drawing"
+    "drawing",
+    "canvas"
   ],
   "author": "Tim Sullivan",
   "license": "MIT",

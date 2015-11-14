@@ -1,8 +1,15 @@
+/*
+ udraw
+ 
+ (c) 2015 Tim Sullivan
+ udraw may be freely distributed under the MIT license.
+ For all details and documentation: github.com/timatooth/udraw
+ */
+
 /* eslint no-console: 0*/
 /* eslint-env node */
 /* global __dirname */
 'use strict';
-var fs = require('fs');
 var express = require('express');
 var morgan = require('morgan');
 var bodyParser = require('body-parser');
@@ -10,29 +17,20 @@ var rateLimit = require('express-rate-limit');
 var redis = require('redis');
 var adapter = require('socket.io-redis');
 var app = express();
-var http, https, io;
+var http = require('http').Server(app);
+var io = require('socket.io')(http);
 var secure = false;
+/** Boundary limit for fetching tiles */
 var tileRadius = 300;
 var patchPass = 'meh patch pass yo';
 
-try {
-    var options = {
-        key: fs.readFileSync(__dirname + '/udraw.key'),
-        cert: fs.readFileSync(__dirname + '/udraw.crt')
-    };
-    https = require('https').Server(options, app);
-    io = require('socket.io')(https);
-    secure = true;
-} catch (e) {
-    console.log("No SSL certs found. using normal http.");
-    http = require('http').Server(app);
-    io = require('socket.io')(http);
-}
 var redisPort = 6379;
-var host = 'localhost'; //problems here with going over the net stick with localhost for now
+var host = 'localhost';
 var tileRedis = redis.createClient(redisPort, host, {return_buffers: true});
 
-io.adapter(adapter(redis.createClient({host: 'localhost', port: redisPort})));
+io.adapter(adapter(redis.createClient({host: host, port: redisPort})));
+
+/**!! Big TODO Ditch express.js for rest Http api. Considering Go or nhhttp2 w/asio lib */
 
 app.set('trust proxy', 'loopback');
 app.set('x-powered-by', false);
@@ -55,7 +53,6 @@ app.use('/static', express.static(__dirname + staticDir));
 app.use(morgan('combined'));
 app.use(bodyParser.raw({type: 'image/png', limit: '250kb'}));
 app.use(bodyParser.json({type: 'application/json', limit: '250kb'}));
-//app.use('/canvases', limiter);
 
 app.get('/', function (req, res) {
     res.sendFile(__dirname + '/index.html');
@@ -155,8 +152,12 @@ app.patch('/canvases/:name/:zoom/:x/:y', function (req, res) {
     }
 });
 
+/******************** - Socket.IO code - ********************************/
+
+/** Store the socket id with tool states and pan offsets */
 var clientStates = {};
-tileRedis.set("current connections", 0); //reset on boot
+tileRedis.set("currentconnections", 0); //reset on boot
+
 io.on('connection', function (socket) {
     var ip = socket.request.connection.remoteAddress;
     tileRedis.incr("totalconnections");
@@ -184,7 +185,7 @@ io.on('connection', function (socket) {
     socket.on('move', function (msg) {
         msg.id = socket.id;
         Object.keys(clientStates).forEach(function (key) {
-            if (socket.id === key) {
+            if (socket.id === key) { //not send move to initator of the move
                 return;
             }
             //when someone is 3000px or more from the client don't relay the move
@@ -219,28 +220,15 @@ io.on('connection', function (socket) {
 });
 
 var port = process.env.PORT || 3000;
-var securePort = process.env.SECUREPORT || process.env.PORT || 3443;
 
-if (secure) {
-    if (process.argv.length > 2) {
-        https.listen(securePort, function () {
-            console.log('HTTPS listening on *:' + securePort);
-        });
-    } else {
-        https.listen(securePort, 'localhost', function () {
-            console.log('HTTPS listening on localhost:' + securePort);
-        });
-    }
-
+if (process.argv.length > 2) {
+    //listen on all ports in dev
+    http.listen(port, function () {
+        console.log('http listening on *:' + port);
+    });
 } else {
-    if (process.argv.length > 2) {
-        http.listen(port, function () {
-            console.log('http listening on *:' + port);
-        });
-    } else {
-        http.listen(port, 'localhost', function () {
-            console.log('http listening on localhost:' + port);
-        });
-    }
+    //only listen on localhost
+    http.listen(port, 'localhost', function () {
+        console.log('http listening on localhost:' + port);
+    });
 }
-

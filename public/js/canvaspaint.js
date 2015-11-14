@@ -1,28 +1,52 @@
+/*
+ udraw
+ 
+ (c) 2015 Tim Sullivan
+ udraw may be freely distributed under the MIT license.
+ For all details and documentation: github.com/timatooth/udraw
+ */
+
 /*eslint-env browser */
 /* global $, Backbone, io, _, PNotify, FastClick */
 
 $(document).ready(function () {
     'use strict';
     var tileSize = 256;
-    var debug = false; //shows tile boundaries and extra console output
+    /** shows tile boundaries and extra console output */
+    var debug = false;
     var lastPing = $.now();
     var canvas = document.getElementById("paper");
     canvas.width = window.innerWidth + tileSize * 2;
     canvas.height = window.innerHeight + tileSize * 2;
     window.credsyo = "";
     var ctx = canvas.getContext('2d');
+    /** Screen ratio is 2 for hdpi/retina displays */
     var ratio = 1;
     var socket = io();
+    /**
+     * Store states of other connected clients
+     * @type type
+     */
     var clientStates = {};
+    /**
+     * Tile memory cache. Maps tile key and Tile objects
+     * @type type
+     */
     var tileCollection = {};
 
-    //The visible region on screen the user sees
+    /**
+     * The visible region to draw on screen.
+     * @type Extent
+     */
     var extent = {
         width: window.innerWidth * ratio,
         height: window.innerHeight * ratio
     };
 
-    //hold all global state about the client
+    /**
+     * Hold all information about the state of the local client
+     * @type Client
+     */
     var client = {
         state: {
             tool: 'move',
@@ -49,7 +73,10 @@ $(document).ready(function () {
         });
     }, 500);
 
-
+    /**
+     * Is the app being displayed in an <iframe>
+     * @returns {Boolean}
+     */
     function inIframe() {
         try {
             return window.self !== window.top;
@@ -89,7 +116,7 @@ $(document).ready(function () {
         ctx.lineWidth = size;
         ctx.lineCap = "round";
         //shadow
-        ctx.shadowBlur = size * 0; //disable shadow
+        ctx.shadowBlur = size * 0; //disabled shadow
         ctx.shadowColor = "black";
         //
         ctx.moveTo(fromx, fromy);
@@ -99,7 +126,7 @@ $(document).ready(function () {
         ctx.shadowBlur = 0; //set back to 0 othewise all drawings are shadowed?
     }
 
-    function clearCircle(ctx, x, y, radius) {
+    function eraseRegion(ctx, x, y, radius) {
         ctx.clearRect(x - radius, y - radius, radius, radius);
     }
 
@@ -218,10 +245,16 @@ $(document).ready(function () {
             //drawCircle(ctx, x, y, cs, state.size / 2);
             drawBrush(ctx, remoteClient.x, remoteClient.y, x, y, cs, state.size);
         } else if (state.tool === 'eraser') {
-            clearCircle(ctx, x, y, state.size);
+            eraseRegion(ctx, x, y, state.size);
         }
     }
 
+    /**
+     * Handle clicks when eyedropper tool is being used.
+     * @param {Number} x canvas coordinate of color to fetch
+     * @param {type} y canvas coordinate of color to fetch
+     * @returns {String} color in hex format with # prefixed
+     */
     function updatePixelColor(x, y) {
         var pxData = ctx.getImageData(x, y, 1, 1);
         var colorString = "rgb(" + pxData.data[0] + "," + pxData.data[1] + "," + pxData.data[2] + ")";
@@ -248,6 +281,14 @@ $(document).ready(function () {
         history.replaceState(null, null, key);
     }, 500);
 
+    /**
+     * Handle Screen panning. 
+     * Updtes current offset and redraws the screen
+     * @param {Object} client
+     * @param {Number} x
+     * @param {Number} y
+     * @returns {undefined}
+     */
     function processMoveAction(client, x, y) {
         var dx = client.x - x;
         var dy = client.y - y;
@@ -337,6 +378,13 @@ $(document).ready(function () {
         return blob;
     }
 
+    /**
+     * Save tile out over HTTP REST api.
+     * @param {Number} x Tile coordinate
+     * @param {Number} y Tile coordinate
+     * @param {HTMLCanvasElement} tileCanvas Tile image to save
+     * @returns {undefined}
+     */
     var saveTileAt = function (x, y, tileCanvas) {
         var key = x + '/' + y;
         var tileString = tileCanvas.toDataURL();
@@ -422,6 +470,11 @@ $(document).ready(function () {
         });
     }, 400);
 
+    /**
+     * Called every 5s. Removes tiles from memory which are more than 
+     * a tile away to prevent stale tiles around. Not ideal.
+     * @returns {undefined}
+     */
     function clearTileCache() {
         Object.keys(tileCollection).forEach(function (tileKey) {
             var tile = tileCollection[tileKey];
@@ -439,7 +492,11 @@ $(document).ready(function () {
         clearTileCache();
     }, 5000);
 
-    function parseHashBangArgs() {
+    /**
+     * Parse the uri for offset location to draw from
+     * @returns {Array} x,y coordinates if parsed successfully otherwise null
+     */
+    function parseUriArgs() {
         var aURL = window.location.href;
         var vars = aURL.slice(aURL.indexOf('/') + 2).split('/');
         if (vars.length === 3) {
@@ -570,7 +627,11 @@ $(document).ready(function () {
         });
     }, 1000);
 
-    // Create the listener function
+    /**
+     * Resizes the canvas when the window is resized. Debounced to only 
+     * call every 500ms.
+     * @type {function}
+     */
     var resizeLayout = _.debounce(function () {
         //hdpi support
         var devicePixelRatio = window.devicePixelRatio || 1;
@@ -602,14 +663,13 @@ $(document).ready(function () {
 
         drawTiles();
     }, 500); // Maximum run of once per 500 milliseconds
-    //disable resizing inside iframe. Buggy on iphone
-    if (!inIframe()) {
+    if (!inIframe()) { //disable resizing inside iframe. Buggy on iphone
         window.addEventListener("resize", resizeLayout, false);
     }
 
     /* History URI API */
     window.onpopstate = function () {
-        var givenOffsets = parseHashBangArgs();
+        var givenOffsets = parseUriArgs();
 
         if (givenOffsets !== null) {
             client.offsetX = givenOffsets[0];
@@ -622,6 +682,12 @@ $(document).ready(function () {
     /*-------------------------------------------------------
      * Backbone view code
      *
+     */
+
+    /**
+     * Displayed when the (i) info button is clicked. Shows ping & connected
+     * clients and their location.
+     * @type Backbone.View
      */
     var StatusView = Backbone.View.extend({
         template: _.template($("#status-template").html()),
@@ -644,6 +710,10 @@ $(document).ready(function () {
         }
     });
 
+    /**
+     * View for updating brush tool settings such as brush size.
+     * @type Backbone.View
+     */
     var BrushToolsView = Backbone.View.extend({
         template: _.template($("#brush-tools-template").html()),
         className: "panel brush-tools",
@@ -670,6 +740,10 @@ $(document).ready(function () {
         }
     });
 
+    /**
+     * View to render the left sidebar for all the tools & buttons
+     * @type Backbone.View
+     */
     var SidebarView = Backbone.View.extend({
         template: _.template($("#sidebar-template").html()),
         className: "sidebar noselect",
@@ -780,6 +854,10 @@ $(document).ready(function () {
      * CANVAS jQuery events
      */
 
+    /**
+     * Callback for when mouse movement or touches begin.
+     * @param {jQuery} evt Incoming event
+     */
     $(canvas).on('mousedown touchstart', function (evt) {
         $('.panel').hide();
         $('.tool-rack').hide();
@@ -817,11 +895,15 @@ $(document).ready(function () {
 
     });
 
+    /**
+     * Mouse movement ends or touch end.
+     * calls updateDirtyTiles which checks for updated regions to save into
+     * off-screen tiles.
+     * @param {jQuery} evt Incoming event
+     */
     $(canvas).on('mouseup mouseleave touchend touchcancel', function (evt) {
         if (evt.type === "touchend" || evt.type === "touchcancel") {
             evt.preventDefault();
-            //client.x = evt.originalEvent.touches[0].clientX;
-            //client.y = evt.originalEvent.touches[0].clientY;
             client.m1Down = false;
             updateDirtyTiles();
             //send a move setting drawing to false
@@ -844,16 +926,23 @@ $(document).ready(function () {
 
     });
 
+    /** Stores time for when last mouse movement packet was sent **/
     var lastEmit = $.now();
+
+    /**
+     * When the mouse moves process draw actions or movement.
+     * This could do with a re-write, cyclic complexity < 15
+     * @param {jQuery} evt Incoming event
+     */
     $(canvas).on('mousemove touchmove', function (evt) {
         var moveMessage;
         var x, y;
         if (evt.type === "touchmove") {
             evt.preventDefault();
-            x = evt.originalEvent.touches[0].clientX * ratio + tileSize; //improve?
+            x = evt.originalEvent.touches[0].clientX * ratio + tileSize;
             y = evt.originalEvent.touches[0].clientY * ratio + tileSize;
         } else {
-            x = evt.offsetX * ratio; //check retina on mac
+            x = evt.offsetX * ratio;
             y = evt.offsetY * ratio;
         }
 
@@ -870,10 +959,10 @@ $(document).ready(function () {
                 tileX = Math.floor((x + client.offsetX + i) / tileSize);
                 tileY = Math.floor((y + client.offsetY + i) / tileSize);
                 key = tileX + '/' + tileY;
-                tileCollection[key].dirty = true;
-                tileCollection[key].filthy = true; //locally created dirty watchdog flag
+                tileCollection[key].dirty = true; //indicate an ofscreen tile needs to be re-fetched from the master canvas
+                tileCollection[key].filthy = true; //indicate that this tile needs saving
             }
-
+            //update 'last' position values for next draw call
             client.x = x;
             client.y = y;
 
@@ -913,11 +1002,15 @@ $(document).ready(function () {
 
     });
 
+    /**
+     * Main entry point to load up.
+     * @returns {undefined}
+     */
     function initTheBusiness() {
         if (debug) {
             localStorage.clear();
         }
-        var givenOffsets = parseHashBangArgs();
+        var givenOffsets = parseUriArgs();
         if (givenOffsets !== null) {
             client.offsetX = givenOffsets[0];
             client.offsetY = givenOffsets[1];
@@ -954,7 +1047,7 @@ $(document).ready(function () {
         FastClick.attach(document.body);
     }
 
-    //loadn UI views
+    //loading UI
     var sidebar = new SidebarView();
     $('body').append(sidebar.render().el);
     //fire it up
