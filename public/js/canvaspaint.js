@@ -130,6 +130,22 @@ $(document).ready(function () {
         ctx.clearRect(x - radius, y - radius, radius, radius);
     }
 
+    function sprayCan(ctx, x, y, color, size) {
+        // Particle count
+        var count = size * 4;
+        ctx.fillStyle = color;
+        for (var i = 0; i < count; i++) {
+            var randomAngle = Math.random() * (2 * Math.PI);
+            var randomRadius = Math.random() * size;
+            var ox = Math.cos(randomAngle) * randomRadius;
+            var oy = Math.sin(randomAngle) * randomRadius;
+            var xLocation = x + ox;
+            var yLocation = y + oy;
+
+            ctx.fillRect(xLocation, yLocation, 1, 1);
+        }
+    }
+
     var updateToolState = _.debounce(function () {
         var message = {
             tool: client.state.tool,
@@ -246,6 +262,8 @@ $(document).ready(function () {
             drawBrush(ctx, remoteClient.x, remoteClient.y, x, y, cs, state.size);
         } else if (state.tool === 'eraser') {
             eraseRegion(ctx, x, y, state.size);
+        } else if (state.tool === 'spray') {
+            sprayCan(ctx, x, y, cs, state.size);
         }
     }
 

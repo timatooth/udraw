@@ -151,7 +151,7 @@ body:fullscreen {
     z-index: 8;
 }
 .tool-rack {
-    width: 22em;
+    width: 24em;
     background-color: rgba(60,60,60,0.9);
     position: absolute;
     left: 4em;
@@ -210,8 +210,9 @@ body:fullscreen {
         border-radius: 6px;
         box-shadow: #363636 1px 1px 4px;
         background-color: rgba(60,60,60,1.0);
-        width: 30em;
+        width: 34em;
         left: -0.5em;
+        top: -1em;
     }
     .tool-rack .tool {
         font-size: 3.5em;
