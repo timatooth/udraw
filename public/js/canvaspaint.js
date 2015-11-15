@@ -272,6 +272,9 @@ $(document).ready(function () {
         client.state.color = rgbToHex(pxData.data[0], pxData.data[1], pxData.data[2]);
         var opacity = pxData.data[3] / 255;
         client.state.opacity = opacity;
+        if (client.state.opacity < 0.01) { //fix when they click completely transparent area
+            client.state.opacity = 0.03;
+        }
         $('.opacity-range').val(opacity);
         updateToolState();
         return colorString;

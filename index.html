@@ -15,6 +15,7 @@
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="mobile-web-app-capable" content="yes" />
         <link rel="stylesheet" href="/static/css/ionicons.css" media="all" />
+        <link rel="stylesheet" href="/static/css/font-awesome.css" media="all" />
         <link rel="stylesheet" href="/static/css/spectrum.css" media="all" />
         <link rel="stylesheet" href="/static/css/pnotify.brighttheme.css" media="all" />
         <link rel="stylesheet" href="/static/css/style.css" media="all" />
@@ -45,14 +46,13 @@
         <canvas id="paper" width="640" height="640"></canvas>
 
         <script id="sidebar-template" type="text/template">
-            <div class="tool tool-button line-tool" data-name ='line' title="Tools!"><i class="icon ion-edit"></i></div>
+            <div class="tool tool-button line-tool" data-name ='line' title="Tools!"><i class="fa fa-pencil"></i></div>
             <div class="move-tool active" data-name ='move' title="Mighty move tool!"><i class="icon ion-arrow-move"></i></div>
             <div class="tool-rack hidden">
-                <div class="tool line-tool" data-name ='line' title="Tools!"><i class="icon ion-edit"></i></div>
-                <div class="tool brush-tool" data-name ='brush' title="Wrecked Paintbrush!"><i class="icon ion-paintbrush"></i></div>
-                <div class="tool eraser-tool" data-name ='eraser' title="Dodgy Eraser!"><i class="icon ion-bookmark"></i></div>
-                <!--<div class="tool wand-tool" data-name ='wand' title="Magic Wand!"><i class="icon ion-ios-color-wand"></i></div>-->
-                <div class="tool eyedropper-tool" data-name ='eyedropper' title="Color Picking Spoon!"><i class="icon ion-spoon"></i></div>
+                <div class="tool line-tool" data-name ='line' title="Tools!"><i class="fa fa-pencil"></i></div>
+                <div class="tool brush-tool" data-name ='brush' title="Wrecked Paintbrush!"><i class="fa fa-paint-brush"></i></div>
+                <div class="tool eraser-tool" data-name ='eraser' title="Dodgy Eraser!"><i class="fa fa-eraser"></i></div>
+                <div class="tool eyedropper-tool" data-name ='eyedropper' title="Color Picker!"><i class="fa fa-eyedropper"></i></div>
             </div>
             
             <div id="colorbutton"><i class="icon ion-ios-circle-filled"></i></div>
@@ -63,8 +63,8 @@
         </script>
 
         <script id="brush-tools-template" type="text/template">
-            <p>Size: <input class="size-range" type="range" max="60" min="1" step="1" value="4" /></p>
-            <p>Opacity: <input class="opacity-range" type="range" max="1" min="0.01" step="0.005" value="1.0" /></p>
+            <p>Size <input class="size-range" type="range" max="60" min="1" step="1" value="4" /></p>
+            <p>Opacity <input class="opacity-range" type="range" max="1" min="0.01" step="0.005" value="1.0" /></p>
         </script>
 
         <script id="status-template" type="text/template">
