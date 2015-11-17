@@ -35,6 +35,13 @@ $(document).ready(function () {
         width: window.innerWidth * ratio,
         height: window.innerHeight * ratio
     };
+    
+    /**
+     * Adapter to persist the tiles!
+     * @type RestTileSource
+     */
+    var tileSource = new RestTileSource('', debug);
+    //var tileSource = new LocalStorageTileSource(debug);
 
     /**
      * Hold all information about the state of the local client
@@ -157,8 +164,6 @@ $(document).ready(function () {
     setInterval(function () {
         updateToolState();
     }, 1000 * 20);
-
-    var tileSource = new RestTileSource('', true);
 
     /**
      * Callback for when source comes back with a tile or error
@@ -349,6 +354,9 @@ $(document).ready(function () {
                     break;
                 case 500:
                     notify("Error 500", "Server isn't feeling well right now.", "error");
+                    break;
+                case 507:
+                    notify("Error 507", "Out of local storage!");
                     break;
                 default:
                     notify("Hmm", "Unhandled status code " + err + " for tile " + x + ", " + y, "error");

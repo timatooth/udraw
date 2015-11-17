@@ -1,16 +1,19 @@
 /**
  * Tile Object
- * @param {HTML5CanvasElement} tileCanvas holds canvas dom element
  * @param {type} x Tile coordinate
  * @param {type} y Tile coordinate
  * @returns {Tile}
  */
-var Tile = function (tileCanvas, x, y) {
-    this.canvas = tileCanvas;
+var Tile = function (x, y, tileSize) {
     this.dirty = false;
     this.x = x;
     this.y = y;
     this.ready = false;
+    var tileCanvas = document.createElement("canvas");
+    tileCanvas.width = tileSize;
+    tileCanvas.height = tileSize;
+    this.canvas = tileCanvas;
+    this.context = tileCanvas.getContext('2d');
 };
 
 var TileSource = function (debug) {
@@ -67,7 +70,7 @@ var b64toBlob = function (b64Data, contentType, sliceSize) {
 /**
  * RESTful Tile Source.
  * @param {String} endpointUrl url where the rest lives without trailing slash
- * @param {type} debug draw gridline coordinates on tiles
+ * @param {Boolean} debug draw gridline coordinates on tiles
  * @returns {RestTileSource}
  */
 var RestTileSource = function (endpointUrl, debug) {
@@ -80,26 +83,23 @@ var RestTileSource = function (endpointUrl, debug) {
 };
 
 RestTileSource.prototype.fetchTileAt = function (tileX, tileY, cb) {
+    var self = this;
     var key = tileX + '/' + tileY;
-
     /* cache lookup */
     if (this.tileCollection.hasOwnProperty(key)) {
         return cb(200, this.tileCollection[key]); //borrowing http codes
     }
 
     var endpoint = this.restEndpoint + '/canvases/main/1/' + key;
-    var tileCanvas = document.createElement("canvas");
-    tileCanvas.width = this.tileSize;
-    tileCanvas.height = this.tileSize;
-    var tCtx = tileCanvas.getContext('2d');
 
     var getRequest = new XMLHttpRequest();
     getRequest.responseType = "blob";
     getRequest.open("GET", endpoint, true);
 
-    var tile = new Tile(tileCanvas, tileX, tileY);
+    var tile = new Tile(tileX, tileY, self.tileSize);
     this.tileCollection[key] = tile; //cache tile structure
-    var self = this;
+
+    var tCtx = tile.context;
     getRequest.onload = function (evt) {
         if (evt.target.status === 200) {
             var imgData = evt.target.response;
@@ -114,7 +114,7 @@ RestTileSource.prototype.fetchTileAt = function (tileX, tileY, cb) {
             if (self.debug) {
                 tCtx.lineWidth = "1";
                 tCtx.strokeStyle = "#AACCEE";
-                tCtx.rect(0, 0, 256, 256);
+                tCtx.rect(0, 0, self.tileSize, self.tileSize);
                 tCtx.stroke();
                 tCtx.fillText("(" + tileX + "," + tileY + ")", 10, 10);
                 tile.ready = true;
@@ -122,7 +122,7 @@ RestTileSource.prototype.fetchTileAt = function (tileX, tileY, cb) {
             }
         } else if (evt.target.status === 416) {
             tCtx.fillStyle = "#0F0";
-            tCtx.fillRect(0, 0, 256, 256);
+            tCtx.fillRect(0, 0, self.tileSize, self.tileSize);
             cb(416, tile);
         }
     };
@@ -135,8 +135,8 @@ RestTileSource.prototype.fetchTileAt = function (tileX, tileY, cb) {
 
 /**
  * Save tile out over HTTP REST api.
- * @param {Number} x Tile coordinate
- * @param {Number} y Tile coordinate
+ * @param {Number} xTile Tile coordinate
+ * @param {Number} yTile Tile coordinate
  * @param {HTMLCanvasElement} tileCanvas Tile image to save
  * @param {Function) cb takes 1 parameter with the response code.
  * @returns {undefined}
@@ -154,4 +154,58 @@ RestTileSource.prototype.saveTileAt = function (xTile, yTile, tileCanvas, cb) {
     };
     putRequest.open("PUT", endpoint, true);
     putRequest.send(blob);
+};
+
+/**
+ * Create localStorage tile saving adapter.
+ * @param {Boolean} debug
+ * @returns {LocalStorageTileSource}
+ */
+var LocalStorageTileSource = function (debug) {
+    TileSource.call(this, debug);
+};
+
+LocalStorageTileSource.prototype.fetchTileAt = function (xTile, yTile, cb) {
+    var self = this;
+    var key = xTile + '/' + yTile;
+
+    /* cache lookup */
+    if (this.tileCollection.hasOwnProperty(key)) {
+        return cb(200, this.tileCollection[key]); //borrowing http codes
+    }
+
+    var tile = new Tile(xTile, yTile, self.tileSize);
+    this.tileCollection[key] = tile; //cache tile structure
+
+    var imageString = localStorage.getItem(key);
+    if (imageString === null) {
+        //draw gridlines, coordinates
+        if (self.debug) {
+            tile.context.lineWidth = "1";
+            tile.context.strokeStyle = "#AACCEE";
+            tile.context.rect(0, 0, self.tileSize, self.tileSize);
+            tile.context.stroke();
+            tile.context.fillText("(" + xTile + "," + yTile + ")", 10, 10);
+            tile.ready = true;
+        }
+        cb(200, tile);
+    } else {
+        var image = new Image;
+        image.onload = function () {
+            tile.context.drawImage(image, 0, 0);
+            tile.ready = true; //can't even remember what this is for
+            cb(200, tile);
+        };
+        image.src = imageString;
+    }
+};
+
+LocalStorageTileSource.prototype.saveTileAt = function (xTile, yTile, tileCanvas, cb) {
+    var key = xTile + '/' + yTile;
+    try {
+        localStorage.setItem(key, tileCanvas.toDataURL());
+        cb(201);
+    } catch (Exception) {
+        cb(507); //507 Insufficient Storage
+    }
 };
