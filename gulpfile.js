@@ -4,7 +4,7 @@ var minifyCss = require('gulp-minify-css');
 var eslint = require('gulp-eslint');
 
 gulp.task('uglifyjs', function () {
-    return gulp.src('public/js/canvaspaint.js')
+    return gulp.src('public/js/*.js')
             .pipe(uglify())
             .pipe(gulp.dest('dist/js'));
 });

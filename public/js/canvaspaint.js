@@ -18,7 +18,6 @@ $(document).ready(function () {
     var canvas = document.getElementById("paper");
     canvas.width = window.innerWidth + tileSize * 2;
     canvas.height = window.innerHeight + tileSize * 2;
-    window.credsyo = "";
     var ctx = canvas.getContext('2d');
     /** Screen ratio is 2 for hdpi/retina displays */
     var ratio = 1;
@@ -28,12 +27,6 @@ $(document).ready(function () {
      * @type type
      */
     var clientStates = {};
-    /**
-     * Tile memory cache. Maps tile key and Tile objects
-     * @type type
-     */
-    var tileCollection = {};
-
     /**
      * The visible region to draw on screen.
      * @type Extent
@@ -165,71 +158,23 @@ $(document).ready(function () {
         updateToolState();
     }, 1000 * 20);
 
+    var tileSource = new RestTileSource('', true);
 
-    //TODO: optimise and re-factor
-    function loadTileAt(x, y, cb) {
-        var key = x + '/' + y;
-        var endpoint = '/canvases/main/1/' + key;
-
-        if (tileCollection.hasOwnProperty(key)) {
-            return cb(tileCollection[key]);
+    /**
+     * Callback for when source comes back with a tile or error
+     * @param {Number} code follows HTTP error code semantics
+     * @param {Tile} tile Tile object returned.
+     * @returns {undefined}
+     */
+    function drawTile(code, tile) {
+        if (code === 200) {
+            var destinationX = (tile.x * tileSize) - client.offsetX;
+            var destinationY = (tile.y * tileSize) - client.offsetY;
+            ctx.drawImage(tile.canvas, 0, 0, tileSize, tileSize, destinationX, destinationY, tileSize, tileSize);
+        } else if (code === 416) {
+            ctx.drawImage(tile.canvas, 0, 0, tileSize, tileSize, destinationX, destinationY, tileSize, tileSize);
+            notify("Tile Fetch Error", "Have you gone too far out?", "error");
         }
-
-        var tile = document.createElement("canvas");
-        tile.width = tileSize;
-        tile.height = tileSize;
-        var tCtx = tile.getContext('2d');
-
-        var oReq = new XMLHttpRequest();
-        oReq.responseType = "blob";
-        oReq.open("GET", endpoint, true);
-        var tileStruct = {
-            canvas: tile,
-            dirty: false,
-            x: x,
-            y: y,
-            ready: false
-        };
-
-        tileCollection[key] = tileStruct; //cache tile
-
-        oReq.onload = function (evt) {
-            if (evt.target.status === 200) {
-                var imgData = evt.target.response;
-                var img = new Image();
-                img.onload = function () {
-                    tCtx.drawImage(img, 0, 0);
-                    tileStruct.ready = true;
-                    cb(tileStruct);
-                };
-                img.src = window.URL.createObjectURL(imgData); //file api experimental
-
-
-            } else if (evt.target.status === 204) {
-                if (debug) {
-                    tCtx.lineWidth = "1";
-                    tCtx.strokeStyle = "#AACCEE";
-                    tCtx.rect(0, 0, tileSize, tileSize);
-                    tCtx.stroke();
-                    tCtx.fillText("(" + x + "," + y + ")", 10, 10);
-                    tileStruct.ready = true;
-                    cb(tileStruct);
-                }
-            } else if (evt.target.status === 416) {
-                tCtx.fillStyle = "#0F0";
-                tCtx.fillRect(0, 0, tileSize, tileSize);
-                notify("Tile Fetch Error", "Have you gone too far?", "error");
-            }
-        };
-        if (!tileStruct.ready) {
-            oReq.send();
-        }
-    }
-
-    function drawTile(tile) {
-        var destinationX = (tile.x * tileSize) - client.offsetX;
-        var destinationY = (tile.y * tileSize) - client.offsetY;
-        ctx.drawImage(tile.canvas, 0, 0, tileSize, tileSize, destinationX, destinationY, tileSize, tileSize);
     }
 
     function drawTiles() {
@@ -239,7 +184,7 @@ $(document).ready(function () {
             for (x = client.offsetX; x < client.offsetX + extent.width + tileSize * 2; x += tileSize) {
                 xTile = Math.floor(x / tileSize);
                 yTile = Math.floor(y / tileSize);
-                loadTileAt(xTile, yTile, drawTile);
+                tileSource.fetchTileAt(xTile, yTile, drawTile);
             }
         }
     }
@@ -379,43 +324,10 @@ $(document).ready(function () {
         }
     });
 
-    //http://stackoverflow.com/questions/16245767/creating-a-blob-from-a-base64-string-in-javascript
-    function b64toBlob(b64Data, contentType, sliceSize) {
-        contentType = contentType || '';
-        sliceSize = sliceSize || 512;
-        var byteCharacters = atob(b64Data);
-        var byteArrays = [], offset, slice, byteNumbers, i, byteArray;
-        for (offset = 0; offset < byteCharacters.length; offset += sliceSize) {
-            slice = byteCharacters.slice(offset, offset + sliceSize);
-            byteNumbers = [slice.length]; //new array
-            for (i = 0; i < slice.length; i += 1) {
-                byteNumbers[i] = slice.charCodeAt(i);
-            }
-            byteArray = new Uint8Array(byteNumbers);
-            byteArrays.push(byteArray);
-        }
-
-        var blob = new Blob(byteArrays, {type: contentType});
-        return blob;
-    }
-
-    /**
-     * Save tile out over HTTP REST api.
-     * @param {Number} x Tile coordinate
-     * @param {Number} y Tile coordinate
-     * @param {HTMLCanvasElement} tileCanvas Tile image to save
-     * @returns {undefined}
-     */
     var saveTileAt = function (x, y, tileCanvas) {
         var key = x + '/' + y;
-        var tileString = tileCanvas.toDataURL();
-        var endpoint = '/canvases/main/1/' + key;
-        //post tile at coordinate:
-        var blob = b64toBlob(tileString.substr(22), 'image/png');
-        var oReq = new XMLHttpRequest();
-        oReq.onload = function (res) {
-            var xhr = res.target;
-            switch (xhr.status) {
+        tileSource.saveTileAt(x, y, tileCanvas, function (err) {
+            switch (err) {
                 case 201:
                     break;
                 case 413:
@@ -431,46 +343,24 @@ $(document).ready(function () {
                     notify("Error 404", "Server playing up?", "error");
                     break;
                 case 403:
-                    notify("Protected Region", "This region is protected. (" + key + ") Move over a bit!", "error");
-                    delete tileCollection[key];
+                    notify("Protected Region", "This region is protected. (" + x + ", " + y + ") Move over a bit!", "error");
+                    delete tileSource.tileCollection[key];
                     drawTiles();
                     break;
                 case 500:
                     notify("Error 500", "Server isn't feeling well right now.", "error");
                     break;
                 default:
-                    notify("Hmm", "Unhandled status code " + xhr.status + " for tile " + x + ", " + y, "error");
+                    notify("Hmm", "Unhandled status code " + err + " for tile " + x + ", " + y, "error");
                     break;
             }
-        };
-        oReq.open("PUT", endpoint, true);
-        oReq.send(blob);
-    };
-
-    var protectTileAt = function (xTile, yTile) {
-        var endpoint = '/canvases/main/1/' + xTile + '/' + yTile;
-        var oReq = new XMLHttpRequest();
-        oReq.onload = function (res) {
-            var xhr = res.target;
-            switch (xhr.status) {
-                case 200:
-                    notify("Done", "tile (" + xTile + ", " + yTile + ") got the patch of approval", 'info');
-                    break;
-                case 401:
-                    notify("Wand Error", "There is no such thing as magic.");
-                    break;
-            }
-        };
-
-        oReq.open("PATCH", endpoint, true);
-        oReq.setRequestHeader("Content-Type", "application/json");
-        oReq.send(JSON.stringify({creds: window.credsyo}));
+        });
     };
 
     var updateDirtyTiles = _.throttle(function () {
-        Object.keys(tileCollection).forEach(function (tileKey) {
-            if (tileCollection[tileKey].dirty) {
-                var tile = tileCollection[tileKey];
+        Object.keys(tileSource.tileCollection).forEach(function (tileKey) {
+            if (tileSource.tileCollection[tileKey].dirty) {
+                var tile = tileSource.tileCollection[tileKey];
                 //find it onscreen
                 var posx = tile.x * tileSize - client.offsetX;
                 var posy = tile.y * tileSize - client.offsetY;
@@ -480,8 +370,8 @@ $(document).ready(function () {
                 var oCtx = ofc.getContext('2d');
                 oCtx.drawImage(canvas, posx, posy, tileSize, tileSize, 0, 0, tileSize, tileSize);
                 //swap
-                tileCollection[tileKey].canvas = ofc;
-                tileCollection[tileKey].dirty = false;
+                tileSource.tileCollection[tileKey].canvas = ofc;
+                tileSource.tileCollection[tileKey].dirty = false;
                 //post tile to persistance layer
                 if (tile.filthy) {
                     saveTileAt(tile.x, tile.y, ofc);
@@ -497,14 +387,14 @@ $(document).ready(function () {
      * @returns {undefined}
      */
     function clearTileCache() {
-        Object.keys(tileCollection).forEach(function (tileKey) {
-            var tile = tileCollection[tileKey];
+        Object.keys(tileSource.tileCollection).forEach(function (tileKey) {
+            var tile = tileSource.tileCollection[tileKey];
             var xMin = Math.floor((client.offsetX - tileSize) / tileSize);
             var xMax = Math.floor((client.offsetX + tileSize + extent.width) / tileSize) + 1;
             var yMin = Math.floor((client.offsetY - tileSize) / tileSize);
             var yMax = Math.floor((client.offsetY + tileSize + extent.height) / tileSize) + 1;
             if (tile.x < xMin - 1 || tile.x > xMax || tile.y < yMin - 1 || tile.y > yMax) {
-                delete tileCollection[tileKey];
+                delete tileSource.tileCollection[tileKey];
             }
         });
     }
@@ -607,7 +497,7 @@ $(document).ready(function () {
                 var tileX = Math.floor((x + client.offsetX) / tileSize);
                 var tileY = Math.floor((y + client.offsetY) / tileSize);
                 var key = tileX + '/' + tileY;
-                tileCollection[key].dirty = true;
+                tileSource.tileCollection[key].dirty = true;
                 updateDirtyTiles();
             }
 
@@ -909,7 +799,7 @@ $(document).ready(function () {
         if (client.m1Down && client.state.tool === 'wand') {
             var tileX = Math.floor((client.x + client.offsetX) / tileSize);
             var tileY = Math.floor((client.y + client.offsetY) / tileSize);
-            protectTileAt(tileX, tileY);
+            //protectTileAt(tileX, tileY); redo
         } else if (client.m1Down && client.state.tool === 'eyedropper') {
             updatePixelColor(client.x, client.y);
         }
@@ -980,8 +870,9 @@ $(document).ready(function () {
                 tileX = Math.floor((x + client.offsetX + i) / tileSize);
                 tileY = Math.floor((y + client.offsetY + i) / tileSize);
                 key = tileX + '/' + tileY;
-                tileCollection[key].dirty = true; //indicate an ofscreen tile needs to be re-fetched from the master canvas
-                tileCollection[key].filthy = true; //indicate that this tile needs saving
+                //TODO: encapsulate this
+                tileSource.tileCollection[key].dirty = true; //indicate an ofscreen tile needs to be re-fetched from the master canvas
+                tileSource.tileCollection[key].filthy = true; //indicate that this tile needs saving
             }
             //update 'last' position values for next draw call
             client.x = x;
