@@ -35,7 +35,7 @@ $(document).ready(function () {
         width: window.innerWidth * ratio,
         height: window.innerHeight * ratio
     };
-    
+
     /**
      * Adapter to persist the tiles!
      * @type RestTileSource
@@ -58,7 +58,9 @@ $(document).ready(function () {
         y: 0,
         m1Down: false,
         offsetX: 0,
-        offsetY: 0
+        offsetY: 0,
+        points: [],
+        pointCount: 0
     };
 
     var notify = _.debounce(function (title, message, type) {
@@ -94,6 +96,37 @@ $(document).ready(function () {
         ctx.lineTo(tox, toy);
         ctx.stroke();
         ctx.closePath();
+    }
+
+    function drawSketchy(remoteClient, x, y, colorString) {
+        var i, dx, dy, d;
+        //push past points to client
+        var points = remoteClient.points;
+        
+        //store the
+        points.push([x + client.offsetX, y + client.offsetY]);
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = colorString;
+        ctx.beginPath();
+        ctx.moveTo(remoteClient.x, remoteClient.y); //prev
+        ctx.lineTo(x, y); //latest
+        ctx.stroke();
+        var pointCount = remoteClient.pointCount;
+        var threshold = 4000;
+        //credit to mrdoob's 'harmony' drawing page.
+        for (i = 0; i < points.length; i++) {
+            dx = points[i][0] - points[pointCount][0];
+            dy = points[i][1] - points[pointCount][1];
+            d = dx * dx + dy * dy;
+
+            if (d < threshold && Math.random() > (d / threshold)) {
+                ctx.beginPath();
+                ctx.moveTo(points[pointCount][0] + (dx * 0.3) - client.offsetX, points[pointCount][1] + (dy * 0.3) - client.offsetY);
+                ctx.lineTo(points[i][0] - (dx * 0.3) - client.offsetX, points[i][1] - (dy * 0.3) - client.offsetY);
+                ctx.stroke();
+            }
+        }
+        remoteClient.pointCount++;
     }
 
     function hexToRgb(hex) {
@@ -206,7 +239,9 @@ $(document).ready(function () {
         var cs = "rgba(" + c.r + "," + c.g + "," + c.b + "," + state.opacity + ")";
 
         if (state.tool === 'line') {
-            drawLine(ctx, remoteClient.x, remoteClient.y, x, y, cs, state.size);
+            //drawLine(ctx, remoteClient.x, remoteClient.y, x, y, cs, state.size);
+            var ss = "rgba(" + c.r + "," + c.g + "," + c.b + "," + 0.1 + ")";
+            drawSketchy(remoteClient, x, y, ss);
         } else if (state.tool === 'brush') {
             //drawCircle(ctx, x, y, cs, state.size / 2);
             drawBrush(ctx, remoteClient.x, remoteClient.y, x, y, cs, state.size);
@@ -447,7 +482,11 @@ $(document).ready(function () {
             x: 0,
             y: 0,
             updated: $.now(),
-            offset: {x: 0, y: 0}
+            offset: {x: 0, y: 0},
+            points: [],
+            pointCount: 0,
+            offsetX: 0,
+            offsetY: 0
         };
     }
     socket.on('connect', function () {
@@ -471,6 +510,11 @@ $(document).ready(function () {
             clientStates[key].updated = $.now();
             clientStates[key].x = 0;
             clientStates[key].y = 0;
+            clientStates[key].points = [];
+            clientStates[key].pointCount = 0;
+            clientStates[key].offsetX = 0;
+            clientStates[key].offsetY = 0;
+            
         });
     });
 
@@ -531,8 +575,8 @@ $(document).ready(function () {
         if (!clientStates.hasOwnProperty(packet.id)) {
             addClient(packet);
         }
-        clientStates[packet.id].state.offsetX = packet.offsetX;
-        clientStates[packet.id].state.offsetY = packet.offsetY;
+        clientStates[packet.id].offsetX = packet.offsetX;
+        clientStates[packet.id].offsetY = packet.offsetY;
         clientStates[packet.id].updated = $.now();
     });
 
@@ -621,8 +665,8 @@ $(document).ready(function () {
             this.$el.find('.users').empty();
             //fill table of users
             Object.keys(clientStates).forEach(function (key) {
-                var x = clientStates[key].state.offsetX;
-                var y = clientStates[key].state.offsetY;
+                var x = clientStates[key].offsetX;
+                var y = clientStates[key].offsetY;
                 var text = "<li><a href='/" + x + "/" + y + "'>" + "User" + "</a> (" + x + ", " + y + ")</li>";
                 this.$el.find('.users').append(text);
             }, this);
