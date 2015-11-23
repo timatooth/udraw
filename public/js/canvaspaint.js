@@ -1,6 +1,6 @@
 /*
  udraw
- 
+
  (c) 2015 Tim Sullivan
  udraw may be freely distributed under the MIT license.
  For all details and documentation: github.com/timatooth/udraw
@@ -102,7 +102,7 @@ $(document).ready(function () {
         var i, dx, dy, d;
         //push past points to client
         var points = remoteClient.points;
-        
+
         //store the
         points.push([x + client.offsetX, y + client.offsetY]);
         ctx.lineWidth = 1;
@@ -288,7 +288,7 @@ $(document).ready(function () {
     }, 500);
 
     /**
-     * Handle Screen panning. 
+     * Handle Screen panning.
      * Updtes current offset and redraws the screen
      * @param {Object} client
      * @param {Number} x
@@ -425,7 +425,7 @@ $(document).ready(function () {
     }, 400);
 
     /**
-     * Called every 5s. Removes tiles from memory which are more than 
+     * Called every 5s. Removes tiles from memory which are more than
      * a tile away to prevent stale tiles around. Not ideal.
      * @returns {undefined}
      */
@@ -514,7 +514,7 @@ $(document).ready(function () {
             clientStates[key].pointCount = 0;
             clientStates[key].offsetX = 0;
             clientStates[key].offsetY = 0;
-            
+
         });
     });
 
@@ -591,7 +591,7 @@ $(document).ready(function () {
     }, 1000);
 
     /**
-     * Resizes the canvas when the window is resized. Debounced to only 
+     * Resizes the canvas when the window is resized. Debounced to only
      * call every 500ms.
      * @type {function}
      */

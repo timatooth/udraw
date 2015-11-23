@@ -153,6 +153,9 @@ RestTileSource.prototype.saveTileAt = function (xTile, yTile, tileCanvas, cb) {
         cb(xhr.status);
     };
     putRequest.open("PUT", endpoint, true);
+    //Edge needs to explicityly set request Content-Type otherwise it sends text/plain
+    putRequest.setRequestHeader('Content-Type', 'image/png');
+    putRequest.responseType = 'blob';
     putRequest.send(blob);
 };
 

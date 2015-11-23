@@ -1,6 +1,6 @@
 /*
  udraw
- 
+
  (c) 2015 Tim Sullivan
  udraw may be freely distributed under the MIT license.
  For all details and documentation: github.com/timatooth/udraw
@@ -34,7 +34,7 @@ io.adapter(adapter(redis.createClient({host: host, port: redisPort})));
 
 app.set('trust proxy', 'loopback');
 app.set('x-powered-by', false);
-app.set('etag', 'strong');
+//app.set('etag', 'strong'); //need to revisit this. Edge caches too aggressively
 
 var putLimiter = rateLimit({
     /* config */
