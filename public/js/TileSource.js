@@ -212,3 +212,8 @@ LocalStorageTileSource.prototype.saveTileAt = function (xTile, yTile, tileCanvas
         cb(507); //507 Insufficient Storage
     }
 };
+
+TileSource.LocalStorageTileSource = LocalStorageTileSource;
+TileSource.RestTileSource = RestTileSource;
+
+module.exports = TileSource;

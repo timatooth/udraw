@@ -1,4 +1,4 @@
-/* 
+/*
     Created on : Oct 10, 2015, 5:55:35 PM
     Author     : tim
 */
@@ -10,7 +10,7 @@ html, body {
     font-family: 'Helvetica Neue', 'Helvetica', 'Open Sans', sans-serif;
     overflow: hidden;
     background-color: #EFEDE0;
-    background-image: url('/static/images/seamlesspaper.jpg');
+    background-image: url('../images/seamlesspaper.jpg');
     background-repeat: repeat;
 }
 #paper {
@@ -20,7 +20,7 @@ html, body {
 }
 
 /* @2x Offset */
-@media 
+@media
 only screen and (-webkit-min-device-pixel-ratio: 2),
 only screen and (min--moz-device-pixel-ratio: 2),
 only screen and (min-device-pixel-ratio: 2),
@@ -33,7 +33,7 @@ only screen and (min-resolution: 2dppx) {
 }
 
 /* @3x Offset. Untested */
-@media 
+@media
 only screen and (-webkit-min-device-pixel-ratio: 3),
 only screen and (min--moz-device-pixel-ratio: 3),
 only screen and (min-device-pixel-ratio: 3),
@@ -118,7 +118,7 @@ body:fullscreen {
 
 #colorbutton {
     color: rgba(0, 0, 0, 0.6);
-    font-size: 4em; 
+    font-size: 4em;
 }
 
 .panel {

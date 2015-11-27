@@ -42,11 +42,7 @@ var putLimiter = rateLimit({
     max: 150
 });
 
-var staticDir = '/dist';
-if (process.argv.length > 2) {
-    console.warn("Serving dev files!");
-    staticDir = '/public';
-}
+var staticDir = '/static';
 
 //Express Middleware
 app.use('/static', express.static(__dirname + staticDir));
