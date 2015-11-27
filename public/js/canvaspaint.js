@@ -9,6 +9,22 @@
 /*eslint-env browser */
 /* global $, Backbone, io, _, PNotify, FastClick */
 
+var $ = require('jquery'); //not for much longer -.-
+var _ = require('underscore');
+var Backbone = require('backbone'); //borrowed time
+var io = require('socket.io-client');
+var spectrum = require('spectrum-colorpicker'); //hmm
+var TileSource = require('./TileSource').RestTileSource;
+
+//not ready to use webpack for other assets yet. just JS for now.
+//stylininup ugh loaders
+// require("../css/spectrum.css");
+// require("../css/font-awesome.css");
+// require("../css/ion-icons.css");
+// require("../css/style.css");
+
+
+
 $(document).ready(function () {
     'use strict';
     var tileSize = 256;
@@ -36,12 +52,8 @@ $(document).ready(function () {
         height: window.innerHeight * ratio
     };
 
-    /**
-     * Adapter to persist the tiles!
-     * @type RestTileSource
-     */
-    var tileSource = new RestTileSource('', debug);
-    //var tileSource = new LocalStorageTileSource(debug);
+
+    var tileSource = new TileSource('', debug);
 
     /**
      * Hold all information about the state of the local client
@@ -64,6 +76,7 @@ $(document).ready(function () {
     };
 
     var notify = _.debounce(function (title, message, type) {
+      /*
         return new PNotify({
             title: title,
             text: message,
@@ -72,13 +85,10 @@ $(document).ready(function () {
                 nonblock_opacity: 0.1
             },
             type: type
-        });
+        }); */
     }, 500);
 
-    /**
-     * Is the app being displayed in an <iframe>
-     * @returns {Boolean}
-     */
+
     function inIframe() {
         try {
             return window.self !== window.top;
@@ -1008,7 +1018,7 @@ $(document).ready(function () {
         $("#paper").focus(); // key events in canvas
 
         //mobile fast touching
-        FastClick.attach(document.body);
+        //FastClick.attach(document.body);
     }
 
     //loading UI

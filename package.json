@@ -19,19 +19,25 @@
   "author": "Tim Sullivan",
   "license": "MIT",
   "dependencies": {
+    "backbone": "^1.2.3",
     "body-parser": "^1.14.1",
     "ejs": "^2.3.4",
     "express": "^4.13.3",
     "express-rate-limit": "^2.0.2",
+    "jquery": "^2.1.4",
     "morgan": "^1.6.1",
     "redis": "^2.2.3",
     "socket.io": "^1.3.7",
-    "socket.io-redis": "^0.1.4"
+    "socket.io-client": "^1.3.7",
+    "socket.io-redis": "^0.1.4",
+    "spectrum-colorpicker": "^1.7.1",
+    "underscore": "^1.8.3"
   },
   "devDependencies": {
     "gulp": "^3.9.0",
-    "gulp-eslint": "^1.1.0",
     "gulp-minify-css": "^1.2.1",
-    "gulp-uglify": "^1.4.2"
+    "gulp-util": "^3.0.7",
+    "uglify-loader": "^1.3.0",
+    "webpack": "^1.12.8"
   }
 }
