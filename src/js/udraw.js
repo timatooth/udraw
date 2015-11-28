@@ -230,6 +230,12 @@ $(document).ready(function () {
         client.offsetX += dx;
         client.offsetY += dy;
         requestAnimationFrame(drawTiles);
+
+        if ((window.history && history.pushState)) {
+            updateUrl("/" + client.offsetX + "/" + client.offsetY);
+        }
+
+        $('#offset-label').text(client.offsetX + ',' + client.offsetY);
     }
 
     function processDrawAction(remoteClient, x, y) {
@@ -297,16 +303,9 @@ $(document).ready(function () {
     function processMoveAction(client, x, y) {
         var dx = client.x - x;
         var dy = client.y - y;
-        client.offsetX = client.offsetX + dx;
-        client.offsetY = client.offsetY + dy;
-        $('#offset-label').text(client.offsetX + ',' + client.offsetY);
-        requestAnimationFrame(drawTiles);
+        panScreen(dx, dy);
         client.x = x;
         client.y = y;
-        if ((window.history && history.pushState)) {
-            updateUrl("/" + client.offsetX + "/" + client.offsetY);
-        }
-
     }
 
     /**
