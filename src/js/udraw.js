@@ -6,9 +6,6 @@
  For all details and documentation: github.com/timatooth/udraw
  */
 
-/*eslint-env browser */
-/* global $, Backbone, io, _, PNotify, FastClick */
-
 var $ = require('jquery'); //not for much longer -.-
 var _ = require('underscore');
 var Backbone = require('backbone'); //borrowed time
@@ -232,7 +229,7 @@ $(document).ready(function () {
     function panScreen(dx, dy) {
         client.offsetX += dx;
         client.offsetY += dy;
-        drawTiles();
+        requestAnimationFrame(drawTiles);
     }
 
     function processDrawAction(remoteClient, x, y) {
@@ -845,7 +842,7 @@ $(document).ready(function () {
             } else {
                 client.m1Down = true;
             }
-            client.x = evt.offsetX * ratio; // CHECKME: maybe factor hdpi here too
+            client.x = evt.offsetX * ratio;
             client.y = evt.offsetY * ratio;
         }
 
@@ -896,22 +893,28 @@ $(document).ready(function () {
 
     /**
      * When the mouse moves process draw actions or movement.
-     * This could do with a re-write, cyclic complexity < 15
+     * This could do with a re-write, Cyclomatic complexity < 15
      * @param {jQuery} evt Incoming event
      */
     $(canvas).on('mousemove touchmove', function (evt) {
         var moveMessage;
         var x, y;
+        var touchPanning = false; //flag for mobile devices panning
         if (evt.type === "touchmove") {
             evt.preventDefault();
             x = evt.originalEvent.touches[0].clientX * ratio + tileSize;
             y = evt.originalEvent.touches[0].clientY * ratio + tileSize;
+            //ios sets the number of touches 2 for panning
+            if (evt.originalEvent.touches.length > 1 ) {
+                touchPanning = true;
+            }
         } else {
             x = evt.offsetX * ratio;
             y = evt.offsetY * ratio;
         }
 
-        if (client.m1Down && client.state.tool !== 'move' && client.state.tool !== 'wand' && client.state.tool !== 'eyedropper') {
+        //far out. that logic...
+        if (client.m1Down && client.state.tool !== 'move' && client.state.tool !== 'wand' && client.state.tool !== 'eyedropper' && !touchPanning) {
             processDrawAction(client, x, y);
             var shadow = 0;
             if (client.state.tool === 'brush') {
@@ -924,7 +927,7 @@ $(document).ready(function () {
                 tileX = Math.floor((x + client.offsetX + i) / tileSize);
                 tileY = Math.floor((y + client.offsetY + i) / tileSize);
                 key = tileX + '/' + tileY;
-                //TODO: encapsulate this
+
                 tileSource.tileCollection[key].dirty = true; //indicate an ofscreen tile needs to be re-fetched from the master canvas
                 tileSource.tileCollection[key].filthy = true; //indicate that this tile needs saving
             }
@@ -941,7 +944,7 @@ $(document).ready(function () {
                 socket.emit('move', moveMessage);
                 lastEmit = $.now();
             }
-        } else if (client.m3Down || (client.m1Down && client.state.tool === 'move')) {
+        } else if (client.m3Down || (client.m1Down && client.state.tool === 'move') || touchPanning) {
             processMoveAction(client, x, y);
             if ($.now() - lastEmit > 60) { //only send pan message every 60ms
                 moveMessage = {
@@ -966,6 +969,12 @@ $(document).ready(function () {
             }
         }
 
+    });
+
+    $(canvas).on('wheel mousewheel', function(evt){
+        //chrome, FF use wheel, safari uses mousewheel
+        evt.preventDefault(); //stop browser going back/forward.
+        panScreen(Math.floor(evt.originalEvent.deltaX), Math.floor(evt.originalEvent.deltaY));
     });
 
     /**

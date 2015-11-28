@@ -37,4 +37,9 @@ gulp.task('minify-css', function () {
     .pipe(gulp.dest('static/css'));
 });
 
+gulp.task('watch', function(){
+    gulp.watch('src/js/*.js', ['webpack']);
+    gulp.watch('src/css/*.css', ['minify-css']);
+})
+
 gulp.task('default', ['webpack', 'copystatic', 'minify-css']);
