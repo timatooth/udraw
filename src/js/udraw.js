@@ -1,6 +1,6 @@
 /*
  udraw
-
+ 
  (c) 2015 Tim Sullivan
  udraw may be freely distributed under the MIT license.
  For all details and documentation: github.com/timatooth/udraw
@@ -65,16 +65,16 @@ $(document).ready(function () {
     };
 
     var notify = _.debounce(function (title, message, type) {
-      /*
-        return new PNotify({
-            title: title,
-            text: message,
-            nonblock: {
-                nonblock: true,
-                nonblock_opacity: 0.1
-            },
-            type: type
-        }); */
+        /*
+         return new PNotify({
+         title: title,
+         text: message,
+         nonblock: {
+         nonblock: true,
+         nonblock_opacity: 0.1
+         },
+         type: type
+         }); */
     }, 500);
 
 
@@ -236,6 +236,16 @@ $(document).ready(function () {
         }
 
         $('#offset-label').text(client.offsetX + ',' + client.offsetY);
+
+        if ($.now() - lastEmit > 60) { //only send pan message every 60ms
+            var moveMessage = {
+                offsetX: client.offsetX,
+                offsetY: client.offsetY
+            };
+
+            socket.emit('pan', moveMessage);
+            lastEmit = $.now();
+        }
     }
 
     function processDrawAction(remoteClient, x, y) {
@@ -904,7 +914,7 @@ $(document).ready(function () {
             x = evt.originalEvent.touches[0].clientX * ratio + tileSize;
             y = evt.originalEvent.touches[0].clientY * ratio + tileSize;
             //ios sets the number of touches 2 for panning
-            if (evt.originalEvent.touches.length > 1 ) {
+            if (evt.originalEvent.touches.length > 1) {
                 touchPanning = true;
             }
         } else {
@@ -945,14 +955,6 @@ $(document).ready(function () {
             }
         } else if (client.m3Down || (client.m1Down && client.state.tool === 'move') || touchPanning) {
             processMoveAction(client, x, y);
-            if ($.now() - lastEmit > 60) { //only send pan message every 60ms
-                moveMessage = {
-                    offsetX: client.offsetX,
-                    offsetY: client.offsetY
-                };
-                socket.emit('pan', moveMessage);
-                lastEmit = $.now();
-            }
         } else if (client.m1Down && client.state.tool === 'eyedropper') {
             updatePixelColor(x, y);
         } else {
@@ -970,7 +972,7 @@ $(document).ready(function () {
 
     });
 
-    $(canvas).on('wheel mousewheel', function(evt){
+    $(canvas).on('wheel mousewheel', function (evt) {
         //chrome, FF use wheel, safari uses mousewheel
         evt.preventDefault(); //stop browser going back/forward.
         panScreen(Math.floor(evt.originalEvent.deltaX), Math.floor(evt.originalEvent.deltaY));
