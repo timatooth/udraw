@@ -2,6 +2,7 @@ var gulp = require('gulp');
 var gutil = require('gulp-util');
 var webpack = require('webpack');
 var minifyCss = require('gulp-minify-css');
+var concat = require('gulp-concat');
 
 var webpackConfig = require("./webpack.config");
 
@@ -25,9 +26,15 @@ gulp.task('copystatic', function () {
 });
 
 gulp.task('minify-css', function () {
-    return gulp.src('public/css/*.css')
-            .pipe(minifyCss())
-            .pipe(gulp.dest('static/css'));
+    return gulp.src([
+        'public/css/font-awesome.css',
+        'public/css/ionicons.css',
+        'public/css/spectrum.css',
+        'public/css/style.css'
+    ])
+    .pipe(concat('bundle.css'))
+    .pipe(minifyCss())
+    .pipe(gulp.dest('static/css'));
 });
 
 gulp.task('default', ['webpack', 'copystatic', 'minify-css']);

@@ -13,17 +13,9 @@ var $ = require('jquery'); //not for much longer -.-
 var _ = require('underscore');
 var Backbone = require('backbone'); //borrowed time
 var io = require('socket.io-client');
-var spectrum = require('spectrum-colorpicker'); //hmm
+var spectrum = require('spectrum-colorpicker');
+var FastClick = require('fastclick');
 var TileSource = require('./TileSource').RestTileSource;
-
-//not ready to use webpack for other assets yet. just JS for now.
-//stylininup ugh loaders
-// require("../css/spectrum.css");
-// require("../css/font-awesome.css");
-// require("../css/ion-icons.css");
-// require("../css/style.css");
-
-
 
 $(document).ready(function () {
     'use strict';
@@ -1018,7 +1010,7 @@ $(document).ready(function () {
         $("#paper").focus(); // key events in canvas
 
         //mobile fast touching
-        //FastClick.attach(document.body);
+        FastClick.attach(document.body);
     }
 
     //loading UI
