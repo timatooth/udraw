@@ -1,7 +1,7 @@
 var path = require('path');
 
 module.exports = {
-    entry: "./public/js/canvaspaint.js",
+    entry: "./src/js/udraw.js",
     output: {
         filename: "bundle.js",
         path: path.join(__dirname, 'static'),

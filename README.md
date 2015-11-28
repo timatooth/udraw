@@ -1,21 +1,23 @@
 # udraw
-_udraw_ is a multiplayer drawing application like many other drawing apps out there which have surfaced since WebSockets. Mine happens to expand in size allowing very large drawings on an (unlimited?) sized surface. Each area of the canvas is broken into 256x256 pixel tiles which are drawn on a single HTML5 canvas seamlessly to make drawing on a large canvas possible. 
+
+_udraw_ is a multiplayer drawing application which expands in size allowing very large drawings on an (unlimited?) sized surface. Each area of the canvas is broken into 256x256 pixel tiles which are drawn on a single HTML5 canvas seamlessly.
 ### Demo
 A live demo is available at [https://udraw.me](https://udraw.me)
 
 #### Features
-- Color picker, eyedropper, Retina support
+- Live mouse movement
+- Color picker, eyedropper, Retina support, Sketchy pencil (based off mrdoobs 'harmony' app)
 - WASD, Arrow keys and Middle Mouse Button pan around
 - Shortcuts for Brush, Line, Eyedropper etc.
 
 ## Operation
-_udraw_ uses Redis for storage of PNG tiles which are accessed via a basic RESTful API. Real time events are sent over WebSocket using Socket.IO. 
+The _udraw_ server uses Redis for storage of PNG tiles which are accessed via a basic RESTful API. Real time events are sent over WebSocket using Socket.IO.
 
-WebRTC support is the next goal for *hopefully faster* Peer-to-Peer support while Socket.IO operates for signalling and relay as fallback.
+WebRTC support is the next goal for *hopefully faster* Peer-to-Peer support while Socket.IO operates for signaling and relay as fallback.
 
 ### Requirements
- - Redis 3 server running
- - Node tested 0.10.x 4.x.x & 5.0.0
+ - Redis server running on localhost
+ - Node.js
  - Gulp (```npm install  -g gulp```)
 
 ## Build & Run
@@ -23,8 +25,8 @@ WebRTC support is the next goal for *hopefully faster* Peer-to-Peer support whil
     cd udraw
     npm install
     gulp
-    node start
-    # server listens on *:3000 and serves public folder in dev mode
+    npm start
+    # server listens on *:3000
 
 ## License
 MIT - see LICENSE file.

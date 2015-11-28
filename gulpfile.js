@@ -17,20 +17,20 @@ gulp.task('webpack', function(callback){
 })
 
 gulp.task('copystatic', function () {
-    gulp.src('public/fonts/**/')
+    gulp.src('src/fonts/**/')
             .pipe(gulp.dest('static/fonts'));
-    gulp.src('public/images/**/')
+    gulp.src('src/images/**/')
             .pipe(gulp.dest('static/images'));
-    gulp.src('index.html')
+    gulp.src('src/index.html')
             .pipe(gulp.dest('static'));
 });
 
 gulp.task('minify-css', function () {
     return gulp.src([
-        'public/css/font-awesome.css',
-        'public/css/ionicons.css',
-        'public/css/spectrum.css',
-        'public/css/style.css'
+        'src/css/font-awesome.css',
+        'src/css/ionicons.css',
+        'src/css/spectrum.css',
+        'src/css/style.css'
     ])
     .pipe(concat('bundle.css'))
     .pipe(minifyCss())

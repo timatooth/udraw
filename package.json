@@ -6,8 +6,7 @@
   "readme": "README.md",
   "repository": "https://bitbucket.org/tsullivan/node-udraw",
   "scripts": {
-    "production": "node server.js",
-    "start": "node server.js dev",
+    "start": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [

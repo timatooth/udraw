@@ -18,11 +18,14 @@ var redis = require('redis');
 var adapter = require('socket.io-redis');
 var app = express();
 var http = require('http').Server(app);
+var path = require('path');
 var io = require('socket.io')(http);
 var secure = false;
 /** Boundary limit for fetching tiles */
 var tileRadius = 300;
 var patchPass = 'meh patch pass yo';
+//location of static web files
+var staticDir = path.join(__dirname, 'static')
 
 var redisPort = 6379;
 var host = 'localhost';
@@ -42,24 +45,23 @@ var putLimiter = rateLimit({
     max: 150
 });
 
-var staticDir = '/static';
 
 //Express Middleware
-app.use('/static', express.static(__dirname + staticDir));
+app.use('/static', express.static(staticDir));
 app.use(morgan('combined'));
 app.use(bodyParser.raw({type: 'image/png', limit: '250kb'}));
 app.use(bodyParser.json({type: 'application/json', limit: '250kb'}));
 
 app.get('/', function (req, res) {
-    res.sendFile(__dirname + '/index.html');
+    res.sendFile(path.join(staticDir, 'index.html'));
 });
 
 app.get('/:x/:y', function (req, res) {
-    res.sendFile(__dirname + '/index.html');
+  res.sendFile(path.join(staticDir, 'index.html'));
 });
 
 app.get('/ogimage/:x/:y', function (req, res) {
-    res.sendFile(__dirname + '/index.html');
+    res.sendFile(path.join(staticDir, 'images/og-image.png'));
 });
 
 app.put('/canvases/:name/:zoom/:x/:y', putLimiter, function (req, res) {
