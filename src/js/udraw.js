@@ -1,7 +1,7 @@
 /*
  udraw
- 
- (c) 2015 Tim Sullivan
+
+ (c) 2015-2016 Tim Sullivan
  udraw may be freely distributed under the MIT license.
  For all details and documentation: github.com/timatooth/udraw
  */
@@ -12,6 +12,9 @@ var Backbone = require('backbone'); //borrowed time
 var io = require('socket.io-client');
 var spectrum = require('spectrum-colorpicker');
 var FastClick = require('fastclick');
+var PNotify = require('pnotify');
+require('pnotify/src/pnotify.nonblock');
+
 var TileSource = require('./TileSource').RestTileSource;
 
 $(document).ready(function () {
@@ -26,7 +29,7 @@ $(document).ready(function () {
     var ctx = canvas.getContext('2d');
     /** Screen ratio is 2 for hdpi/retina displays */
     var ratio = 1;
-    var socket = io();
+    var socket = new io("https://udraw.me");
     /**
      * Store states of other connected clients
      * @type type
@@ -42,7 +45,7 @@ $(document).ready(function () {
     };
 
 
-    var tileSource = new TileSource('', debug);
+    var tileSource = new TileSource('https://udraw.me', debug); //no trailing slash
 
     /**
      * Hold all information about the state of the local client
@@ -65,16 +68,16 @@ $(document).ready(function () {
     };
 
     var notify = _.debounce(function (title, message, type) {
-        /*
          return new PNotify({
-         title: title,
-         text: message,
-         nonblock: {
-         nonblock: true,
-         nonblock_opacity: 0.1
-         },
-         type: type
-         }); */
+             title: title,
+             addClass: 'custom',
+             text: message,
+             nonblock: {
+                 nonblock: true,
+                 nonblock_opacity: 0.1
+             },
+             type: type
+         });
     }, 500);
 
 
@@ -499,6 +502,11 @@ $(document).ready(function () {
     }
     socket.on('connect', function () {
         updateToolState();
+    });
+
+    socket.on('error', function(err){
+        console.log("socket error");
+        console.log(err);
     });
 
     socket.on('ping', function () {

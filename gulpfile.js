@@ -29,6 +29,7 @@ gulp.task('minify-css', function () {
     return gulp.src([
         'src/css/font-awesome.css',
         'src/css/ionicons.css',
+        'src/css/pnotify.brighttheme.css',
         'src/css/spectrum.css',
         'src/css/style.css'
     ])
