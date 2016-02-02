@@ -1,20 +1,29 @@
 var gulp = require('gulp');
 var gutil = require('gulp-util');
-var webpack = require('webpack');
 var minifyCss = require('gulp-minify-css');
 var concat = require('gulp-concat');
+var browserify = require('browserify');
+var source = require('vinyl-source-stream');
+var sourcemaps = require('gulp-sourcemaps');
+var buffer = require('vinyl-buffer');
+var uglify = require('gulp-uglify');
 
-var webpackConfig = require("./webpack.config");
-
-gulp.task('webpack', function(callback){
-  webpack(webpackConfig, function(err, stats) {
-        if(err) throw new gutil.PluginError("webpack", err);
-        gutil.log("[webpack]", stats.toString({
-            // output options
-        }));
-        callback();
+gulp.task('browserify', function () {
+    var bro = browserify({
+        entries: './src/js/udraw.js',
+        debug: true
     });
-})
+
+    return bro.bundle()
+            .pipe(source('./udraw.js'))
+            .pipe(buffer())
+            .pipe(sourcemaps.init({loadMaps: true}))
+            // Add transformation tasks to the pipeline here.
+            .pipe(uglify())
+            .on('error', gutil.log)
+            .pipe(sourcemaps.write('./'))
+            .pipe(gulp.dest('./static/js/'));
+});
 
 gulp.task('copystatic', function () {
     gulp.src('src/fonts/**/')
@@ -33,14 +42,14 @@ gulp.task('minify-css', function () {
         'src/css/spectrum.css',
         'src/css/style.css'
     ])
-    .pipe(concat('bundle.css'))
-    .pipe(minifyCss())
-    .pipe(gulp.dest('static/css'));
+            .pipe(concat('bundle.css'))
+            .pipe(minifyCss())
+            .pipe(gulp.dest('static/css'));
 });
 
-gulp.task('watch', function(){
-    gulp.watch('src/js/*.js', ['webpack']);
+gulp.task('watch', function () {
+    gulp.watch('src/js/*.js', ['browserify']);
     gulp.watch('src/css/*.css', ['minify-css']);
-})
+});
 
-gulp.task('default', ['webpack', 'copystatic', 'minify-css']);
+gulp.task('default', ['browserify', 'copystatic', 'minify-css']);

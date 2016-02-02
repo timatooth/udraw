@@ -21,7 +21,7 @@ $(document).ready(function () {
     'use strict';
     var tileSize = 256;
     /** shows tile boundaries and extra console output */
-    var debug = false;
+    var debug = true;
     var lastPing = $.now();
     var canvas = document.getElementById("paper");
     canvas.width = window.innerWidth + tileSize * 2;
@@ -29,7 +29,7 @@ $(document).ready(function () {
     var ctx = canvas.getContext('2d');
     /** Screen ratio is 2 for hdpi/retina displays */
     var ratio = 1;
-    var socket = new io("https://udraw.me");
+    var socket = new io();
     /**
      * Store states of other connected clients
      * @type type
@@ -45,7 +45,7 @@ $(document).ready(function () {
     };
 
 
-    var tileSource = new TileSource('https://udraw.me', debug); //no trailing slash
+    var tileSource = new TileSource('', debug); //no trailing slash
 
     /**
      * Hold all information about the state of the local client
@@ -740,20 +740,20 @@ $(document).ready(function () {
         },
         render: function () {
             this.$el.append(this.template());
-            this.$el.find('#colorbutton').spectrum({
-                color: client.state.color,
-                clickoutFiresChange: true,
-                preferredFormat: "hex3",
-                showInput: true,
-                move: function (color) {
-                    client.state.color = color.toHexString();
-                    $('#colorbutton').css({color: color.toHexString()});
-                },
-                change: function (color) {
-                    client.state.color = color.toHexString();
-                    updateToolState();
-                }
-            });
+//            this.$el.find('#colorbutton').spectrum({
+//                color: client.state.color,
+//                clickoutFiresChange: true,
+//                preferredFormat: "hex3",
+//                showInput: true,
+//                move: function (color) {
+//                    client.state.color = color.toHexString();
+//                    $('#colorbutton').css({color: color.toHexString()});
+//                },
+//                change: function (color) {
+//                    client.state.color = color.toHexString();
+//                    updateToolState();
+//                }
+//            });
             this.toolsPanel = new BrushToolsView();
             this.$el.append(this.toolsPanel.render().el);
             this.toolsPanel.$el.hide();
@@ -1028,7 +1028,7 @@ $(document).ready(function () {
         $("#paper").focus(); // key events in canvas
 
         //mobile fast touching
-        FastClick.attach(document.body);
+        //FastClick.attach(document.body);
     }
 
     //loading UI
