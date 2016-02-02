@@ -1,24 +1,21 @@
 # udraw
 
-_udraw_ is a multiplayer drawing application which expands in size allowing very large drawings on an (unlimited?) sized surface. Each area of the canvas is broken into 256x256 pixel tiles which are drawn on a single HTML5 canvas seamlessly.
+_udraw_ lets you draw and pan on a very large canvas. It uses a single HTML5 canvas which is broken up into tiles which are saved on a server. Many people can draw in the same area with WebSocket and WebRTC Peer-to-Peer connections for realtime updating.
+
 ### Demo
 A live demo is available at [https://udraw.me](https://udraw.me)
 
 #### Features
-- Live mouse movement
+- Mobile 2 finger touch gestures for panning
 - Color picker, eyedropper, Retina support, Sketchy pencil (based off mrdoobs 'harmony' app)
-- WASD, Arrow keys and Middle Mouse Button pan around
+- WASD, Arrow keys and Middle Mouse Button for pan around on PC
 - Shortcuts for Brush, Line, Eyedropper etc.
 
 ## Operation
-The _udraw_ server uses Redis for storage of PNG tiles which are accessed via a basic RESTful API. Real time events are sent over WebSocket using Socket.IO.
-
-WebRTC support is the next goal for *hopefully faster* Peer-to-Peer support while Socket.IO operates for signaling and relay as fallback.
+The _udraw_ server uses Redis for storage of PNG tiles which are accessed via a basic RESTful API. Real time events are sent over WebSocket using Socket.IO or if possible leveraging WebRTC with Socket.IO-P2P.
 
 ### Requirements
  - Redis server running on localhost
- - Node.js
- - Gulp (```npm install  -g gulp```)
 
 ## Build & Run
     git clone https://github.com/timatooth/udraw
