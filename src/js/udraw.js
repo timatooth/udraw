@@ -5,7 +5,6 @@
  udraw may be freely distributed under the MIT license.
  For all details and documentation: github.com/timatooth/udraw
  */
-
 var $ = require('jquery'); //not for much longer -.-
 var _ = require('underscore');
 var Backbone = require('backbone'); //borrowed time
@@ -101,6 +100,7 @@ $(document).ready(function () {
     }
 
     function drawSketchy(remoteClient, x, y, colorString) {
+        //console.log("sketchy..."); yo cunt!!!~~!~!ß
         var i, dx, dy, d;
         //push past points to client
         var points = remoteClient.points;
@@ -376,6 +376,7 @@ $(document).ready(function () {
     });
 
     var saveTileAt = function (x, y, tileCanvas) {
+        console.log("saving tile");
         var key = x + '/' + y;
         tileSource.saveTileAt(x, y, tileCanvas, function (err) {
             switch (err) {
@@ -391,7 +392,7 @@ $(document).ready(function () {
                     notify("Slow Down", "Drawing fast? Server rejected tile save at " + x + ", " + y + " try again shortly.", "error");
                     break;
                 case 404:
-                    notify("Error 404", "Server playing up?", "error");
+                    notify("Error 404", "Server messing up?", "error");
                     break;
                 case 403:
                     notify("Protected Region", "This region is protected. (" + x + ", " + y + ") Move over a bit!", "error");
@@ -740,20 +741,20 @@ $(document).ready(function () {
         },
         render: function () {
             this.$el.append(this.template());
-//            this.$el.find('#colorbutton').spectrum({
-//                color: client.state.color,
-//                clickoutFiresChange: true,
-//                preferredFormat: "hex3",
-//                showInput: true,
-//                move: function (color) {
-//                    client.state.color = color.toHexString();
-//                    $('#colorbutton').css({color: color.toHexString()});
-//                },
-//                change: function (color) {
-//                    client.state.color = color.toHexString();
-//                    updateToolState();
-//                }
-//            });
+            this.$el.find('#colorbutton').spectrum({
+                color: client.state.color,
+                clickoutFiresChange: true,
+                preferredFormat: "hex3",
+                showInput: true,
+                move: function (color) {
+                    client.state.color = color.toHexString();
+                    $('#colorbutton').css({color: color.toHexString()});
+                },
+                change: function (color) {
+                    client.state.color = color.toHexString();
+                    updateToolState();
+                }
+            });
             this.toolsPanel = new BrushToolsView();
             this.$el.append(this.toolsPanel.render().el);
             this.toolsPanel.$el.hide();
@@ -1028,7 +1029,7 @@ $(document).ready(function () {
         $("#paper").focus(); // key events in canvas
 
         //mobile fast touching
-        //FastClick.attach(document.body);
+        FastClick.attach(document.body);
     }
 
     //loading UI
