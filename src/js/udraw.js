@@ -20,7 +20,7 @@ $(document).ready(function () {
     'use strict';
     var tileSize = 256;
     /** shows tile boundaries and extra console output */
-    var debug = true;
+    var debug = false;
     var lastPing = $.now();
     var canvas = document.getElementById("paper");
     canvas.width = window.innerWidth + tileSize * 2;
@@ -44,7 +44,10 @@ $(document).ready(function () {
     };
 
 
-    var tileSource = new TileSource('', debug); //no trailing slash
+    var tileSource = new TileSource({
+        debug: debug,
+        //url: '' //default is /
+    });
 
     /**
      * Hold all information about the state of the local client
@@ -100,7 +103,6 @@ $(document).ready(function () {
     }
 
     function drawSketchy(remoteClient, x, y, colorString) {
-        //console.log("sketchy..."); yo cunt!!!~~!~!ß
         var i, dx, dy, d;
         //push past points to client
         var points = remoteClient.points;
@@ -376,7 +378,6 @@ $(document).ready(function () {
     });
 
     var saveTileAt = function (x, y, tileCanvas) {
-        console.log("saving tile");
         var key = x + '/' + y;
         tileSource.saveTileAt(x, y, tileCanvas, function (err) {
             switch (err) {
@@ -480,7 +481,7 @@ $(document).ready(function () {
     }
 
     /*--------------------------------------------------------
-     * Network socket event handeling section.
+     * Network socket event handling section.
      */
     function addClient(packet) {
         clientStates[packet.id] = {
@@ -994,6 +995,7 @@ $(document).ready(function () {
     function initTheBusiness() {
         if (debug) {
             localStorage.clear();
+            console.log("localStorage cleared");
         }
         var givenOffsets = parseUriArgs();
         if (givenOffsets !== null) {

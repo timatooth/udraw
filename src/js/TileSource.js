@@ -1,7 +1,8 @@
 /**
  * Tile Object
- * @param {type} x Tile coordinate
- * @param {type} y Tile coordinate
+ * @param {Number} x Tile coordinate
+ * @param {Number} y Tile coordinate
+ * @param {Number} tileSize of the tile e.g 256
  * @returns {Tile}
  */
 var Tile = function (x, y, tileSize) {
@@ -16,17 +17,22 @@ var Tile = function (x, y, tileSize) {
     this.context = tileCanvas.getContext('2d');
 };
 
-var TileSource = function (debug) {
+/**
+ *
+ * @param options {debug: false}
+ * @constructor
+ */
+var TileSource = function (options) {
     /**
      * Stores tiles in memory structure where keys are the tile coordinates seperated by '/'
      */
+    this.debug = false;
+    var self = this;
+    Object.keys(options).forEach(function(key) {
+        self[key] = options[key];
+    });
     this.tileCollection = {};
     this.tileSize = 256;
-    if (debug !== undefined && debug) {
-        this.debug = true;
-    } else {
-        this.debug = false;
-    }
 };
 
 /** TileSource 'interface' */
@@ -42,10 +48,10 @@ TileSource.prototype.saveTileAt = function () {
 
 /**
  * Helper for creating Blob objects from base64.
- * @param {type} b64Data
- * @param {type} contentType
- * @param {type} sliceSize
- * @returns {Blob|nm$_.exports|nm$_.module.exports}
+ * @param {String} b64Data
+ * @param {String} contentType
+ * @param {Number} sliceSize
+ * @returns {Blob}
  */
 var b64toBlob = function (b64Data, contentType, sliceSize) {
     contentType = contentType || '';
@@ -62,23 +68,21 @@ var b64toBlob = function (b64Data, contentType, sliceSize) {
         byteArrays.push(byteArray);
     }
 
-    var blob = new Blob(byteArrays, {type: contentType});
-    return blob;
+    return new Blob(byteArrays, {type: contentType});
 };
 
 
 /**
  * RESTful Tile Source.
- * @param {String} endpointUrl url where the rest lives without trailing slash
- * @param {Boolean} debug draw gridline coordinates on tiles
+ * @param {Object} options {url: '/', debug: false}
  * @returns {RestTileSource}
  */
-var RestTileSource = function (endpointUrl, debug) {
-    TileSource.call(this, debug);
-    if (endpointUrl === undefined) {
-        this.restEndpoint = '';
+var RestTileSource = function (options) {
+    TileSource.call(this, options);
+    if (this.url === undefined) {
+        this.url = '/';
     } else {
-        this.restEndpoint = endpointUrl;
+        this.url = endpointUrl;
     }
 };
 
@@ -90,7 +94,7 @@ RestTileSource.prototype.fetchTileAt = function (tileX, tileY, cb) {
         return cb(200, this.tileCollection[key]); //borrowing http codes
     }
 
-    var endpoint = this.restEndpoint + '/canvases/main/1/' + key;
+    var endpoint = this.url + 'canvases/main/1/' + key;
 
     var getRequest = new XMLHttpRequest();
     getRequest.responseType = "blob";
@@ -138,13 +142,12 @@ RestTileSource.prototype.fetchTileAt = function (tileX, tileY, cb) {
  * @param {Number} xTile Tile coordinate
  * @param {Number} yTile Tile coordinate
  * @param {HTMLCanvasElement} tileCanvas Tile image to save
- * @param {Function) cb takes 1 parameter with the response code.
- * @returns {undefined}
+ * @param {Function} cb takes 1 parameter with the response code.
  */
 RestTileSource.prototype.saveTileAt = function (xTile, yTile, tileCanvas, cb) {
     var key = xTile + '/' + yTile;
     var tileString = tileCanvas.toDataURL();
-    var endpoint = this.restEndpoint + '/canvases/main/1/' + key;
+    var endpoint = this.url + 'canvases/main/1/' + key;
     //post tile at coordinate:
     var blob = b64toBlob(tileString.substr(22), 'image/png');
     var putRequest = new XMLHttpRequest();
