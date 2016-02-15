@@ -47,7 +47,7 @@ var putLimiter = rateLimit({
 
 
 //Express Middleware
-app.use('/static', express.static(staticDir));
+app.use('/', express.static(staticDir));
 app.use(morgan('combined'));
 app.use(bodyParser.raw({type: 'image/png', limit: '250kb'}));
 app.use(bodyParser.json({type: 'application/json', limit: '250kb'}));

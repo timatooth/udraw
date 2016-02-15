@@ -7,7 +7,7 @@ module.exports = {
     output: {
         path: path.resolve(__dirname, "static"),
         filename: "js/udraw-bundle.js",
-        publicPath: "/assets/",
+        publicPath: "/static/",
     },
     //module: {
     //    loaders: [
