@@ -5,16 +5,21 @@
  udraw may be freely distributed under the MIT license.
  For all details and documentation: github.com/timatooth/udraw
  */
-var $ = require('jquery'); //not for much longer -.-
+var $ = require('jquery');
 var _ = require('underscore');
-var Backbone = require('backbone'); //borrowed time
+var Backbone = require('backbone');
 var io = require('socket.io-client');
 var spectrum = require('spectrum-colorpicker');
 var FastClick = require('fastclick');
 var PNotify = require('pnotify');
 require('pnotify/src/pnotify.nonblock');
 
-var TileSource = require('./TileSource').RestTileSource;
+//es6 plug
+import React from 'react';
+import ReactDOM from 'react-dom';
+import App from './App.jsx';
+
+var TileSource = require('./TileSource').LocalStorageTileSource;
 
 $(document).ready(function () {
     'use strict';
@@ -1032,6 +1037,9 @@ $(document).ready(function () {
 
         //mobile fast touching
         FastClick.attach(document.body);
+
+        console.log("loading react app...");
+        ReactDOM.render(<App />, document.getElementById('udrawapp'));
     }
 
     //loading UI
