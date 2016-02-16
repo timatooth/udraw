@@ -45,6 +45,7 @@ gulp.task('webpack', function(callback){
 //webpack dev server (run on watch)
 gulp.task("webpack-dev-server", function(callback) {
     // Start a webpack-dev-server
+    webpackConfig.entry.app.unshift("webpack-dev-server/client?http://localhost:8080"); //this makes inline mode work...
     var compiler = webpack(webpackConfig);
 
     new WebpackDevServer(compiler, {

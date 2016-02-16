@@ -1,6 +1,19 @@
 import React from 'react';
+import ColorPanel from './ColorPanel.jsx'
 
+/**
+ * The toolbar is displays all ui related to the current color status and active tool.
+ *
+ */
 export default class Toolbar extends React.Component {
+
+    constructor(){
+        super();
+        this.state = {
+            currentTool: 'line'
+        }
+    }
+
     render() {
         return (
             <div className="toolbar">
@@ -14,7 +27,8 @@ export default class Toolbar extends React.Component {
                     <div className="tool eyedropper-tool" data-name ='eyedropper' title="Color Picker!"><i className="fa fa-eyedropper"></i></div>
                 </div>
 
-                <div id="colorbutton"><i className="icon ion-ios-circle-filled"></i></div>
+                <ColorPanel />
+
                 <div className="panel-tool brush-tools" title="Brush Tools!"><i className="icon ion-ios-settings-strong"></i></div>
                 <div className="panel-tool fullscreen" title="Full Screen!"><i className="icon ion-arrow-expand"></i></div>
                 <div className="panel-tool status-info" title="Status"><i className="icon ion-ios-information-outline"></i></div>

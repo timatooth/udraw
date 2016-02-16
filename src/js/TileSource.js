@@ -26,6 +26,11 @@ var TileSource = function (options) {
     /**
      * Stores tiles in memory structure where keys are the tile coordinates seperated by '/'
      */
+
+    if(options === undefined){
+        throw "TileSource requires options object";
+    }
+
     this.debug = false;
     var self = this;
     Object.keys(options).forEach(function(key) {
