@@ -64,7 +64,6 @@ export default class DrawingCanvas extends React.Component {
 
     //tile grid loop, fetches tiles from source and calls given callback
     drawTiles() {
-        console.log("drawtiles call")
         this.ctx.clearRect(0, 0, this.state.width, this.state.height);
         var x, y, xTile, yTile;
         let tileSize = this.props.tileSize;
@@ -111,6 +110,7 @@ export default class DrawingCanvas extends React.Component {
     onMouseDown(){
         this.canvasState.offset.x += 3;
         this.drawTiles();
+        this.props.eventHub.trigger('canvas:offsetChange', this.canvasState.offset);
     }
 
     onMouseUp(){
@@ -124,7 +124,6 @@ export default class DrawingCanvas extends React.Component {
 
 
     render() {
-        console.log("render");
         return (
             <canvas
                 width={this.state.width}
@@ -137,7 +136,11 @@ export default class DrawingCanvas extends React.Component {
     }
 }
 
-DrawingCanvas.propTypes = { tileSize: React.PropTypes.number };
+DrawingCanvas.propTypes = {
+    tileSize: React.PropTypes.number,
+    eventHub: React.PropTypes.object.isRequired
+};
+
 DrawingCanvas.defaultProps = {
     tileSize: 256
 };

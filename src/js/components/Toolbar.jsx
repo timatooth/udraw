@@ -10,8 +10,14 @@ export default class Toolbar extends React.Component {
     constructor(){
         super();
         this.state = {
-            currentTool: 'line'
+            currentTool: 'line',
+            offset: {x: 0, y: 0}
         }
+    }
+
+    componentDidMount() {
+        //sync offset label
+        this.props.eventHub.on('canvas:offsetChange', (offset) => {this.setState({offset: offset})});
     }
 
     render() {
@@ -32,8 +38,12 @@ export default class Toolbar extends React.Component {
                 <div className="panel-tool brush-tools" title="Brush Tools!"><i className="icon ion-ios-settings-strong"></i></div>
                 <div className="panel-tool fullscreen" title="Full Screen!"><i className="icon ion-arrow-expand"></i></div>
                 <div className="panel-tool status-info" title="Status"><i className="icon ion-ios-information-outline"></i></div>
-                <div id="offset-label" title="offset!">0,0</div>
+                <div id="offset-label" title="offset!">{this.state.offset.x + ", " + this.state.offset.y }</div>
             </div>
         );
     }
 }
+
+Toolbar.propTypes = {
+    eventHub: React.PropTypes.object.isRequired
+};
