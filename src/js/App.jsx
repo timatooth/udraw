@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom'
 import DrawingCanvas from './components/DrawingCanvas.jsx'
 import Toolbar from './components/Toolbar.jsx'
 import EventHub from './EventHub'
+import WebSocketConnection from './net/WebSocketConnection'
 
 import css from '../sass/style.scss'
 
@@ -19,6 +20,7 @@ export default class App extends React.Component {
     constructor(){
         super();
         this.eventHub = new EventHub();
+        this.netConnection = new WebSocketConnection({eventHub: this.eventHub})
     }
     render() {
         return (

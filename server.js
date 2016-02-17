@@ -174,7 +174,7 @@ io.on('connection', function (socket) {
 
     function inRadius(diamater, x, y, client) {
         var r = diamater / 2;
-        if (x > -r + client.offsetX && x < r + client.offsetX && y > -r + client.offsetY && r + client.offsetY) {
+        if (x > -r + client.offset.x && x < r + client.offset.y && y > -r + client.offset.y && r + client.offset.y) {
             return true;
         }
         return false;
@@ -197,8 +197,7 @@ io.on('connection', function (socket) {
         msg.id = socket.id;
         socket.broadcast.emit('pan', msg);
         if (clientStates.hasOwnProperty(socket.id)) {
-            clientStates[socket.id].offsetX = msg.offsetX;
-            clientStates[socket.id].offsetY = msg.offsetY;
+            clientStates[socket.id].offset = msg
         }
     });
 
