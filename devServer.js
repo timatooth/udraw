@@ -13,6 +13,7 @@ var compiler = webpack(config);
 
 var server = new webpackDevServer(compiler, {
     contentBase: path.resolve(__dirname, "static"),
+    hot: true,
     historyApiFallback: true, //allow /z/x/y request to reach index instead of 404,
     publicPath: "/assets/", //wtf is this for...
     proxy: {

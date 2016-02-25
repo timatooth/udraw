@@ -53,6 +53,7 @@ gulp.task("webpack-dev-server", function(callback) {
         contentBase: path.resolve(__dirname, "static"),
         historyApiFallback: true, //allow /z/x/y request to reach index instead of 404,
         publicPath: "/assets/", //wtf is this for...
+        hot: true,
         //proxy: {
         //    "/canvases/*": "http://localhost:3000",
         //    "/socket.io/*": "http://localhost:3000"
