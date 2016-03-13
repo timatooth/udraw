@@ -1,12 +1,27 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
     <title>udraw: Unlimited Multiplayer Drawing</title>
-    <link rel="stylesheet" href="/css/vendor.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta property="og:title" content="udraw: Multiplayer Drawing" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://udraw.me" />
+    <meta property="og:description"
+          content="Draw in real time with others on an unlimited sized canvas" />
+    <meta property="og:image" content="https://udraw.me/static/images/og-image.png" />
+    <meta property="og:image:secure_url" content="https://udraw.me/static/images/og-image.png" />
+    <meta name="description" content="Draw in real time with others on an unlimited sized canvas">
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <link rel="stylesheet" href="/css/vendor.css" media="all" />
+    <meta name="apple-mobile-web-app-title" content="udraw.me">
+    <meta name="application-name" content="udraw.me">
 </head>
 <body>
-    <div id="udrawapp"></div>
-<script src="/assets/js/udraw-bundle.js"></script>
+<div id="cursors"></div>
+<canvas id="paper" width="640" height="640"></canvas>
+<div id="udrawapp"></div><!--react ui -->
+<script type="text/javascript" src="/assets/js/udraw-bundle.js"></script>
 </body>
 </html>

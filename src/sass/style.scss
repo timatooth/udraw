@@ -23,18 +23,12 @@ html, body {
   width: 4em;
   height: 100%;
   background-color: #eee;
-  background-color: rgba(240,240,240,0.5);
+  background-color: rgba(240,240,240,0.8);
   color: #555;
   font-family: 'Helvetica Neue', 'Open Sans', sans-serif;
   font-weight: 300;
   text-align: center;
   z-index: 9;
-}
-
-.tool {
-  font-size: 3em;
-  margin-top: 0.2em;
-  margin-bottom: 0.2em;
 }
 
 .tool-rack {

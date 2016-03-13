@@ -14,10 +14,12 @@ var FastClick = require('fastclick');
 var PNotify = require('pnotify');
 require('pnotify/src/pnotify.nonblock');
 
+import css from '../sass/style.scss'
+
 //es6 plug
 import React from 'react';
 import ReactDOM from 'react-dom';
-import App from './App.jsx';
+import {Toolbar} from './components/Toolbar.jsx';
 
 var TileSource = require('./TileSource').LocalStorageTileSource;
 
@@ -33,7 +35,7 @@ $(document).ready(function () {
     var ctx = canvas.getContext('2d');
     /** Screen ratio is 2 for hdpi/retina displays */
     var ratio = 1;
-    var socket = new io();
+    var socket = new io('',{reconnection: false});
     /**
      * Store states of other connected clients
      * @type type
@@ -244,8 +246,6 @@ $(document).ready(function () {
         if ((window.history && history.pushState)) {
             updateUrl("/" + client.offsetX + "/" + client.offsetY);
         }
-
-        $('#offset-label').text(client.offsetX + ',' + client.offsetY);
 
         if ($.now() - lastEmit > 60) { //only send pan message every 60ms
             var moveMessage = {
@@ -660,7 +660,6 @@ $(document).ready(function () {
         if (givenOffsets !== null) {
             client.offsetX = givenOffsets[0];
             client.offsetY = givenOffsets[1];
-            $('#offset-label').text(client.offsetX + ',' + client.offsetY);
         }
         drawTiles();
     };
@@ -845,8 +844,6 @@ $(document).ready(function () {
      * @param {jQuery} evt Incoming event
      */
     $(canvas).on('mousedown touchstart', function (evt) {
-        $('.panel').hide();
-        $('.tool-rack').hide();
         if (evt.type === "touchstart") {
             evt.preventDefault();
             client.x = evt.originalEvent.touches[0].clientX * ratio + tileSize; //caveat adding tilesize?
@@ -1006,7 +1003,6 @@ $(document).ready(function () {
         if (givenOffsets !== null) {
             client.offsetX = givenOffsets[0];
             client.offsetY = givenOffsets[1];
-            $('#offset-label').text(client.offsetX + ',' + client.offsetY);
         }
         resizeLayout(); //calls drawTiles()
         if (localStorage.getItem('walkthrough') === null) {
@@ -1039,12 +1035,12 @@ $(document).ready(function () {
         FastClick.attach(document.body);
 
         console.log("loading react app...");
-        ReactDOM.render(<App />, document.getElementById('udrawapp'));
+        ReactDOM.render(<Toolbar legacyClient={client} />, document.getElementById('udrawapp'));
     }
 
     //loading UI
-    var sidebar = new SidebarView();
-    $('body').append(sidebar.render().el);
+    //var sidebar = new SidebarView();
+    //$('body').append(sidebar.render().el);
     //fire it up
     initTheBusiness();
 });

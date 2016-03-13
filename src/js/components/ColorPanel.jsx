@@ -17,30 +17,38 @@ export default class ColorPanel extends React.Component {
     }
 
     handleColorButtonClick() {
+        console.log("button click");
         this.setState({
             displayColorPicker: !this.state.displayColorPicker, //toggle display. re calls render
+            mouseDownOnPuck: true
         });
+    }
+
+    handleMouseMove(evt){
+
     }
 
     handleColorChange(color){
         this.setState({
             color: color.rgb
-        })
+        });
+        this.props.onColorChange(color)
     }
 
     render() {
         var colorString = 'rgba(' + this.state.color.r + ', ' + this.state.color.g + ', ' + this.state.color.b + ', ' + this.state.color.a + ')';
         var buttonStyle = {
             color: colorString,
-            fontSize: '4em'
-        }
+            fontSize: this.props.size + 'px'
+        };
 
         return (
             <div>
-                <div onClick={this.handleColorButtonClick } style={buttonStyle}><i className="icon ion-ios-circle-filled"></i></div>
+                <div onClick={this.handleColorButtonClick } style={buttonStyle}><i className="icon ion-ios-circle-filled" /></div>
                 <ColorPicker color={ this.state.color }
                              display={ this.state.displayColorPicker }
                              onChange={ this.handleColorChange }
+                             onClose={ () => this.setState({displayColorPicker: !this.state.displayColorPicker}) }
                              type="chrome"
                 />
             </div>
