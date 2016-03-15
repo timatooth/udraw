@@ -1,6 +1,6 @@
 import React from 'react';
 import ColorPanel from './ColorPanel.jsx'
-import ToolMenu from './ToolMenu.jsx'
+import {ToolMenu} from './ToolMenu.jsx'
 
 const TOOL_ICONS = {
     brush: 'fa fa-paint-brush',
@@ -74,12 +74,13 @@ export class Toolbar extends React.Component {
         }, 10); //woo polling!
     }
 
-    onToolClick(tool){
-        this.props.legacyClient.state.tool = tool.props.name;
+    onToolClick(toolName){
+        //Problem: still keeping state in 2 places
+        this.props.legacyClient.state.tool = toolName
 
         this.setState({
             toolState: Object.assign({}, this.props.legacyClient.state, {
-                tool: tool.props.name
+                tool: toolName
             })
         })
     }
@@ -91,8 +92,8 @@ export class Toolbar extends React.Component {
     render() {
         let activeTool = this.state.toolState.tool;
         return (
-            <div className="toolbar">
-                <ToolMenu />
+            <div className="Toolbar">
+                <ToolMenu onToolClick={this.onToolClick} />
                 <ColorPanel onColorChange={this.onColorChange} size={this.state.toolState.size } />
                 <div>
                     {this.state.offset.x + ", " + this.state.offset.y }

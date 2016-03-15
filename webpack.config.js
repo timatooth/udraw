@@ -27,6 +27,6 @@ module.exports = {
         ]
     },
     plugins: [
-        //new webpack.HotModuleReplacementPlugin() not needed when using webpack-dev-server from CLI
+        //new webpack.HotModuleReplacementPlugin() //not needed when using webpack-dev-server from CLI
     ]
 };

@@ -56,7 +56,7 @@ function finalChildDeltaPositions(index) {
 }
 
 
-class ToolMenu extends React.Component {
+export class ToolMenu extends React.Component {
     constructor(props) {
         super(props);
 
@@ -136,6 +136,19 @@ class ToolMenu extends React.Component {
         this.setState({ isOpen: false});
     }
 
+    onToolClick(clickedToolIndex){
+        this.setState({activeIcon: childButtonIcons[clickedToolIndex]})
+
+        const toolIndexToNames = [
+            'line',
+            'brush',
+            'eraser',
+            'move'
+        ]
+
+        this.props.onToolClick(toolIndexToNames[clickedToolIndex], clickedToolIndex)
+    }
+
     renderChildButtons() {
         const {isOpen} = this.state;
         const targetButtonStyles = range(NUM_CHILDREN).map(i => {
@@ -179,7 +192,7 @@ class ToolMenu extends React.Component {
                             <div
                                 className="child-button"
                                 key={index}
-                                onClick={(i) => this.setState({activeIcon: childButtonIcons[index]})}
+                                onClick={this.onToolClick.bind(this, index)}
                                 style={Object.assign({}, childButtonsCss, {
 									left,
 									height,
@@ -217,5 +230,3 @@ class ToolMenu extends React.Component {
         );
     }
 };
-
-module.exports = ToolMenu;

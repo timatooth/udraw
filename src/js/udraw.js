@@ -6,13 +6,9 @@
  For all details and documentation: github.com/timatooth/udraw
  */
 var $ = require('jquery');
-var us = require('underscore');
-var Backbone = require('backbone');
+var underscore = require('underscore');
 var io = require('socket.io-client');
-var spectrum = require('spectrum-colorpicker');
 var FastClick = require('fastclick');
-var PNotify = require('pnotify');
-require('pnotify/src/pnotify.nonblock');
 
 import css from '../sass/style.scss'
 
@@ -76,17 +72,8 @@ $(document).ready(function () {
         pointCount: 0
     };
 
-    var notify = _.debounce(function (title, message, type) {
-         return new PNotify({
-             title: title,
-             addClass: 'custom',
-             text: message,
-             nonblock: {
-                 nonblock: true,
-                 nonblock_opacity: 0.1
-             },
-             type: type
-         });
+    var notify = underscore.debounce(function (title, message, type) {
+        console.log(title, message, type)
     }, 500);
 
 
@@ -190,7 +177,7 @@ $(document).ready(function () {
         }
     }
 
-    var updateToolState = _.debounce(function () {
+    var updateToolState = underscore.debounce(function () {
         var message = {
             tool: client.state.tool,
             color: client.state.color,
@@ -286,8 +273,6 @@ $(document).ready(function () {
     function updatePixelColor(x, y) {
         var pxData = ctx.getImageData(x, y, 1, 1);
         var colorString = "rgb(" + pxData.data[0] + "," + pxData.data[1] + "," + pxData.data[2] + ")";
-        $('#colorbutton').spectrum("set", colorString);
-        $('#colorbutton').css({color: colorString});
 
         function componentToHex(c) {
             var hex = c.toString(16);
@@ -303,12 +288,12 @@ $(document).ready(function () {
         if (client.state.opacity < 0.01) { //fix when they click completely transparent area
             client.state.opacity = 0.03;
         }
-        $('.opacity-range').val(opacity);
+
         updateToolState();
         return colorString;
     }
 
-    var updateUrl = _.debounce(function (key) {
+    var updateUrl = underscore.debounce(function (key) {
         //history.replaceState(null, null, key); disabled for now
     }, 500);
 
@@ -418,7 +403,7 @@ $(document).ready(function () {
         });
     };
 
-    var updateDirtyTiles = _.throttle(function () {
+    var updateDirtyTiles = underscore.throttle(function () {
         Object.keys(tileSource.tileCollection).forEach(function (tileKey) {
             if (tileSource.tileCollection[tileKey].dirty) {
                 var tile = tileSource.tileCollection[tileKey];
@@ -522,7 +507,6 @@ $(document).ready(function () {
 
     socket.on('pong', function () {
         var latency = $.now() - lastPing;
-        $('#latency-label').text(latency + 'ms');
     });
 
     socket.on('states', function (data) {
@@ -618,7 +602,7 @@ $(document).ready(function () {
      * call every 500ms.
      * @type {function}
      */
-    var resizeLayout = _.debounce(function () {
+    var resizeLayout = underscore.debounce(function () {
         //hdpi support
         var devicePixelRatio = window.devicePixelRatio || 1;
         var backingStoreRatio = ctx.webkitBackingStorePixelRatio ||
@@ -663,177 +647,6 @@ $(document).ready(function () {
         }
         drawTiles();
     };
-
-    /*-------------------------------------------------------
-     * Backbone view code
-     *
-     */
-
-    /**
-     * Displayed when the (i) info button is clicked. Shows ping & connected
-     * clients and their location.
-     * @type Backbone.View
-     */
-    var StatusView = Backbone.View.extend({
-        template: _.template($("#status-template").html()),
-        className: "panel status-panel",
-        events: {
-        },
-        render: function () {
-            this.$el.append(this.template());
-            return this;
-        },
-        updateLabels: function () {
-            this.$el.find('.users').empty();
-            //fill table of users
-            Object.keys(clientStates).forEach(function (key) {
-                var x = clientStates[key].offsetX;
-                var y = clientStates[key].offsetY;
-                var text = "<li><a href='/" + x + "/" + y + "'>" + "User" + "</a> (" + x + ", " + y + ")</li>";
-                this.$el.find('.users').append(text);
-            }, this);
-        }
-    });
-
-    /**
-     * View for updating brush tool settings such as brush size.
-     * @type Backbone.View
-     */
-    var BrushToolsView = Backbone.View.extend({
-        template: _.template($("#brush-tools-template").html()),
-        className: "panel brush-tools",
-        events: {
-            "change .opacity-range": "onOpacityChange",
-            "change .size-range": "onSizeChange"
-        },
-        initialize: function () {
-
-        },
-        render: function () {
-            this.$el.append(this.template());
-            this.$el.find('.size-range').val(client.state.size);
-            this.$el.find('.opacity-range').val(client.state.opacity);
-            return this;
-        },
-        onOpacityChange: function (evt) {
-            client.state.opacity = Number(evt.target.value);
-            updateToolState();
-        },
-        onSizeChange: function (evt) {
-            client.state.size = Number(evt.target.value);
-            updateToolState();
-        }
-    });
-
-    /**
-     * View to render the left sidebar for all the tools & buttons
-     * @type Backbone.View
-     */
-    var SidebarView = Backbone.View.extend({
-        template: _.template($("#sidebar-template").html()),
-        className: "sidebar noselect",
-        events: {
-            "click .tool": "onToolClick",
-            "click .move-tool": "onMoveToolClick",
-            "click .brush-tools": "onBrushToolsClick",
-            "click .fullscreen": "onFullScreenClick",
-            "change .colourpicker input": "onColourChange",
-            "click .status-info": "onStatusClick"
-        },
-        initialize: function () {
-            this.toolsPanel = null;
-            this.statusPanel = null;
-        },
-        render: function () {
-            this.$el.append(this.template());
-            this.$el.find('#colorbutton').spectrum({
-                color: client.state.color,
-                clickoutFiresChange: true,
-                preferredFormat: "hex3",
-                showInput: true,
-                move: function (color) {
-                    client.state.color = color.toHexString();
-                    $('#colorbutton').css({color: color.toHexString()});
-                },
-                change: function (color) {
-                    client.state.color = color.toHexString();
-                    updateToolState();
-                }
-            });
-            this.toolsPanel = new BrushToolsView();
-            this.$el.append(this.toolsPanel.render().el);
-            this.toolsPanel.$el.hide();
-            return this;
-        },
-        onToolClick: function (evt) {
-            this.$el.find('.active').removeClass('active');
-            client.state.tool = $(evt.currentTarget).data('name');
-            $('.tool-button').addClass('active');
-            $('.tool-rack').toggle();
-            $('.tool-button').html($(evt.currentTarget).html());
-            $('.tool-button').data('name', $(evt.currentTarget).data('name'));
-            $('.tool-rack div').show();
-            $('.tool-rack').find('.' + $(evt.currentTarget).data('name') + '-tool').hide();
-            updateToolState();
-        },
-        onMoveToolClick: function (evt) {
-            this.$el.find('.active').removeClass('active');
-            client.state.tool = $(evt.currentTarget).data('name');
-            $(evt.currentTarget).addClass('active');
-            updateToolState();
-        },
-        onBrushToolsClick: function () {
-            this.toolsPanel.$el.toggle();
-        },
-        onColourChange: function (evt) {
-            client.state.color = evt.target.value;
-            updateToolState();
-        },
-        onFullScreenClick: function () {
-            $('.fullscreen i').removeClass('ion-arrow-expand');
-            $('.fullscreen i').addClass('ion-arrow-shrink');
-            if (!document.fullscreenElement && // alternative standard method
-                    !document.mozFullScreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) {  // current working methods
-                if (document.documentElement.requestFullscreen) {
-                    document.documentElement.requestFullscreen();
-                } else if (document.documentElement.msRequestFullscreen) {
-                    document.documentElement.msRequestFullscreen();
-                } else if (document.documentElement.mozRequestFullScreen) {
-                    document.documentElement.mozRequestFullScreen();
-                } else if (document.documentElement.webkitRequestFullscreen) {
-                    document.documentElement.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
-                }
-            } else {
-                $('.fullscreen i').removeClass('ion-arrow-shrink');
-                $('.fullscreen i').addClass('ion-arrow-expand');
-
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                } else if (document.msExitFullscreen) {
-                    document.msExitFullscreen();
-                } else if (document.mozCancelFullScreen) {
-                    document.mozCancelFullScreen();
-                } else if (document.webkitExitFullscreen) {
-                    document.webkitExitFullscreen();
-                }
-            }
-        },
-        onStatusClick: function () {
-            if (this.statusPanel === null) {
-                this.statusPanel = new StatusView();
-                this.$el.append(this.statusPanel.render().el);
-                var sp = this.statusPanel;
-                setInterval(function () {
-                    lastPing = $.now();
-                    socket.emit('ping');
-                    sp.updateLabels();
-                }, 1500);
-            } else {
-                this.statusPanel.$el.toggle();
-            }
-            this.statusPanel.updateLabels();
-        }
-    });
 
     /********************************************************
      * CANVAS jQuery events
@@ -995,52 +808,22 @@ $(document).ready(function () {
      * @returns {undefined}
      */
     function initTheBusiness() {
-        if (debug) {
-            localStorage.clear();
-            console.log("localStorage cleared");
-        }
         var givenOffsets = parseUriArgs();
+
         if (givenOffsets !== null) {
             client.offsetX = givenOffsets[0];
             client.offsetY = givenOffsets[1];
         }
         resizeLayout(); //calls drawTiles()
-        if (localStorage.getItem('walkthrough') === null) {
-            //setup tutorial
-            notify("Welcome", "Draw anywhere in real time. Drawings are saved. Expect bugs.", "");
 
-            setTimeout(function () {
-                notify("Tips", "<ul><li>B - brush</li><li>L - Line</li><li>M - Move</li><li>E - Eyedropper</li><li>Use Middle Mouse, WASD, Arrows to pan.</li></ul>", "info");
-            }, 10000);
-
-            setTimeout(function () {
-                notify("Boss Tips", "The URL points to your current location to share.", "info");
-            }, 35000);
-            localStorage.setItem('walkthrough', 1);
-        }
-
-        if (localStorage.getItem('toolsettings') !== null) {
-            var tools = JSON.parse(localStorage.getItem('toolsettings'));
-            client.state = tools;
-            $('.move-tool').click();
-            $('#colorbutton').css({color: client.state.color});
-            //set size, opacity range values
-            $('.size-range').val(client.state.size);
-            $('.opacity-range').val(client.state.opacity);
-        }
 
         $("#paper").focus(); // key events in canvas
 
         //mobile fast touching
         FastClick.attach(document.body);
 
-        console.log("loading react app...");
         ReactDOM.render(<Toolbar legacyClient={client} />, document.getElementById('udrawapp'));
     }
 
-    //loading UI
-    //var sidebar = new SidebarView();
-    //$('body').append(sidebar.render().el);
-    //fire it up
     initTheBusiness();
 });
