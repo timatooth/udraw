@@ -12,10 +12,9 @@ config.entry.app.unshift("webpack-dev-server/client?http://localhost:8080");
 var compiler = webpack(config);
 
 var server = new webpackDevServer(compiler, {
-    contentBase: path.resolve(__dirname, "static"),
+    contentBase: path.resolve(__dirname, 'public'),
     hot: true,
     historyApiFallback: true, //allow /z/x/y request to reach index instead of 404,
-    publicPath: "/assets/", //wtf is this for...
     proxy: {
         "/canvases/*": "http://localhost:3000",
         "/socket.io/*": "http://localhost:3000"

@@ -10,9 +10,8 @@ module.exports = {
         ]
     },
     output: {
-        path: path.resolve(__dirname, "static"),
+        path: path.resolve(__dirname, 'public'),
         filename: "js/udraw-bundle.js",
-        publicPath: "/assets/",
     },
     module: {
         loaders: [
@@ -20,10 +19,7 @@ module.exports = {
                 test: /\.jsx?$/, //this covers .js and .jsx extensions
                 exclude: /(node_modules|bower_components)/,
                 loaders: ['react-hot', 'babel?presets[]=react,presets[]=es2015'],
-                //query: {
-                //    presets: ['react', 'es2015']
-                //}
-            }, //end of babel loader
+            },
             {
                 test: /\.scss$/,
                 loaders: ["style", "css", "sass"]
@@ -31,6 +27,6 @@ module.exports = {
         ]
     },
     plugins: [
-        new webpack.HotModuleReplacementPlugin()
+        //new webpack.HotModuleReplacementPlugin() not needed when using webpack-dev-server from CLI
     ]
 };

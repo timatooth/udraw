@@ -39,7 +39,7 @@ export default class ColorPanel extends React.Component {
         var colorString = 'rgba(' + this.state.color.r + ', ' + this.state.color.g + ', ' + this.state.color.b + ', ' + this.state.color.a + ')';
         var buttonStyle = {
             color: colorString,
-            fontSize: this.props.size + 'px'
+            fontSize: 48 + 'px'
         };
 
         return (

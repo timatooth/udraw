@@ -4,3 +4,4 @@ nbproject/
 .DS_Store
 dist/
 .idea/
+public/js/

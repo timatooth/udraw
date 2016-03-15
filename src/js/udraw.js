@@ -6,7 +6,7 @@
  For all details and documentation: github.com/timatooth/udraw
  */
 var $ = require('jquery');
-var _ = require('underscore');
+var us = require('underscore');
 var Backbone = require('backbone');
 var io = require('socket.io-client');
 var spectrum = require('spectrum-colorpicker');
@@ -309,7 +309,7 @@ $(document).ready(function () {
     }
 
     var updateUrl = _.debounce(function (key) {
-        history.replaceState(null, null, key);
+        //history.replaceState(null, null, key); disabled for now
     }, 500);
 
     /**
