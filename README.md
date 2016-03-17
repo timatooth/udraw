@@ -17,13 +17,12 @@ The _udraw_ server uses Redis for storage of PNG tiles which are accessed via a 
 ### Requirements
  - Redis server running on localhost
 
+
 ## Build & Run
-    git clone https://github.com/timatooth/udraw
-    cd udraw
     npm install
-    gulp
-    npm start
-    # server listens on *:3000
+    # ensure Redis is running first
+    node server.js
+    npm start #launches webpack-dev-server
 
 ## License
 MIT - see LICENSE file.
