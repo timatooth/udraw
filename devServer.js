@@ -18,6 +18,10 @@ var server = new webpackDevServer(compiler, {
     proxy: {
         "/canvases/*": "http://localhost:3000",
         "/socket.io/*": "http://localhost:3000"
+    },
+    headers: {
+        'Access-Control-Allow-Origin': 'http://localhost:3000',
+        'Access-Control-Allow-Credentials': 'true'
     }
 });
 

@@ -5,22 +5,21 @@
  udraw may be freely distributed under the MIT license.
  For all details and documentation: github.com/timatooth/udraw
  */
-var $ = require('jquery');
-var underscore = require('underscore');
-var io = require('socket.io-client');
-var FastClick = require('fastclick');
+'use strict';
+//import $ from 'jquery'
+import underscore from 'underscore'
+import io from 'socket.io-client'
+import FastClick from 'fastclick'
 
 import css from '../sass/style.scss'
 
-//es6 plug
-import React from 'react';
-import ReactDOM from 'react-dom';
-import {Toolbar} from './components/Toolbar.jsx';
+import React from 'react'
+import ReactDOM from 'react-dom'
+import {Toolbar} from './components/Toolbar.jsx'
 
-var TileSource = require('./TileSource').LocalStorageTileSource;
+import {RestTileSource} from './TileSource'
 
 $(document).ready(function () {
-    'use strict';
     var tileSize = 256;
     /** shows tile boundaries and extra console output */
     var debug = false;
@@ -47,9 +46,9 @@ $(document).ready(function () {
     };
 
 
-    var tileSource = new TileSource({
+    var tileSource = RestTileSource({
         debug: debug,
-        //url: '' //default is /
+        url: 'http://localhost:3000/' //default is /
     });
 
     /**
@@ -196,21 +195,10 @@ $(document).ready(function () {
         updateToolState();
     }, 1000 * 20);
 
-    /**
-     * Callback for when source comes back with a tile or error
-     * @param {Number} code follows HTTP error code semantics
-     * @param {Tile} tile Tile object returned.
-     * @returns {undefined}
-     */
-    function drawTile(code, tile) {
-        if (code === 200) {
-            var destinationX = (tile.x * tileSize) - client.offsetX;
-            var destinationY = (tile.y * tileSize) - client.offsetY;
-            ctx.drawImage(tile.canvas, 0, 0, tileSize, tileSize, destinationX, destinationY, tileSize, tileSize);
-        } else if (code === 416) {
-            ctx.drawImage(tile.canvas, 0, 0, tileSize, tileSize, destinationX, destinationY, tileSize, tileSize);
-            notify("Tile Fetch Error", "Have you gone too far out?", "error");
-        }
+    function drawTile(tile) {
+        let destinationX = (tile.x * tileSize) - client.offsetX
+        let destinationY = (tile.y * tileSize) - client.offsetY
+        ctx.drawImage(tile.canvas, 0, 0, tileSize, tileSize, destinationX, destinationY, tileSize, tileSize)
     }
 
     function drawTiles() {
@@ -220,7 +208,7 @@ $(document).ready(function () {
             for (x = client.offsetX; x < client.offsetX + extent.width + tileSize * 2; x += tileSize) {
                 xTile = Math.floor(x / tileSize);
                 yTile = Math.floor(y / tileSize);
-                tileSource.fetchTileAt(xTile, yTile, drawTile);
+                tileSource.fetchTileAt(xTile, yTile).then(drawTile)
             }
         }
     }
@@ -369,38 +357,38 @@ $(document).ready(function () {
 
     var saveTileAt = function (x, y, tileCanvas) {
         var key = x + '/' + y;
-        tileSource.saveTileAt(x, y, tileCanvas, function (err) {
-            switch (err) {
-                case 201:
-                    break;
-                case 413:
-                    notify("Too Large", "Error 413 is the tile" + x + ", " + y + " too large?", "error");
-                    break;
-                case 416:
-                    notify("Range Excedded", "Canvas boundary limit. You have gone too far.", "error");
-                    break;
-                case 429:
-                    notify("Slow Down", "Drawing fast? Server rejected tile save at " + x + ", " + y + " try again shortly.", "error");
-                    break;
-                case 404:
-                    notify("Error 404", "Server messing up?", "error");
-                    break;
-                case 403:
-                    notify("Protected Region", "This region is protected. (" + x + ", " + y + ") Move over a bit!", "error");
-                    delete tileSource.tileCollection[key];
-                    drawTiles();
-                    break;
-                case 500:
-                    notify("Error 500", "Server isn't feeling well right now.", "error");
-                    break;
-                case 507:
-                    notify("Error 507", "Out of local storage!");
-                    break;
-                default:
-                    notify("Hmm", "Unhandled status code " + err + " for tile " + x + ", " + y, "error");
-                    break;
-            }
-        });
+        tileSource.saveTileAt(x, y, tileCanvas)
+            .then((response) => console.log(key + ' saved.'))
+            .catch((responseError) => {
+                switch(responseError.status) {
+                    case 413:
+                        notify("Too Large", "Error 413 is the tile" + x + ", " + y + " too large?", "error");
+                        break;
+                    case 416:
+                        notify("Range Excedded", "Canvas boundary limit. You have gone too far.", "error");
+                        break;
+                    case 429:
+                        notify("Slow Down", "Drawing fast? Server rejected tile save at " + x + ", " + y + " try again shortly.", "error");
+                        break;
+                    case 404:
+                        notify("Error 404", "Server messing up?", "error");
+                        break;
+                    case 403:
+                        notify("Protected Region", "This region is protected. (" + x + ", " + y + ") Move over a bit!", "error");
+                        delete tileSource.tileCollection[key];
+                        drawTiles();
+                        break;
+                    case 500:
+                        notify("Error 500", "Server isn't feeling well right now.", "error");
+                        break;
+                    case 507:
+                        notify("Error 507", "Out of local storage!");
+                        break;
+                    default:
+                        notify("Hmm", "Unhandled status code " + err + " for tile " + x + ", " + y, "error");
+                        break;
+                }
+            })
     };
 
     var updateDirtyTiles = underscore.throttle(function () {

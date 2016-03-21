@@ -27,6 +27,9 @@ module.exports = {
         ]
     },
     plugins: [
-        //new webpack.HotModuleReplacementPlugin() //not needed when using webpack-dev-server from CLI
+        new webpack.HotModuleReplacementPlugin(), //not needed when using webpack-dev-server from CLI
+        new webpack.ProvidePlugin({
+            'fetch': 'imports?this=>global!exports?global.fetch!whatwg-fetch'
+        })
     ]
 };

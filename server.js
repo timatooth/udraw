@@ -14,6 +14,7 @@ var express = require('express');
 var morgan = require('morgan');
 var bodyParser = require('body-parser');
 var rateLimit = require('express-rate-limit');
+var cors = require('cors');
 var redis = require('redis');
 var adapter = require('socket.io-redis');
 var app = express();
@@ -33,8 +34,6 @@ var tileRedis = redis.createClient(redisPort, host, {return_buffers: true});
 
 io.adapter(adapter(redis.createClient({host: host, port: redisPort})));
 
-/**!! Big TODO Ditch express.js for rest Http api. Considering Go or nhhttp2 w/asio lib */
-
 app.set('trust proxy', 'loopback');
 app.set('x-powered-by', false);
 //app.set('etag', 'strong'); //need to revisit this. Edge caches too aggressively
@@ -51,6 +50,7 @@ app.use('/', express.static(staticDir));
 app.use(morgan('combined'));
 app.use(bodyParser.raw({type: 'image/png', limit: '250kb'}));
 app.use(bodyParser.json({type: 'application/json', limit: '250kb'}));
+app.use(cors());
 
 app.get('/', function (req, res) {
     res.sendFile(path.join(staticDir, 'index.html'));
