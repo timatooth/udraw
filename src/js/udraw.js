@@ -6,7 +6,7 @@
  For all details and documentation: github.com/timatooth/udraw
  */
 'use strict';
-//import $ from 'jquery'
+import $ from 'jquery'
 import underscore from 'underscore'
 import io from 'socket.io-client'
 import FastClick from 'fastclick'
@@ -17,12 +17,12 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import {Toolbar} from './components/Toolbar.jsx'
 
-import {RestTileSource} from './TileSource'
+import {LocalStorageTileSource} from './TileSource'
 
 $(document).ready(function () {
     var tileSize = 256;
     /** shows tile boundaries and extra console output */
-    var debug = false;
+    var debug = true;
     var lastPing = $.now();
     var canvas = document.getElementById("paper");
     canvas.width = window.innerWidth + tileSize * 2;
@@ -46,9 +46,9 @@ $(document).ready(function () {
     };
 
 
-    var tileSource = RestTileSource({
+    var tileSource = LocalStorageTileSource({
         debug: debug,
-        url: 'http://localhost:3000/' //default is /
+        //url: 'http://localhost:3000/' //default is /
     });
 
     /**
@@ -359,8 +359,8 @@ $(document).ready(function () {
         var key = x + '/' + y;
         tileSource.saveTileAt(x, y, tileCanvas)
             .then((response) => console.log(key + ' saved.'))
-            .catch((responseError) => {
-                switch(responseError.status) {
+            .catch((error) => {
+                switch(error) {
                     case 413:
                         notify("Too Large", "Error 413 is the tile" + x + ", " + y + " too large?", "error");
                         break;
@@ -385,7 +385,8 @@ $(document).ready(function () {
                         notify("Error 507", "Out of local storage!");
                         break;
                     default:
-                        notify("Hmm", "Unhandled status code " + err + " for tile " + x + ", " + y, "error");
+                        notify("Hmm", "Unhandled status code " + error + " for tile " + x + ", " + y, "error");
+                        console.log(error)
                         break;
                 }
             })

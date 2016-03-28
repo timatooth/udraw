@@ -135,6 +135,7 @@ export const LocalStorageTileSource = (options) => {
 
     return {
         fetchTileAt: (x, y, cb) => {
+            let key = x + '/' + y
             return new Promise((resolve, reject) => {
                 /* cache lookup */
                 if (tileCollection.hasOwnProperty(key)) {
@@ -151,6 +152,7 @@ export const LocalStorageTileSource = (options) => {
                             ctx.drawImage(img, 0, 0)
                             resolve(tile)
                         }
+                        img.src = imageString
                     } else {
                         let newTile = Tile(x, y)
                         if (debug) {
@@ -159,7 +161,7 @@ export const LocalStorageTileSource = (options) => {
                             ctx.strokeStyle = "#AACCEE";
                             ctx.rect(0, 0, tile.tileSize, tile.tileSize);
                             ctx.stroke();
-                            ctx.fillText("(" + xTile + "," + yTile + ")", 10, 10);
+                            ctx.fillText("(" + x + "," + y + ")", 10, 10);
                         }
                         resolve(newTile)
                     }
@@ -168,13 +170,13 @@ export const LocalStorageTileSource = (options) => {
             })
         },
         saveTileAt: (x, y, tile) => {
-            var key = xTile + '/' + yTile;
+            var key = x + '/' + y;
             return new Promise((resolve, reject) => {
                 try {
-                    localStorage.setItem(key, tileCanvas.toDataURL());
+                    localStorage.setItem(key, tile.toDataURL());
                     resolve()
-                } catch (Exception) {
-                    reject(Error('localStorage threw exception'))
+                } catch (exception) {
+                    reject(exception)
                 }
             })
         },
