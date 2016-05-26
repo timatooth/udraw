@@ -154,7 +154,6 @@ export const LocalStorageTileSource = (options) => {
                         }
                         img.src = imageString
                     } else {
-                        let newTile = Tile(x, y)
                         if (debug) {
                             let ctx = tile.canvas.getContext('2d')
                             ctx.lineWidth = "1";
@@ -163,7 +162,7 @@ export const LocalStorageTileSource = (options) => {
                             ctx.stroke();
                             ctx.fillText("(" + x + "," + y + ")", 10, 10);
                         }
-                        resolve(newTile)
+                        resolve(tile)
                     }
 
                 }
@@ -183,4 +182,3 @@ export const LocalStorageTileSource = (options) => {
         tileCollection //exposing privates
     }
 }
-

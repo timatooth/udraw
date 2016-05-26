@@ -17,7 +17,7 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import {Toolbar} from './components/Toolbar.jsx'
 
-import {LocalStorageTileSource} from './TileSource'
+import { RestTileSource } from './TileSource'
 
 $(document).ready(function () {
     var tileSize = 256;
@@ -46,9 +46,9 @@ $(document).ready(function () {
     };
 
 
-    var tileSource = LocalStorageTileSource({
+    var tileSource = RestTileSource({
         debug: debug,
-        //url: 'http://localhost:3000/' //default is /
+        url: 'https://localhost:4000/' //default is /
     });
 
     /**

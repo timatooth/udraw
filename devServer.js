@@ -16,7 +16,7 @@ var server = new webpackDevServer(compiler, {
     hot: true,
     historyApiFallback: true, //allow /z/x/y request to reach index instead of 404,
     proxy: {
-        "/canvases/*": "http://localhost:3000",
+        "/canvases/*": "http://localhost:4000",
         "/socket.io/*": "http://localhost:3000"
     },
     headers: {
