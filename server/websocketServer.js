@@ -1,0 +1,85 @@
+'use strict';
+const redis = require('redis');
+const adapter = require('socket.io-redis');
+const http = require('http')
+const socketio = require('socket.io');
+
+const websocketServer = () => {
+    let app = require('express')();
+    let httpServer = require('http').Server(app);
+    let io = socketio(httpServer);
+    
+    let tileRedis = redis.createClient(
+        process.env.REDIS_PORT || 6379, 
+        process.env.REDIS_HOST || 'localhost',
+        { return_buffers: true }
+    );
+    
+    /** Store the socket id with tool states and pan offsets */
+    let clientStates = {};
+    
+    io.on('connection', (socket) => {
+        let ip = socket.request.connection.remoteAddress;
+        tileRedis.incr("totalconnections");
+        tileRedis.incr("currentconnections");
+        tileRedis.hset("user:" + ip, "lastconnect", Date.now() / 1000 | 0);
+        tileRedis.hincrby("user:" + ip, "connectcount", 1);
+        
+        socket.emit('states', clientStates);
+        
+        socket.on('disconnect', () => {
+            if (clientStates.hasOwnProperty(socket.id)) {
+                delete clientStates[socket.id];
+            }
+            tileRedis.decr("currentconnections");
+        });
+        
+        function inRadius(diamater, x, y, client) {
+            let r = diamater / 2;
+            if (x > -r + client.offset.x && x < r + client.offset.y && y > -r + client.offset.y && r + client.offset.y) {
+                return true;
+            }
+            return false;
+        }
+        
+        socket.on('move', (msg) => {
+            msg.id = socket.id;
+            Object.keys(clientStates).forEach( (key) => {
+                if (socket.id === key) { //not send move to initator of the move
+                    return;
+                }
+                //when someone is 3000px or more from the client don't relay the move
+                if (inRadius(6000, msg.x, msg.y, clientStates[key]) === true) {
+                    io.to(key).emit('move', msg);
+                }
+            });
+        });
+        
+        socket.on('pan', (msg) => {
+            msg.id = socket.id;
+            socket.broadcast.emit('pan', msg);
+            if (clientStates.hasOwnProperty(socket.id)) {
+                clientStates[socket.id].offset = msg
+            }
+        });
+        
+        socket.on('ping', () => {
+            socket.emit('pong');
+        });
+        
+        socket.on('status', (msg) => {
+            if (msg.size > 60 || msg.size < 1 || msg.opacity > 1 || msg.opacity < 0) {
+                tileRedis.sadd("malicious", ip);
+                return;
+            }
+            clientStates[socket.id] = msg;
+            msg.id = socket.id;
+            socket.broadcast.emit('status', msg);
+        });
+        
+    });
+    
+    return httpServer;
+}
+
+module.exports = websocketServer;

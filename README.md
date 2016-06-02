@@ -21,8 +21,7 @@ The _udraw_ server uses Redis for storage of PNG tiles which are accessed via a 
 ## Build & Run
     npm install
     # ensure Redis is running first
-    node server.js
-    npm start #launches webpack-dev-server
+    npm start #launches webpack-dev-server proxying requests to the rest api and websocket server.
 
 ## License
 MIT - see LICENSE file.

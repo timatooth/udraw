@@ -48,7 +48,7 @@ $(document).ready(function () {
 
     var tileSource = RestTileSource({
         debug: debug,
-        url: 'https://localhost:4000/' //default is /
+        //url: 'https://localhost:4000/' //default is /
     });
 
     /**
