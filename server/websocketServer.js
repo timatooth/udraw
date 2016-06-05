@@ -36,20 +36,21 @@ const websocketServer = () => {
         
         function inRadius(diamater, x, y, client) {
             let r = diamater / 2;
-            if (x > -r + client.offset.x && x < r + client.offset.y && y > -r + client.offset.y && r + client.offset.y) {
-                return true;
-            }
-            return false;
+            return x > -r + client.offsetX &&
+                x < r + client.offsetX &&
+                y > -r + client.offsetY &&
+                y < r + client.offsetY
         }
         
         socket.on('move', (msg) => {
-            msg.id = socket.id;
+            let id = socket.id;
+            msg.id = id;
             Object.keys(clientStates).forEach( (key) => {
                 if (socket.id === key) { //not send move to initator of the move
                     return;
                 }
                 //when someone is 3000px or more from the client don't relay the move
-                if (inRadius(6000, msg.x, msg.y, clientStates[key]) === true) {
+                if (inRadius(6000, msg.x, msg.y, clientStates[key])) {
                     io.to(key).emit('move', msg);
                 }
             });
