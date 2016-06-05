@@ -223,12 +223,12 @@ $(document).ready(function () {
         }
 
         if ($.now() - lastEmit > 60) { //only send pan message every 60ms
-            var moveMessage = {
-                offsetX: client.offsetX,
-                offsetY: client.offsetY
+            var panMessage = {
+                offsetX: client.offsetX * ratio,
+                offsetY: client.offsetY * ratio
             };
 
-            socket.emit('pan', moveMessage);
+            socket.emit('pan', panMessage);
             lastEmit = $.now();
         }
     }
@@ -534,7 +534,7 @@ $(document).ready(function () {
             //update the cursor
             $(clientStates[packet.id].cursor).show(); //if was hidden
             $(clientStates[packet.id].cursor).css({
-                transform: "translate(" + screenX + "px, " + (screenY) + "px)"
+                transform: "translate(" + (screenX ) + "px, " + (screenY) + "px)"
             });
 
             if (packet.d1) { //mouse1 down
@@ -775,8 +775,8 @@ $(document).ready(function () {
             //just a regular mouse move? this needs refactoring
             if ($.now() - lastEmit > 60) {
                 moveMessage = {
-                    x: evt.offsetX + client.offsetX,
-                    y: evt.offsetY + client.offsetY,
+                    x: ((x / ratio) * ratio) + client.offsetX,
+                    y: ((y / ratio) * ratio) + client.offsetY,
                     d1: client.m1Down
                 };
                 socket.emit('move', moveMessage);
