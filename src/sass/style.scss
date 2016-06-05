@@ -1,6 +1,8 @@
 @import url('/css/vendor/font-awesome.css');
 @import url('/css/vendor/ionicons.css');
 
+@import 'params';
+
 /** Globbal stuff */
 html, body {
   margin: 0px;
@@ -9,6 +11,38 @@ html, body {
   font-family: 'Helvetica Neue', 'Helvetica', 'Open Sans', sans-serif;
   overflow: hidden;
 
+}
+
+/* Expand the canvas out beyond the window viewport by length of tile on each
+   side
+*/
+#paper {
+    /* @1x offset by tileSize */
+    position: relative;
+    top: -$tileSize;
+    left: -$tileSize;
+
+    /* @2x Offset offset by tileSize / 2 */
+    @media
+    only screen and (-webkit-min-device-pixel-ratio: 2),
+    only screen and (min--moz-device-pixel-ratio: 2),
+    only screen and (min-device-pixel-ratio: 2),
+    only screen and (min-resolution: 2dppx) {
+        position: relative;
+        top: -$tileSize / 2;
+        left: -$tileSize / 2;
+    }
+
+    /* @3x Offset offset by tileSize / 3 */
+    @media
+    only screen and (-webkit-min-device-pixel-ratio: 3),
+    only screen and (min--moz-device-pixel-ratio: 3),
+    only screen and (min-device-pixel-ratio: 3),
+    only screen and (min-resolution: 3dppx) {
+        position: relative;
+        top: -$tileSize / 3;
+        left: -$tileSize / 3;
+    }
 }
 
 /* Toolbar component styling */
