@@ -92,7 +92,7 @@ $(document).ready(function () {
     var ctx = canvas.getContext('2d');
     /** Screen ratio is 2 for hdpi/retina displays */
     var ratio = 1;
-    var socket = new io('http://192.168.20.112:3001',{reconnection: false});
+    var socket = new io('https://realtime.udraw.me', {reconnection: true});
 
     var notify = underscore.debounce(function (title, message, type) {
         console.log(title, message, type)
