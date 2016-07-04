@@ -2,6 +2,13 @@
  * Created by tim on 17/02/16.
  */
 
+ /**
+ * This guy is a dirty escape hatch to pass events into the new React UI
+ * environment so it can re-render as changes happen.
+ * 
+ * This should only be here to assist the migration to a full React/Redux
+ * design. *touch wood*
+ */
 // http://codereview.stackexchange.com/questions/79114/custom-event-hub
 export default class EventHub {
     constructor(){

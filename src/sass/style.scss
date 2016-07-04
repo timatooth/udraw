@@ -10,7 +10,6 @@ html, body {
   height: 100%;
   font-family: 'Helvetica Neue', 'Helvetica', 'Open Sans', sans-serif;
   overflow: hidden;
-
 }
 
 /* Expand the canvas out beyond the window viewport by length of tile on each
@@ -46,18 +45,18 @@ html, body {
 }
 
 /* Cursors */
-#cursors {
+.CursorContainer {
     position:relative;
     pointer-events: none; /* the irony */
-    z-index: 2;
-}
-
-#cursors .cursor {
-    position: absolute;
-    width:15px;
-    height:22px;
-    background:url('../../public/images/pointer.png') no-repeat -4px 0;
-    z-index: 8;
+    z-index: 10;
+    
+    .Cursor {
+        position: absolute;
+        width:15px;
+        height:22px;
+        background:url('../../public/images/pointer.png') no-repeat -4px 0;
+        z-index: 99999;
+    }
 }
 
 /* Toolbar component styling */

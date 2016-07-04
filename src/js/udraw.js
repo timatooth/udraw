@@ -15,21 +15,18 @@ import css from '../sass/style.scss'
 
 import React from 'react'
 import ReactDOM from 'react-dom'
-import {Toolbar} from './components/Toolbar.jsx'
+import { UdrawApp} from './UdrawApp.jsx'
+import EventHub from './EventHub.js'
 
 import { RestTileSource } from './TileSource'
+import {createStore } from 'redux'
+import { udrawAppReducer } from './reducers/udrawapp'
 
 $(document).ready(function () {
     var tileSize = 256;
     /** shows tile boundaries and extra console output */
     var debug = true;
     var lastPing = $.now();
-    var canvas = document.getElementById("paper");
-    canvas.width = window.innerWidth + tileSize * 2;
-    canvas.height = window.innerHeight + tileSize * 2;
-    var ctx = canvas.getContext('2d');
-    /** Screen ratio is 2 for hdpi/retina displays */
-    var ratio = 1;
     var socket = new io('',{reconnection: false});
     /**
      * Store states of other connected clients
@@ -44,6 +41,16 @@ $(document).ready(function () {
         width: window.innerWidth * ratio,
         height: window.innerHeight * ratio
     };
+    
+    
+    /**
+    * This guy is a dirty escape hatch to pass events into the new React UI
+    * environment so it can re-render as changes happen.
+    *
+    * This should only be here to assist the migration to a full React/Redux
+    * design. *touch wood*
+    */
+    let badEventHub = new EventHub();
 
 
     var tileSource = RestTileSource({
@@ -70,6 +77,22 @@ $(document).ready(function () {
         points: [],
         pointCount: 0
     };
+    
+    let store = createStore( udrawAppReducer );
+    console.log(store)
+
+    ReactDOM.render(
+        <UdrawApp store={store} legacyClient={client} clientStates={clientStates} badEventHub={badEventHub} />,
+        document.getElementById('udrawapp')
+    );
+
+    var canvas = document.getElementById("paper");
+    canvas.width = window.innerWidth + tileSize * 2;
+    canvas.height = window.innerHeight + tileSize * 2;
+    var ctx = canvas.getContext('2d');
+    /** Screen ratio is 2 for hdpi/retina displays */
+    var ratio = 1;
+    var socket = new io('http://192.168.20.112:3001',{reconnection: false});
 
     var notify = underscore.debounce(function (title, message, type) {
         console.log(title, message, type)
@@ -464,7 +487,7 @@ $(document).ready(function () {
      */
     function addClient(packet) {
         clientStates[packet.id] = {
-            cursor: $('<div class="cursor">').appendTo('#cursors'),
+            //cursor: $('<div class="cursor">').appendTo('#cursors'),
             state: {
                 tool: 'line',
                 color: '#222222',
@@ -502,7 +525,7 @@ $(document).ready(function () {
         Object.keys(data).forEach(function (key) {
             clientStates[key] = {};
             clientStates[key].state = data[key];
-            clientStates[key].cursor = $('<div class="cursor">').appendTo('#cursors');
+            //clientStates[key].cursor = $('<div class="cursor">').appendTo('#cursors');
             clientStates[key].updated = $.now();
             clientStates[key].x = 0;
             clientStates[key].y = 0;
@@ -532,10 +555,10 @@ $(document).ready(function () {
             var screenX = (packet.x - (tileSize) - client.offsetX) / ratio;
             var screenY = (packet.y - (tileSize) - client.offsetY) / ratio;
             //update the cursor
-            $(clientStates[packet.id].cursor).show(); //if was hidden
-            $(clientStates[packet.id].cursor).css({
-                transform: "translate(" + (screenX ) + "px, " + (screenY) + "px)"
-            });
+            //$(clientStates[packet.id].cursor).show(); //if was hidden
+            // $(clientStates[packet.id].cursor).css({
+            //     transform: "translate(" + (screenX ) + "px, " + (screenY) + "px)"
+            // });
 
             if (packet.d1) { //mouse1 down
                 processDrawAction(remoteClient, x, y);
@@ -549,14 +572,11 @@ $(document).ready(function () {
                 updateDirtyTiles();
             }
 
-        } else {
-            //they are not in viewable region. Place cursor in general direction TODO
-            $(clientStates[packet.id].cursor).hide();
         }
 
         clientStates[packet.id].x = x;
         clientStates[packet.id].y = y;
-
+        badEventHub.trigger('clientStates:move', clientStates, client.offsetX, client.offsetY);
     });
 
     socket.on('status', function (packet) {
@@ -580,7 +600,7 @@ $(document).ready(function () {
     setInterval(function () {
         Object.keys(clientStates).forEach(function (key) {
             if ($.now() - clientStates[key].updated > 1000 * 30) {
-                clientStates[key].cursor.remove(); //remove cursor
+                //clientStates[key].cursor.remove(); //remove cursor
                 delete clientStates[key]; //remove states
             }
         });
@@ -810,8 +830,6 @@ $(document).ready(function () {
 
         //mobile fast touching
         FastClick.attach(document.body);
-
-        ReactDOM.render(<Toolbar legacyClient={client} />, document.getElementById('udrawapp'));
     }
 
     initTheBusiness();
