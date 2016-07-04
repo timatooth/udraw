@@ -27,7 +27,6 @@ $(document).ready(function () {
     /** shows tile boundaries and extra console output */
     var debug = true;
     var lastPing = $.now();
-    var socket = new io('',{reconnection: false});
     /**
      * Store states of other connected clients
      * @type type
