@@ -19,15 +19,11 @@
   "author": "Tim Sullivan",
   "license": "MIT",
   "dependencies": {
-    "backbone": "^1.2.3",
     "body-parser": "^1.15.0",
     "cors": "^2.7.1",
-    "ejs": "^2.4.1",
-    "exports-loader": "^0.6.3",
     "express": "^4.13.4",
     "express-rate-limit": "^2.1.0",
     "fastclick": "^1.0.6",
-    "imports-loader": "^0.6.5",
     "jquery": "^2.2.0",
     "lodash.range": "^3.1.3",
     "morgan": "^1.6.1",
@@ -41,21 +37,20 @@
     "socket.io-client": "^1.4.5",
     "socket.io-redis": "^1.0.0",
     "underscore": "^1.8.3",
-    "webpack-dev-server": "^1.14.1",
-    "whatwg-fetch": "^0.11.0"
+    "webpack-dev-server": "^1.14.1"
   },
   "devDependencies": {
     "babel-core": "^6.5.2",
     "babel-loader": "^6.2.2",
     "babel-preset-es2015": "^6.5.0",
     "babel-preset-react": "^6.5.0",
-    "browserify": "^13.0.0",
     "css-loader": "^0.23.1",
     "file-loader": "^0.8.5",
     "node-sass": "^3.4.2",
     "react-hot-loader": "^1.3.0",
     "sass-loader": "^3.1.2",
     "style-loader": "^0.13.0",
+    "imports-loader": "^0.6.5",
     "webpack": "^1.12.13"
   }
 }

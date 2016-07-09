@@ -18,7 +18,7 @@ import ReactDOM from 'react-dom'
 import { UdrawApp} from './UdrawApp.jsx'
 import EventHub from './EventHub.js'
 
-import { RestTileSource } from './TileSource'
+import RestTileSource from './RestTileSource'
 import {createStore } from 'redux'
 import { udrawAppReducer } from './reducers/udrawapp'
 
@@ -52,9 +52,9 @@ $(document).ready(function () {
     let badEventHub = new EventHub();
 
 
-    var tileSource = RestTileSource({
+    var tileSource = new RestTileSource({
         debug: debug,
-        //url: 'https://localhost:4000/' //default is /
+        //url: 'https://udraw.me' //default is /
     });
 
     /**
@@ -217,7 +217,7 @@ $(document).ready(function () {
         updateToolState();
     }, 1000 * 20);
 
-    function drawTile(tile) {
+    function drawTile(e, tile) {
         let destinationX = (tile.x * tileSize) - client.offsetX
         let destinationY = (tile.y * tileSize) - client.offsetY
         ctx.drawImage(tile.canvas, 0, 0, tileSize, tileSize, destinationX, destinationY, tileSize, tileSize)
@@ -230,7 +230,7 @@ $(document).ready(function () {
             for (x = client.offsetX; x < client.offsetX + extent.width + tileSize * 2; x += tileSize) {
                 xTile = Math.floor(x / tileSize);
                 yTile = Math.floor(y / tileSize);
-                tileSource.fetchTileAt(xTile, yTile).then(drawTile)
+                tileSource.fetchTileAt(xTile, yTile, drawTile)
             }
         }
     }
@@ -379,39 +379,42 @@ $(document).ready(function () {
 
     var saveTileAt = function (x, y, tileCanvas) {
         var key = x + '/' + y;
-        tileSource.saveTileAt(x, y, tileCanvas)
-            .then((response) => console.log(key + ' saved.'))
-            .catch((error) => {
-                switch(error) {
-                    case 413:
-                        notify("Too Large", "Error 413 is the tile" + x + ", " + y + " too large?", "error");
-                        break;
-                    case 416:
-                        notify("Range Excedded", "Canvas boundary limit. You have gone too far.", "error");
-                        break;
-                    case 429:
-                        notify("Slow Down", "Drawing fast? Server rejected tile save at " + x + ", " + y + " try again shortly.", "error");
-                        break;
-                    case 404:
-                        notify("Error 404", "Server messing up?", "error");
-                        break;
-                    case 403:
-                        notify("Protected Region", "This region is protected. (" + x + ", " + y + ") Move over a bit!", "error");
-                        delete tileSource.tileCollection[key];
-                        drawTiles();
-                        break;
-                    case 500:
-                        notify("Error 500", "Server isn't feeling well right now.", "error");
-                        break;
-                    case 507:
-                        notify("Error 507", "Out of local storage!");
-                        break;
-                    default:
-                        notify("Hmm", "Unhandled status code " + error + " for tile " + x + ", " + y, "error");
-                        console.log(error)
-                        break;
-                }
-            })
+
+        var onSaveResponse = function(code){
+            switch(code) {
+                case 201:
+                    break; //successfully saved.
+                case 413:
+                    notify("Too Large", "Error 413 is the tile" + x + ", " + y + " too large?", "error");
+                    break;
+                case 416:
+                    notify("Range Excedded", "Canvas boundary limit. You have gone too far.", "error");
+                    break;
+                case 429:
+                    notify("Slow Down", "Drawing fast? Server rejected tile save at " + x + ", " + y + " try again shortly.", "error");
+                    break;
+                case 404:
+                    notify("Error 404", "Server messing up?", "error");
+                    break;
+                case 403:
+                    notify("Protected Region", "This region is protected. (" + x + ", " + y + ") Move over a bit!", "error");
+                    delete tileSource.tileCollection[key];
+                    drawTiles();
+                    break;
+                case 500:
+                    notify("Error 500", "Server isn't feeling well right now.", "error");
+                    break;
+                case 507:
+                    notify("Error 507", "Out of local storage!");
+                    break;
+                default:
+                    notify("Hmm", "Unhandled status code " + code + " for tile " + x + ", " + y, "error");
+                    //console.log(code)
+                    break;
+            }
+        };
+
+        tileSource.saveTileAt(x, y, tileCanvas, onSaveResponse);
     };
 
     var updateDirtyTiles = underscore.throttle(function () {

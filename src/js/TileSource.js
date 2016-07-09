@@ -1,4 +1,9 @@
 'use strict'
+/*
+Fukit. Promise performance sucks. Small improvemet with when.js but not
+good enough */
+
+//import when from 'when' <- shits rekt here.
 
 export const Tile = (x, y, tileSize = 256) => {
     const canvas = document.createElement('canvas')
@@ -15,7 +20,7 @@ export const Tile = (x, y, tileSize = 256) => {
     }
 
     pub.applyBlob = (blob) => {
-        return new Promise((resolve, reject) => {
+        return when.promise((resolve, reject) => {
             let img = new Image()
             img.onload = () => {
                 if(img.width === img.height === 0){
@@ -40,7 +45,7 @@ export const RestTileSource = (options) => {
 
     return {
         fetchTileAt: (x, y) => {
-            return new Promise((resolve, reject) => {
+            return when.promise((resolve, reject) => {
                 let key = x + '/' + y
                 if (tileCollection.hasOwnProperty(key)) {
                     if(tileCollection[key].ready){
@@ -87,7 +92,7 @@ export const RestTileSource = (options) => {
             let tileString = tile.toDataURL();
             let endpoint = url + 'canvases/main/1/' + key;
 
-            return new Promise((resolve, reject) => {
+            return when.promise((resolve, reject) => {
                 let blob = b64toBlob(tileString.substr(22), 'image/png');
 
                 fetch(endpoint, {
@@ -136,7 +141,7 @@ export const LocalStorageTileSource = (options) => {
     return {
         fetchTileAt: (x, y, cb) => {
             let key = x + '/' + y
-            return new Promise((resolve, reject) => {
+            return when.promise((resolve, reject) => {
                 /* cache lookup */
                 if (tileCollection.hasOwnProperty(key)) {
                     resolve(tileCollection[key])
@@ -170,7 +175,7 @@ export const LocalStorageTileSource = (options) => {
         },
         saveTileAt: (x, y, tile) => {
             var key = x + '/' + y;
-            return new Promise((resolve, reject) => {
+            return when.promise((resolve, reject) => {
                 try {
                     localStorage.setItem(key, tile.toDataURL());
                     resolve()
