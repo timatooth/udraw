@@ -9,6 +9,9 @@ const redis = require('redis');
 const http = require('http')
 const path = require('path');
 
+const StatsD = require('node-dogstatsd').StatsD;
+const dogstatsd = new StatsD();
+
 /** Boundary limit for fetching tiles */
 const tileRadius = 300;
 const patchPass = 'meh patch pass yo';
@@ -42,7 +45,17 @@ const canvasApiServer = () => {
     app.use(bodyParser.raw({type: 'image/png', limit: '250kb'}));
     app.use(bodyParser.json({type: 'application/json', limit: '250kb'}));
     app.use(cors());
-    
+
+    //datadog metrics
+    const dd_options = {
+      'response_code':true,
+      'tags': ['app:udraw']
+    }
+
+    const connect_datadog = require('connect-datadog')(dd_options);
+
+    app.use(connect_datadog);
+
     app.get('/',(req, res) => {
         res.sendFile(path.join(staticDir, 'index.html'));
     });
@@ -97,6 +110,7 @@ const canvasApiServer = () => {
         res.sendStatus(201);
         tileRedis.incr('putcount');
         tileRedis.hincrby("user:" + req.ip, "putcount", 1);
+        dogstatsd.increment('tile.saves');
     };
     
     app.get('/canvases/:name/:zoom/:x/:y', (req, res) => {
@@ -122,6 +136,7 @@ const canvasApiServer = () => {
             } else {
                 tileRedis.incr('getcount');
                 tileRedis.hincrby("user:" + req.ip, "getcount", 1);
+                dogstatsd.increment('tile.gets');
                 res.set('Content-Type', 'image/png');
                 res.send(reply);
             }

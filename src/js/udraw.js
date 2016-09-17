@@ -25,7 +25,7 @@ import { udrawAppReducer } from './reducers/udrawapp'
 $(document).ready(function () {
     var tileSize = 256;
     /** shows tile boundaries and extra console output */
-    var debug = true;
+    var debug = false;
     var lastPing = $.now();
     /**
      * Store states of other connected clients
@@ -91,7 +91,7 @@ $(document).ready(function () {
     var ctx = canvas.getContext('2d');
     /** Screen ratio is 2 for hdpi/retina displays */
     var ratio = 1;
-    var socket = new io('https://realtime.udraw.me', {reconnection: true});
+    var socket = new io('', {reconnection: true});
 
     var notify = underscore.debounce(function (title, message, type) {
         console.log(title, message, type)

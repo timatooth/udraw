@@ -3,6 +3,8 @@ const redis = require('redis');
 const adapter = require('socket.io-redis');
 const http = require('http');
 const socketio = require('socket.io');
+const StatsD = require('node-dogstatsd').StatsD;
+const dogstatsd = new StatsD();
 
 const websocketServer = () => {
     let app = require('express')();
@@ -24,6 +26,7 @@ const websocketServer = () => {
         tileRedis.incr("currentconnections");
         tileRedis.hset("user:" + ip, "lastconnect", Date.now() / 1000 | 0);
         tileRedis.hincrby("user:" + ip, "connectcount", 1);
+        dogstatsd.increment('websocket.connections');
         
         socket.emit('states', clientStates);
         
@@ -32,6 +35,7 @@ const websocketServer = () => {
                 delete clientStates[socket.id];
             }
             tileRedis.decr("currentconnections");
+            dogstatsd.increment('websocket.disconnections');
         });
 
         function inRadius(diamater, x, y, client) {
@@ -54,6 +58,7 @@ const websocketServer = () => {
                     io.to(key).emit('move', msg);
                 }
             });
+            dogstatsd.increment('websocket.move');
         });
         
         socket.on('pan', (msg) => {
@@ -62,6 +67,7 @@ const websocketServer = () => {
             if (clientStates.hasOwnProperty(socket.id)) {
                 clientStates[socket.id].offset = msg
             }
+            dogstatsd.increment('websocket.pan');
         });
         
         socket.on('ping', () => {
@@ -76,6 +82,7 @@ const websocketServer = () => {
             clientStates[socket.id] = msg;
             msg.id = socket.id;
             socket.broadcast.emit('status', msg);
+            dogstatsd.increment('websocket.statuschange');
         });
         
     });

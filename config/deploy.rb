@@ -35,7 +35,17 @@ desc "Restart app"
 task :restart_udraw do
   on roles(:app) do |host|
     within release_path do
-      execute :sudo, "supervisorctl update && supervisorctl restart udraw"
+      execute :sudo, "supervisorctl update && supervisorctl restart udraw:udraw-web-1"
+    end
+  end
+end
+
+#this is shitty but will do for now until cloudfront cdn is properly setup
+desc "Rebuild UI."
+task :rebuild_ui do
+  on roles(:app) do |host|
+    within release_path do
+      execute :npm, "install && npm run build:production"
     end
   end
 end
@@ -44,13 +54,8 @@ end
 after "deploy:published", "export_supervisor"
 after "export_supervisor", "reread_supervisor"
 after "reread_supervisor", "restart_udraw"
-# desc 'Restart application'
-# task :restart do
-#   on roles(:app), in: :sequence, wait: 5 do
-#     execute "sudo supervisorctl reread"
-#     execute "sudo supervisorctl restart udraw"
-#   end
-# end
+after "restart_udraw", "rebuild_ui"
+
 
 
 
