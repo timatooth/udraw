@@ -6,3 +6,4 @@ dist/
 .idea/
 public/js/
 npm-debug.log
+log/

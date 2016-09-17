@@ -1,7 +1,7 @@
 'use strict';
 const redis = require('redis');
 const adapter = require('socket.io-redis');
-const http = require('http')
+const http = require('http');
 const socketio = require('socket.io');
 
 const websocketServer = () => {
@@ -10,7 +10,7 @@ const websocketServer = () => {
     let io = socketio(httpServer);
     
     let tileRedis = redis.createClient(
-        process.env.REDIS_PORT || 6379, 
+        process.env.REDIS_PORT || 6379,
         process.env.REDIS_HOST || 'localhost',
         { return_buffers: true }
     );
@@ -33,7 +33,7 @@ const websocketServer = () => {
             }
             tileRedis.decr("currentconnections");
         });
-        
+
         function inRadius(diamater, x, y, client) {
             let r = diamater / 2;
             return x > -r + client.offsetX &&

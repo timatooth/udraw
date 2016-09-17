@@ -20,7 +20,7 @@ if (cluster.isMaster) {
         console.log(`worker ${worker.process.pid} died`);
     });
     
-    //TODO: Investigate best option forsocket.io for worker for session sanity. 
+    //TODO: Investigate best option forsocket.io for worker for session sanity.
     // e.g Ngix hasing or sticky-session with node clustering
     let socketPort = process.env.WEBSOCKET_PORT || 3001;
     websocketServer().listen(socketPort);

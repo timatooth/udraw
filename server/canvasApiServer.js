@@ -18,7 +18,7 @@ const staticDir = path.join(__dirname, '../public')
 const canvasApiServer = () => {
     
     let tileRedis = redis.createClient(
-        process.env.REDIS_PORT || 6379, 
+        process.env.REDIS_PORT || 6379,
         process.env.REDIS_HOST || 'localhost',
         { return_buffers: true }
     );
@@ -61,11 +61,11 @@ const canvasApiServer = () => {
             return res.sendStatus(404);
         } else if (Number(p.zoom) !== 1) {
             return res.sendStatus(404);
-        } else if 
+        } else if
         (Number(p.x) < -(tileRadius / 2) ||
         Number(p.x) > tileRadius / 2 ||
         Number(p.y) < -(tileRadius / 2) ||
-        Number(p.y) > tileRadius / 2) 
+        Number(p.y) > tileRadius / 2)
         {
             return res.sendStatus(416); //requested outside range
         }
