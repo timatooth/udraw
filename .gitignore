@@ -7,3 +7,4 @@ dist/
 public/js/
 npm-debug.log
 log/
+.bundle/
