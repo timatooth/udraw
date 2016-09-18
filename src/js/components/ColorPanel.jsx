@@ -6,26 +6,62 @@ export default class ColorPanel extends React.Component {
     constructor() {
         super();
 
-        //initial state is closed color picker
         this.state = {
             displayColorPicker: false,
-            color: { r: 51, g: 51, b: 51, a: 1 }
+            color: { r: 51, g: 51, b: 51, a: 1 },
+            mouseDownOnPuck: false,
+            currentPuckPos: {x: 0, y: 0},
+            size: 40,
+            didChangeSize: false
         };
 
-        this.handleColorButtonClick = this.handleColorButtonClick.bind(this);
+        this.onColorButtonMouseDown = this.onColorButtonMouseDown.bind(this);
+        this.onColorButtonMouseUp = this.onColorButtonMouseUp.bind(this);
         this.handleColorChange = this.handleColorChange.bind(this);
+        this.handleGlobalMouseMovePuckTarget = this.handleGlobalMouseMovePuckTarget.bind(this);
     }
 
-    handleColorButtonClick() {
-        console.log("button click");
+    onColorButtonMouseDown(evt) {
         this.setState({
-            displayColorPicker: !this.state.displayColorPicker, //toggle display. re calls render
-            mouseDownOnPuck: true
+            //displayColorPicker: !this.state.displayColorPicker, //toggle display. re calls render
+            mouseDownOnPuck: true,
+            currentPuckPos: {
+                x: evt.clientX,
+                y: evt.clientY
+            }
         });
+        window.addEventListener('mousemove', this.handleGlobalMouseMovePuckTarget)
+        window.addEventListener('mouseup', this.onColorButtonMouseUp)
     }
 
-    handleMouseMove(evt){
+    onColorButtonMouseUp(){
 
+        if(this.state.didChangeSize){
+            this.props.onSizeChange(this.state.size)
+        }
+
+        this.setState({
+            displayColorPicker: !this.state.displayColorPicker && !this.state.didChangeSize,
+            mouseDownOnPuck: false,
+            didChangeSize: false
+        });
+
+        window.removeEventListener('mousemove', this.handleGlobalMouseMovePuckTarget)
+        window.removeEventListener('mouseup', this.onColorButtonMouseUp)
+    }
+
+    handleGlobalMouseMovePuckTarget(evt){
+        let dX = evt.clientX - this.state.currentPuckPos.x
+        let dY = evt.clientY - this.state.currentPuckPos.y
+
+        //compute size
+        let proposedSize = this.state.size + dY + dX
+
+        this.setState({
+            currentPuckPos: {x: evt.clientX, y: evt.clientY},
+            size: ((proposedSize > 2 && proposedSize <= 60) ? proposedSize : this.state.size),
+            didChangeSize: true
+        })
     }
 
     handleColorChange(color){
@@ -39,12 +75,15 @@ export default class ColorPanel extends React.Component {
         var colorString = 'rgba(' + this.state.color.r + ', ' + this.state.color.g + ', ' + this.state.color.b + ', ' + this.state.color.a + ')';
         var buttonStyle = {
             color: colorString,
-            fontSize: 48 + 'px'
+            fontSize: ( (this.state.size > 10) ? this.state.size + 'px' : '10px'),
+            marginTop: '20px',
+            //cursor: 'all-scroll'
         };
 
         return (
             <div>
-                <div onClick={this.handleColorButtonClick } style={buttonStyle}><i className="icon ion-ios-circle-filled" /></div>
+                <div className="noselect" onMouseDown={this.onColorButtonMouseDown }
+                    style={buttonStyle}><i className="icon ion-ios-circle-filled" /></div>
                 <ColorPicker color={ this.state.color }
                              display={ this.state.displayColorPicker }
                              onChange={ this.handleColorChange }

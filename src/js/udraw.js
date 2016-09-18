@@ -214,10 +214,10 @@ $(document).ready(function () {
         console.log(message)
     }, 200);
 
-    //send out current tool state every 20 seconds
+    //send out current tool state every 2 seconds
     setInterval(function () {
         updateToolState();
-    }, 1000 * 20);
+    }, 1000 * 2);
 
     function drawTile(e, tile) {
         let destinationX = (tile.x * tileSize) - client.offsetX
@@ -262,10 +262,11 @@ $(document).ready(function () {
         var c = hexToRgb(state.color);
         var cs = "rgba(" + c.r + "," + c.g + "," + c.b + "," + state.opacity + ")";
 
-        if (state.tool === 'line') {
-            //drawLine(ctx, remoteClient.x, remoteClient.y, x, y, cs, state.size);
+        if (state.tool === 'pencil') {
             var ss = "rgba(" + c.r + "," + c.g + "," + c.b + "," + 0.1 + ")";
             drawSketchy(remoteClient, x, y, ss);
+        } else if (state.tool === 'line'){
+            drawLine(ctx, remoteClient.x, remoteClient.y, x, y, cs, state.size);
         } else if (state.tool === 'brush') {
             //drawCircle(ctx, x, y, cs, state.size / 2);
             drawBrush(ctx, remoteClient.x, remoteClient.y, x, y, cs, state.size);

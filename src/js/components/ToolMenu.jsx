@@ -8,7 +8,7 @@ import range from 'lodash.range';
 const MAIN_BUTTON_DIAM = 48;
 const CHILD_BUTTON_DIAM = 48;
 // The number of child buttons that fly out from the main button
-const NUM_CHILDREN = 4;
+const NUM_CHILDREN = 7;
 // Hard code the position values of the mainButton
 const M_X = 30;
 const M_Y = 30;
@@ -20,14 +20,14 @@ const OFFSET = 0.4;
 const SPRING_CONFIG = [500, 28];
 
 // How far away from the main button does the child buttons go
-const FLY_OUT_RADIUS = 130,
-    SEPARATION_ANGLE = 30, //degrees
+const FLY_OUT_RADIUS = 220,
+    SEPARATION_ANGLE = 15, //degrees
     FAN_ANGLE = (NUM_CHILDREN - 1) * SEPARATION_ANGLE, //degrees
     BASE_ANGLE = ((-90 - FAN_ANGLE)/2); // degrees
 
 // Names of icons for each button retreived from fontAwesome, we'll add a little extra just in case
 // the NUM_CHILDREN is changed to a bigger value
-let childButtonIcons = ['pencil', 'paint-brush', 'eraser', 'arrows', 'eyedropper', 'bolt', 'ban', 'code'];
+let childButtonIcons = ['pencil', 'paint-brush', 'eraser', 'arrows', 'eyedropper', 'certificate', 'stop'];
 
 const childButtonsCss = {
     position: 'absolute',
@@ -38,7 +38,7 @@ const childButtonsCss = {
     height: '50px',
     borderRadius: '100%',
     backgroundColor: 'white',
-    boxShadow: 'rgba(0, 0, 0, 0.2) 0px 1px 3px',
+    boxShadow: 'rgba(0, 0, 0, 0.4) 0px 1px 10px',
     color: '#8898A5',
 }
 // Utility functions
@@ -63,7 +63,7 @@ export class ToolMenu extends React.Component {
         this.state = {
             isOpen: false,
             childButtons: [],
-            activeIcon: 'pencil'
+            activeIcon: 'arrows'
         };
 
         // Bind this to the functions
@@ -140,10 +140,13 @@ export class ToolMenu extends React.Component {
         this.setState({activeIcon: childButtonIcons[clickedToolIndex]})
 
         const toolIndexToNames = [
-            'line',
+            'pencil',
             'brush',
             'eraser',
-            'move'
+            'move',
+            'eyedropper',
+            'spray',
+            'line'
         ]
 
         this.props.onToolClick(toolIndexToNames[clickedToolIndex], clickedToolIndex)

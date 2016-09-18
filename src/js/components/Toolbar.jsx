@@ -53,6 +53,7 @@ export class Toolbar extends React.Component {
 
         this.onToolClick = this.onToolClick.bind(this)
         this.onColorChange = this.onColorChange.bind(this)
+        this.onSizeChange = this.onSizeChange.bind(this)
     }
 
     componentDidMount() {
@@ -89,13 +90,17 @@ export class Toolbar extends React.Component {
         this.props.legacyClient.state.color = '#' + color.hex
     }
 
+    onSizeChange(size){
+        this.props.legacyClient.state.size = size
+    }
+
     render() {
         let activeTool = this.state.toolState.tool;
         return (
             <div className="Toolbar">
                 <ToolMenu onToolClick={this.onToolClick} />
-                <ColorPanel onColorChange={this.onColorChange} size={this.state.toolState.size } />
-                <div>
+                <ColorPanel onColorChange={this.onColorChange} size={this.state.toolState.size } onSizeChange={this.onSizeChange} />
+                <div className="noselect">
                     {this.state.offset.x + ", " + this.state.offset.y }
                 </div>
             </div>
