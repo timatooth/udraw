@@ -14,8 +14,6 @@ export class CursorContainer extends React.Component {
     componentDidMount(){
         //bad state handling
         this.props.badEventHub.on('clientStates:move', (clientStates, offsetX, offsetY) => {
-            console.log('cursor container got clientStates move event')
-            console.log(clientStates)
             this.setState({
                 clientStates: clientStates,
                 offsetX: offsetX,

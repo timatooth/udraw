@@ -75,7 +75,7 @@ const websocketServer = () => {
         });
         
         socket.on('status', (msg) => {
-            if (msg.size > 60 || msg.size < 1 || msg.opacity > 1 || msg.opacity < 0) {
+            if (msg.size > 120 || msg.size < 1 || msg.opacity > 1 || msg.opacity < 0) {
                 tileRedis.sadd("malicious", ip);
                 return;
             }

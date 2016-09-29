@@ -31,7 +31,9 @@ export default class ColorPanel extends React.Component {
             }
         });
         window.addEventListener('mousemove', this.handleGlobalMouseMovePuckTarget)
+        window.addEventListener('touchmove', this.handleGlobalMouseMovePuckTarget)
         window.addEventListener('mouseup', this.onColorButtonMouseUp)
+        window.addEventListener('touchend', this.onColorButtonMouseUp)
     }
 
     onColorButtonMouseUp(){
@@ -47,19 +49,31 @@ export default class ColorPanel extends React.Component {
         });
 
         window.removeEventListener('mousemove', this.handleGlobalMouseMovePuckTarget)
+        window.removeEventListener('touchmove', this.handleGlobalMouseMovePuckTarget)
         window.removeEventListener('mouseup', this.onColorButtonMouseUp)
+        window.removeEventListener('touchend', this.onColorButtonMouseUp)
     }
 
     handleGlobalMouseMovePuckTarget(evt){
-        let dX = evt.clientX - this.state.currentPuckPos.x
-        let dY = evt.clientY - this.state.currentPuckPos.y
+        let x, y, dX, dY;
+
+        if (evt instanceof TouchEvent) {
+            x = evt.touches[0].clientX
+            y = evt.touches[0].clientY
+        } else {
+            x = evt.clientX
+            y = evt.clientY
+        }
+
+        dX = x - this.state.currentPuckPos.x
+        dY = y - this.state.currentPuckPos.y
 
         //compute size
         let proposedSize = this.state.size + dY + dX
 
         this.setState({
-            currentPuckPos: {x: evt.clientX, y: evt.clientY},
-            size: ((proposedSize > 2 && proposedSize <= 60) ? proposedSize : this.state.size),
+            currentPuckPos: {x, y},
+            size: ((proposedSize > 2 && proposedSize <= 120) ? proposedSize : this.state.size),
             didChangeSize: true
         })
     }
@@ -82,8 +96,12 @@ export default class ColorPanel extends React.Component {
 
         return (
             <div>
-                <div className="noselect" onMouseDown={this.onColorButtonMouseDown }
-                    style={buttonStyle}><i className="icon ion-ios-circle-filled" /></div>
+                <div className="noselect"
+                    onMouseDown={this.onColorButtonMouseDown}
+                    onTouchStart={this.onColorButtonMouseDown}
+                    style={buttonStyle}><i className="noselect icon ion-ios-circle-filled"
+                />
+                </div>
                 <ColorPicker color={ this.state.color }
                              display={ this.state.displayColorPicker }
                              onChange={ this.handleColorChange }

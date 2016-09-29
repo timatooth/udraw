@@ -199,7 +199,7 @@ $(document).ready(function () {
     }
 
     var updateToolState = underscore.debounce(function () {
-        console.log("sending tool state")
+
         var message = {
             tool: client.state.tool,
             color: client.state.color,
@@ -211,7 +211,6 @@ $(document).ready(function () {
         localStorage.setItem("toolsettings", JSON.stringify(client.state));
 
         socket.emit('status', message);
-        console.log(message)
     }, 200);
 
     //send out current tool state every 2 seconds

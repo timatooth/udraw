@@ -30,7 +30,7 @@ export class UdrawApp extends React.Component {
 
     render() {
         let {store, legacyClient, clientStates, badEventHub} = this.props
-        console.log(badEventHub)
+
         return (
             <div>
                 <CursorContainer store={store} clientStates={clientStates} badEventHub={ badEventHub} />
