@@ -5,6 +5,8 @@ nbproject/
 dist/
 .idea/
 public/js/
+public/*.png
+public/*.html
 npm-debug.log
 log/
 .bundle/

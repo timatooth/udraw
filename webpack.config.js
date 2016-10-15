@@ -1,5 +1,6 @@
 var path = require('path');
 var webpack = require('webpack');
+var HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
     entry: {
@@ -31,5 +32,9 @@ module.exports = {
     },
     plugins: [
         new webpack.HotModuleReplacementPlugin(), //not needed when using webpack-dev-server from CLI
+        new HtmlWebpackPlugin({
+          title: 'Custom template',
+          template: 'src/index.ejs',
+        })
     ]
 };
