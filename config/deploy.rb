@@ -41,19 +41,20 @@ task :restart_udraw do
 end
 
 #this is shitty but will do for now until cloudfront cdn is properly setup
-# desc "Rebuild UI."
-# task :rebuild_ui do
-#   on roles(:app) do |host|
-#     within release_path do
-#       execute :npm, "install && npm run build:production"
-#     end
-#   end
-# end
+desc "Rebuild UI."
+task :rebuild_ui do
+  on roles(:app) do |host|
+    within release_path do
+      execute :npm, "install && npm run build:production"
+    end
+  end
+end
 
 
 after "deploy:published", "export_supervisor"
 after "export_supervisor", "reread_supervisor"
 after "reread_supervisor", "restart_udraw"
+after "restart_udraw", "rebuild_ui"
 
 
 
