@@ -54,7 +54,6 @@ end
 after "deploy:published", "export_supervisor"
 after "export_supervisor", "reread_supervisor"
 after "reread_supervisor", "restart_udraw"
-after "restart_udraw", "rebuild_ui"
 
 
 

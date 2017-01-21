@@ -1,5 +1,20 @@
 import React from 'react'
-import ColorPicker from 'react-color'
+//import ColorPicker from 'react-color'
+import ChromePicker from 'react-color'
+
+//wrapper for old react-color behaviour which is now missing the display prop
+function ReactColorPanel(props){
+    if(props.display) {
+        return (
+            <ChromePicker
+                color={ props.color }
+                onChangeComplete={ props.onChangeComplete }
+                onChange={ props.onChange } />
+        )
+    }
+
+    return null;
+}
 
 export default class ColorPanel extends React.Component {
 
@@ -99,15 +114,14 @@ export default class ColorPanel extends React.Component {
                 <div className="noselect"
                     onMouseDown={this.onColorButtonMouseDown}
                     onTouchStart={this.onColorButtonMouseDown}
-                    style={buttonStyle}><i className="noselect icon ion-ios-circle-filled"
-                />
+                    style={buttonStyle}>
+                    <i className="noselect icon ion-ios-circle-filled"/>
                 </div>
-                <ColorPicker color={ this.state.color }
-                             display={ this.state.displayColorPicker }
-                             onChange={ this.handleColorChange }
-                             onClose={ () => this.setState({displayColorPicker: !this.state.displayColorPicker}) }
-                             type="chrome"
-                />
+                <ReactColorPanel
+                    color={this.state.color}
+                    display={this.state.displayColorPicker}
+                    onChangeComplete={ () => this.setState({displayColorPicker: !this.state.displayColorPicker}) }
+                    onChange={this.handleColorChange} />
             </div>
         );
     }

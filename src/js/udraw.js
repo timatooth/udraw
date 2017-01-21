@@ -78,7 +78,6 @@ $(document).ready(function () {
     };
     
     let store = createStore( udrawAppReducer );
-    console.log(store)
 
     ReactDOM.render(
         <UdrawApp store={store} legacyClient={client} clientStates={clientStates} badEventHub={badEventHub} />,
@@ -411,7 +410,6 @@ $(document).ready(function () {
                     break;
                 default:
                     notify("Hmm", "Unhandled status code " + code + " for tile " + x + ", " + y, "error");
-                    //console.log(code)
                     break;
             }
         };

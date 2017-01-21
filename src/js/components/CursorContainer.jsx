@@ -28,7 +28,7 @@ export class CursorContainer extends React.Component {
 
             var screenX = (clientState.x - 256 - this.state.offsetX) / 2;
             var screenY = (clientState.y - 256 - this.state.offsetY) / 2;
-            console.log(clientState)
+
             let style = {
                 //transform: "translate(" + (screenX ) + "px, " + (screenY) + "px)"
                 left: screenX,
