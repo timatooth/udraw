@@ -88,6 +88,7 @@ export class Toolbar extends React.Component {
 
     onColorChange(color){
         this.props.legacyClient.state.color = color.hex
+        this.props.legacyClient.state.opacity = color.rgb.a
     }
 
     onSizeChange(size){

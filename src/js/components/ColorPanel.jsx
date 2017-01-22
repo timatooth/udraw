@@ -23,7 +23,7 @@ export default class ColorPanel extends React.Component {
 
         this.state = {
             displayColorPicker: false,
-            color: { r: 51, g: 51, b: 51, a: 1 },
+            color: {rgb: { r: 51, g: 51, b: 51, a: 1 }},
             mouseDownOnPuck: false,
             currentPuckPos: {x: 0, y: 0},
             size: 40,
@@ -95,13 +95,13 @@ export default class ColorPanel extends React.Component {
 
     handleColorChange(color){
         this.setState({
-            color: color.rgb
+            color: color
         });
         this.props.onColorChange(color)
     }
 
     render() {
-        var colorString = 'rgba(' + this.state.color.r + ', ' + this.state.color.g + ', ' + this.state.color.b + ', ' + this.state.color.a + ')';
+        var colorString = 'rgba(' + this.state.color.rgb.r + ', ' + this.state.color.rgb.g + ', ' + this.state.color.rgb.b + ', ' + this.state.color.rgb.a + ')';
         var buttonStyle = {
             color: colorString,
             fontSize: ( (this.state.size > 10) ? this.state.size + 'px' : '10px'),
@@ -118,9 +118,8 @@ export default class ColorPanel extends React.Component {
                     <i className="noselect icon ion-ios-circle-filled"/>
                 </div>
                 <ReactColorPanel
-                    color={this.state.color}
+                    color={this.state.color.rgb}
                     display={this.state.displayColorPicker}
-                    onChangeComplete={ () => this.setState({displayColorPicker: !this.state.displayColorPicker}) }
                     onChange={this.handleColorChange} />
             </div>
         );
