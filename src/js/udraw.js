@@ -1,7 +1,7 @@
 /*
  udraw
 
- (c) 2015-2016 Tim Sullivan
+ (c) 2015-2017 Tim Sullivan
  udraw may be freely distributed under the MIT license.
  For all details and documentation: github.com/timatooth/udraw
  */
@@ -22,21 +22,23 @@ import RestTileSource from './RestTileSource'
 import {createStore } from 'redux'
 import { udrawAppReducer } from './reducers/udrawapp'
 
+const EMIT_DELAY = 10;
+
 $(document).ready(function () {
-    var tileSize = 256;
+    const tileSize = 256;
     /** shows tile boundaries and extra console output */
-    var debug = false;
-    var lastPing = $.now();
+    const debug = false;
+    let lastPing = $.now();
     /**
      * Store states of other connected clients
      * @type type
      */
-    var clientStates = {};
+    let clientStates = {};
     /**
      * The visible region to draw on screen.
      * @type Extent
      */
-    var extent = {
+    let extent = {
         width: window.innerWidth * ratio,
         height: window.innerHeight * ratio
     };
@@ -52,7 +54,7 @@ $(document).ready(function () {
     let badEventHub = new EventHub();
 
 
-    var tileSource = new RestTileSource({
+    let tileSource = new RestTileSource({
         debug: debug,
         //url: 'https://udraw.me' //default is /
     });
@@ -61,7 +63,7 @@ $(document).ready(function () {
      * Hold all information about the state of the local client
      * @type Client
      */
-    var client = {
+    let client = {
         state: {
             tool: 'move',
             color: '#222222',
@@ -84,15 +86,15 @@ $(document).ready(function () {
         document.getElementById('udrawapp')
     );
 
-    var canvas = document.getElementById("paper");
+    let canvas = document.getElementById("paper");
     canvas.width = window.innerWidth + tileSize * 2;
     canvas.height = window.innerHeight + tileSize * 2;
-    var ctx = canvas.getContext('2d');
+    let ctx = canvas.getContext('2d');
     /** Screen ratio is 2 for hdpi/retina displays */
-    var ratio = 1;
-    var socket = new io('', {reconnection: true});
+    let ratio = 1;
+    let socket = new io('', {reconnection: true});
 
-    var notify = underscore.debounce(function (title, message, type) {
+    let notify = underscore.debounce(function (title, message, type) {
         console.log(title, message, type)
     }, 500);
 
@@ -117,9 +119,9 @@ $(document).ready(function () {
     }
 
     function drawSketchy(remoteClient, x, y, colorString) {
-        var i, dx, dy, d;
+        let i, dx, dy, d;
         //push past points to client
-        var points = remoteClient.points;
+        let points = remoteClient.points;
 
         //store the
         points.push([x + client.offsetX, y + client.offsetY]);
@@ -129,8 +131,8 @@ $(document).ready(function () {
         ctx.moveTo(remoteClient.x, remoteClient.y); //prev
         ctx.lineTo(x, y); //latest
         ctx.stroke();
-        var pointCount = remoteClient.pointCount;
-        var threshold = 4000;
+        let pointCount = remoteClient.pointCount;
+        let threshold = 4000;
         //credit to mrdoob's 'harmony' drawing page.
         for (i = 0; i < points.length; i++) {
             dx = points[i][0] - points[pointCount][0];
@@ -149,11 +151,11 @@ $(document).ready(function () {
 
     function hexToRgb(hex) {
         // Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
-        var shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+        let shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
         hex = hex.replace(shorthandRegex, function (ignore, r, g, b) {
             return r + r + g + g + b + b;
         });
-        var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
         return {
             r: parseInt(result[1], 16),
             g: parseInt(result[2], 16),
@@ -183,23 +185,23 @@ $(document).ready(function () {
 
     function sprayCan(ctx, x, y, color, size) {
         // Particle count
-        var count = size * 4;
+        let count = size * 4;
         ctx.fillStyle = color;
-        for (var i = 0; i < count; i++) {
-            var randomAngle = Math.random() * (2 * Math.PI);
-            var randomRadius = Math.random() * size;
-            var ox = Math.cos(randomAngle) * randomRadius;
-            var oy = Math.sin(randomAngle) * randomRadius;
-            var xLocation = x + ox;
-            var yLocation = y + oy;
+        for (let i = 0; i < count; i++) {
+            let randomAngle = Math.random() * (2 * Math.PI);
+            let randomRadius = Math.random() * size;
+            let ox = Math.cos(randomAngle) * randomRadius;
+            let oy = Math.sin(randomAngle) * randomRadius;
+            let xLocation = x + ox;
+            let yLocation = y + oy;
 
             ctx.fillRect(xLocation, yLocation, 1, 1);
         }
     }
 
-    var updateToolState = underscore.debounce(function () {
+    let updateToolState = underscore.debounce(function () {
 
-        var message = {
+        let message = {
             tool: client.state.tool,
             color: client.state.color,
             size: client.state.size,
@@ -225,7 +227,7 @@ $(document).ready(function () {
 
     function drawTiles() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        var x, y, xTile, yTile;
+        let x, y, xTile, yTile;
         for (y = client.offsetY; y < client.offsetY + extent.height + tileSize * 2; y += tileSize) {
             for (x = client.offsetX; x < client.offsetX + extent.width + tileSize * 2; x += tileSize) {
                 xTile = Math.floor(x / tileSize);
@@ -244,8 +246,8 @@ $(document).ready(function () {
             updateUrl("/" + client.offsetX + "/" + client.offsetY);
         }
 
-        if ($.now() - lastEmit > 60) { //only send pan message every 60ms
-            var panMessage = {
+        if ($.now() - lastEmit > EMIT_DELAY) { //only send pan message every 60ms
+            let panMessage = {
                 offsetX: client.offsetX * ratio,
                 offsetY: client.offsetY * ratio
             };
@@ -256,12 +258,12 @@ $(document).ready(function () {
     }
 
     function processDrawAction(remoteClient, x, y) {
-        var state = remoteClient.state;
-        var c = hexToRgb(state.color);
-        var cs = "rgba(" + c.r + "," + c.g + "," + c.b + "," + state.opacity + ")";
+        let state = remoteClient.state;
+        let c = hexToRgb(state.color);
+        let cs = "rgba(" + c.r + "," + c.g + "," + c.b + "," + state.opacity + ")";
 
         if (state.tool === 'pencil') {
-            var ss = "rgba(" + c.r + "," + c.g + "," + c.b + "," + 0.1 + ")";
+            let ss = "rgba(" + c.r + "," + c.g + "," + c.b + "," + 0.1 + ")";
             drawSketchy(remoteClient, x, y, ss);
         } else if (state.tool === 'line'){
             drawLine(ctx, remoteClient.x, remoteClient.y, x, y, cs, state.size);
@@ -282,11 +284,11 @@ $(document).ready(function () {
      * @returns {String} color in hex format with # prefixed
      */
     function updatePixelColor(x, y) {
-        var pxData = ctx.getImageData(x, y, 1, 1);
-        var colorString = "rgb(" + pxData.data[0] + "," + pxData.data[1] + "," + pxData.data[2] + ")";
+        let pxData = ctx.getImageData(x, y, 1, 1);
+        let colorString = "rgb(" + pxData.data[0] + "," + pxData.data[1] + "," + pxData.data[2] + ")";
 
         function componentToHex(c) {
-            var hex = c.toString(16);
+            let hex = c.toString(16);
             return hex.length === 1 ? "0" + hex : hex;
         }
 
@@ -294,7 +296,7 @@ $(document).ready(function () {
             return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
         }
         client.state.color = rgbToHex(pxData.data[0], pxData.data[1], pxData.data[2]);
-        var opacity = pxData.data[3] / 255;
+        let opacity = pxData.data[3] / 255;
         client.state.opacity = opacity;
         if (client.state.opacity < 0.01) { //fix when they click completely transparent area
             client.state.opacity = 0.03;
@@ -304,7 +306,7 @@ $(document).ready(function () {
         return colorString;
     }
 
-    var updateUrl = underscore.debounce(function (key) {
+    let updateUrl = underscore.debounce(function (key) {
         //history.replaceState(null, null, key); disabled for now
     }, 500);
 
@@ -317,8 +319,8 @@ $(document).ready(function () {
      * @returns {undefined}
      */
     function processMoveAction(client, x, y) {
-        var dx = client.x - x;
-        var dy = client.y - y;
+        let dx = client.x - x;
+        let dy = client.y - y;
         panScreen(dx, dy);
         client.x = x;
         client.y = y;
@@ -328,7 +330,7 @@ $(document).ready(function () {
      * Key event bindings
      */
     $(document).on('keydown keypress keyup', function (evt) {
-        var s = 40;
+        let s = 40;
         switch (evt.keyCode) {
             //move keys
             case 37:
@@ -378,10 +380,10 @@ $(document).ready(function () {
         }
     });
 
-    var saveTileAt = function (x, y, tileCanvas) {
-        var key = x + '/' + y;
+    let saveTileAt = function (x, y, tileCanvas) {
+        let key = x + '/' + y;
 
-        var onSaveResponse = function(code){
+        let onSaveResponse = function(code){
             switch(code) {
                 case 201:
                     break; //successfully saved.
@@ -417,17 +419,17 @@ $(document).ready(function () {
         tileSource.saveTileAt(x, y, tileCanvas, onSaveResponse);
     };
 
-    var updateDirtyTiles = underscore.throttle(function () {
+    let updateDirtyTiles = underscore.throttle(function () {
         Object.keys(tileSource.tileCollection).forEach(function (tileKey) {
             if (tileSource.tileCollection[tileKey].dirty) {
-                var tile = tileSource.tileCollection[tileKey];
+                let tile = tileSource.tileCollection[tileKey];
                 //find it onscreen
-                var posx = tile.x * tileSize - client.offsetX;
-                var posy = tile.y * tileSize - client.offsetY;
-                var ofc = document.createElement("canvas");
+                let posx = tile.x * tileSize - client.offsetX;
+                let posy = tile.y * tileSize - client.offsetY;
+                let ofc = document.createElement("canvas");
                 ofc.width = tileSize;
                 ofc.height = tileSize;
-                var oCtx = ofc.getContext('2d');
+                let oCtx = ofc.getContext('2d');
                 oCtx.drawImage(canvas, posx, posy, tileSize, tileSize, 0, 0, tileSize, tileSize);
                 //swap
                 tileSource.tileCollection[tileKey].canvas = ofc;
@@ -448,11 +450,11 @@ $(document).ready(function () {
      */
     function clearTileCache() {
         Object.keys(tileSource.tileCollection).forEach(function (tileKey) {
-            var tile = tileSource.tileCollection[tileKey];
-            var xMin = Math.floor((client.offsetX - tileSize) / tileSize);
-            var xMax = Math.floor((client.offsetX + tileSize + extent.width) / tileSize) + 1;
-            var yMin = Math.floor((client.offsetY - tileSize) / tileSize);
-            var yMax = Math.floor((client.offsetY + tileSize + extent.height) / tileSize) + 1;
+            let tile = tileSource.tileCollection[tileKey];
+            let xMin = Math.floor((client.offsetX - tileSize) / tileSize);
+            let xMax = Math.floor((client.offsetX + tileSize + extent.width) / tileSize) + 1;
+            let yMin = Math.floor((client.offsetY - tileSize) / tileSize);
+            let yMax = Math.floor((client.offsetY + tileSize + extent.height) / tileSize) + 1;
             if (tile.x < xMin - 1 || tile.x > xMax || tile.y < yMin - 1 || tile.y > yMax) {
                 delete tileSource.tileCollection[tileKey];
             }
@@ -468,12 +470,12 @@ $(document).ready(function () {
      * @returns {Array} x,y coordinates if parsed successfully otherwise null
      */
     function parseUriArgs() {
-        var aURL = window.location.href;
-        var vars = aURL.slice(aURL.indexOf('/') + 2).split('/');
+        let aURL = window.location.href;
+        let vars = aURL.slice(aURL.indexOf('/') + 2).split('/');
         if (vars.length === 3) {
-            var parsedX = parseInt(vars[1]);
-            var parsedY = parseInt(vars[2]);
-            var l = 150 * tileSize;
+            let parsedX = parseInt(vars[1]);
+            let parsedY = parseInt(vars[2]);
+            let l = 150 * tileSize;
             if (!isNaN(parsedX) && !isNaN(parsedY)) {
                 if (parsedX < -l || parsedX > l || parsedY < -l || parsedY > l) {
                     return null;
@@ -520,7 +522,7 @@ $(document).ready(function () {
     });
 
     socket.on('pong', function () {
-        var latency = $.now() - lastPing;
+        let latency = $.now() - lastPing;
     });
 
     socket.on('states', function (data) {
@@ -546,16 +548,16 @@ $(document).ready(function () {
             clientStates[packet.id].updated = $.now();
         }
 
-        var remoteClient = clientStates[packet.id];
-        var x = packet.x - client.offsetX;
-        var y = packet.y - client.offsetY;
+        let remoteClient = clientStates[packet.id];
+        let x = packet.x - client.offsetX;
+        let y = packet.y - client.offsetY;
         //is the user in our viewport extent?
         if (packet.x > client.offsetX + tileSize &&
                 packet.x < extent.width + client.offsetX + tileSize * 2 &&
                 packet.y > client.offsetY &&
                 packet.y < extent.height + client.offsetY + tileSize * 2) {
-            var screenX = (packet.x - (tileSize) - client.offsetX) / ratio;
-            var screenY = (packet.y - (tileSize) - client.offsetY) / ratio;
+            let screenX = (packet.x - (tileSize) - client.offsetX) / ratio;
+            let screenY = (packet.y - (tileSize) - client.offsetY) / ratio;
             //update the cursor
             //$(clientStates[packet.id].cursor).show(); //if was hidden
             // $(clientStates[packet.id].cursor).css({
@@ -567,9 +569,9 @@ $(document).ready(function () {
 
                 //dirty the tile
                 //set the 'tile' to be recached
-                var tileX = Math.floor((x + client.offsetX) / tileSize);
-                var tileY = Math.floor((y + client.offsetY) / tileSize);
-                var key = tileX + '/' + tileY;
+                let tileX = Math.floor((x + client.offsetX) / tileSize);
+                let tileY = Math.floor((y + client.offsetY) / tileSize);
+                let key = tileX + '/' + tileY;
                 tileSource.tileCollection[key].dirty = true;
                 updateDirtyTiles();
             }
@@ -613,10 +615,10 @@ $(document).ready(function () {
      * call every 500ms.
      * @type {function}
      */
-    var resizeLayout = underscore.debounce(function () {
+    let resizeLayout = underscore.debounce(function () {
         //hdpi support
-        var devicePixelRatio = window.devicePixelRatio || 1;
-        var backingStoreRatio = ctx.webkitBackingStorePixelRatio ||
+        let devicePixelRatio = window.devicePixelRatio || 1;
+        let backingStoreRatio = ctx.webkitBackingStorePixelRatio ||
                 ctx.mozBackingStorePixelRatio ||
                 ctx.msBackingStorePixelRatio ||
                 ctx.oBackingStorePixelRatio ||
@@ -634,8 +636,8 @@ $(document).ready(function () {
         };
 
         if (devicePixelRatio !== backingStoreRatio) {
-            var oldWidth = canvas.width;
-            var oldHeight = canvas.height;
+            let oldWidth = canvas.width;
+            let oldHeight = canvas.height;
             canvas.width = oldWidth * ratio;
             canvas.height = oldHeight * ratio;
             canvas.style.width = oldWidth + 'px';
@@ -650,7 +652,7 @@ $(document).ready(function () {
 
     /* History URI API */
     window.onpopstate = function () {
-        var givenOffsets = parseUriArgs();
+        let givenOffsets = parseUriArgs();
 
         if (givenOffsets !== null) {
             client.offsetX = givenOffsets[0];
@@ -674,7 +676,7 @@ $(document).ready(function () {
             client.y = evt.originalEvent.touches[0].clientY * ratio + tileSize;
             client.m1Down = true;
             //send a move setting drawing to true to say where they draw from
-            var message = {
+            let message = {
                 x: ((client.x / ratio) * ratio) + client.offsetX,
                 y: ((client.y / ratio) * ratio) + client.offsetY,
                 d1: false //they aren't really drawing yet...
@@ -693,8 +695,8 @@ $(document).ready(function () {
 
         //admin protection
         if (client.m1Down && client.state.tool === 'wand') {
-            var tileX = Math.floor((client.x + client.offsetX) / tileSize);
-            var tileY = Math.floor((client.y + client.offsetY) / tileSize);
+            let tileX = Math.floor((client.x + client.offsetX) / tileSize);
+            let tileY = Math.floor((client.y + client.offsetY) / tileSize);
             //protectTileAt(tileX, tileY); redo
         } else if (client.m1Down && client.state.tool === 'eyedropper') {
             updatePixelColor(client.x, client.y);
@@ -714,7 +716,7 @@ $(document).ready(function () {
             client.m1Down = false;
             updateDirtyTiles();
             //send a move setting drawing to false
-            var moveMessage = {
+            let moveMessage = {
                 x: ((client.x / ratio) * ratio) + client.offsetX,
                 y: ((client.y / ratio) * ratio) + client.offsetY,
                 d1: client.m1Down
@@ -734,7 +736,7 @@ $(document).ready(function () {
     });
 
     /** Stores time for when last mouse movement packet was sent **/
-    var lastEmit = $.now();
+    let lastEmit = $.now();
 
     /**
      * When the mouse moves process draw actions or movement.
@@ -742,9 +744,9 @@ $(document).ready(function () {
      * @param {jQuery} evt Incoming event
      */
     $(canvas).on('mousemove touchmove', function (evt) {
-        var moveMessage;
-        var x, y;
-        var touchPanning = false; //flag for mobile devices panning
+        let moveMessage;
+        let x, y;
+        let touchPanning = false; //flag for mobile devices panning
         if (evt.type === "touchmove") {
             evt.preventDefault();
             x = evt.originalEvent.touches[0].clientX * ratio + tileSize;
@@ -761,12 +763,12 @@ $(document).ready(function () {
         //far out. that logic...
         if (client.m1Down && client.state.tool !== 'move' && client.state.tool !== 'wand' && client.state.tool !== 'eyedropper' && !touchPanning) {
             processDrawAction(client, x, y);
-            var shadow = 0;
+            let shadow = 0;
             if (client.state.tool === 'brush') {
                 shadow = client.state.size * 0.8;
             }
             // we need to factor in the size of the brush which might overlap more than one tile
-            var i, tileX, tileY, key;
+            let i, tileX, tileY, key;
             for (i = -(client.state.size / 2) - shadow; i < (client.state.size / 2) + shadow; i += 1) {
                 //set the 'tile' to be recached
                 tileX = Math.floor((x + client.offsetX + i) / tileSize);
@@ -819,7 +821,7 @@ $(document).ready(function () {
      * @returns {undefined}
      */
     function initTheBusiness() {
-        var givenOffsets = parseUriArgs();
+        let givenOffsets = parseUriArgs();
 
         if (givenOffsets !== null) {
             client.offsetX = givenOffsets[0];
