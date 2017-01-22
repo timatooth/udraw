@@ -2,6 +2,17 @@ import React from 'react'
 //import ColorPicker from 'react-color'
 import ChromePicker from 'react-color'
 
+
+/**
+Set a timeout under 200ms to wait for movements before
+bringing up the colour panel
+*/
+const DOWN_WAIT_THRESHOLD = 150;
+
+//hold reference to a global timeout to distingush between a tap and a tap-drag
+// to improve UX with the color-puck
+let mouseTouchMoveTimeout;
+
 //wrapper for old react-color behaviour which is now missing the display prop
 function ReactColorPanel(props){
     if(props.display) {
@@ -45,13 +56,21 @@ export default class ColorPanel extends React.Component {
                 y: evt.clientY
             }
         });
-        window.addEventListener('mousemove', this.handleGlobalMouseMovePuckTarget)
-        window.addEventListener('touchmove', this.handleGlobalMouseMovePuckTarget)
+
+        //add a delay to listening from touch/move to improve UX
+        mouseTouchMoveTimeout = setTimeout(() => {
+            window.addEventListener('mousemove', this.handleGlobalMouseMovePuckTarget)
+            window.addEventListener('touchmove', this.handleGlobalMouseMovePuckTarget)
+        }, DOWN_WAIT_THRESHOLD)
+
         window.addEventListener('mouseup', this.onColorButtonMouseUp)
         window.addEventListener('touchend', this.onColorButtonMouseUp)
     }
 
     onColorButtonMouseUp(){
+
+        //cancel any pending move listeners
+        clearTimeout(mouseTouchMoveTimeout)
 
         if(this.state.didChangeSize){
             this.props.onSizeChange(this.state.size)
@@ -62,7 +81,6 @@ export default class ColorPanel extends React.Component {
             mouseDownOnPuck: false,
             didChangeSize: false
         });
-
         window.removeEventListener('mousemove', this.handleGlobalMouseMovePuckTarget)
         window.removeEventListener('touchmove', this.handleGlobalMouseMovePuckTarget)
         window.removeEventListener('mouseup', this.onColorButtonMouseUp)
@@ -115,7 +133,7 @@ export default class ColorPanel extends React.Component {
                     onMouseDown={this.onColorButtonMouseDown}
                     onTouchStart={this.onColorButtonMouseDown}
                     style={buttonStyle}>
-                    <i className="noselect icon ion-ios-circle-filled"/>
+                    <i style={{textShadow: 'rgba(0, 0, 0, 0.05) 0px 1px 1px'}} className="noselect icon ion-ios-circle-filled"/>
                 </div>
                 <ReactColorPanel
                     color={this.state.color.rgb}
