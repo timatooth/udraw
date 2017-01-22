@@ -22,10 +22,11 @@ import RestTileSource from './RestTileSource'
 import {createStore } from 'redux'
 import { udrawAppReducer } from './reducers/udrawapp'
 
+import {drawLine, drawSketchy, drawBrush, eraseRegion, sprayCan} from './drawing'
+
 const EMIT_DELAY = 10;
-
-
 const tileSize = 256;
+
 /** shows tile boundaries and extra console output */
 const debug = false;
 let lastPing = $.now();
@@ -92,9 +93,10 @@ canvas.height = window.innerHeight + tileSize * 2;
 let ctx = canvas.getContext('2d');
 /** Screen ratio is 2 for hdpi/retina displays */
 let ratio = 1;
-let socket = new io('', {reconnection: true});
 
-let notify = underscore.debounce(function (title, message, type) {
+let socket = new io('http://localhost:3001', {reconnection: true});
+
+const notify = underscore.debounce(function (title, message, type) {
     console.log(title, message, type)
 }, 500);
 
@@ -105,48 +107,6 @@ function inIframe() {
     } catch (e) {
         return true;
     }
-}
-
-function drawLine(ctx, fromx, fromy, tox, toy, color, size) {
-    ctx.beginPath(); //need to enclose in begin/close for colour settings to work
-    ctx.strokeStyle = color;
-    ctx.lineWidth = size;
-    ctx.lineCap = 'butt';
-    ctx.moveTo(fromx, fromy);
-    ctx.lineTo(tox, toy);
-    ctx.stroke();
-    ctx.closePath();
-}
-
-function drawSketchy(remoteClient, x, y, colorString) {
-    let i, dx, dy, d;
-    //push past points to client
-    let points = remoteClient.points;
-
-    //store the
-    points.push([x + client.offsetX, y + client.offsetY]);
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = colorString;
-    ctx.beginPath();
-    ctx.moveTo(remoteClient.x, remoteClient.y); //prev
-    ctx.lineTo(x, y); //latest
-    ctx.stroke();
-    let pointCount = remoteClient.pointCount;
-    let threshold = 4000;
-    //credit to mrdoob's 'harmony' drawing page.
-    for (i = 0; i < points.length; i++) {
-        dx = points[i][0] - points[pointCount][0];
-        dy = points[i][1] - points[pointCount][1];
-        d = dx * dx + dy * dy;
-
-        if (d < threshold && Math.random() > (d / threshold)) {
-            ctx.beginPath();
-            ctx.moveTo(points[pointCount][0] + (dx * 0.3) - client.offsetX, points[pointCount][1] + (dy * 0.3) - client.offsetY);
-            ctx.lineTo(points[i][0] - (dx * 0.3) - client.offsetX, points[i][1] - (dy * 0.3) - client.offsetY);
-            ctx.stroke();
-        }
-    }
-    remoteClient.pointCount++;
 }
 
 function hexToRgb(hex) {
@@ -163,43 +123,7 @@ function hexToRgb(hex) {
     };
 }
 
-function drawBrush(ctx, fromx, fromy, tox, toy, color, size) {
-    ctx.beginPath(); //need to enclose in begin/close for colour settings to work
-    ctx.strokeStyle = color;
-    ctx.lineWidth = size;
-    ctx.lineCap = "round";
-    //shadow
-    ctx.shadowBlur = size * 0; //disabled shadow
-    ctx.shadowColor = "black";
-    //
-    ctx.moveTo(fromx, fromy);
-    ctx.lineTo(tox, toy);
-    ctx.stroke();
-    ctx.closePath();
-    ctx.shadowBlur = 0; //set back to 0 othewise all drawings are shadowed?
-}
-
-function eraseRegion(ctx, x, y, radius) {
-    ctx.clearRect(x - radius, y - radius, radius, radius);
-}
-
-function sprayCan(ctx, x, y, color, size) {
-    // Particle count
-    let count = size * 4;
-    ctx.fillStyle = color;
-    for (let i = 0; i < count; i++) {
-        let randomAngle = Math.random() * (2 * Math.PI);
-        let randomRadius = Math.random() * size;
-        let ox = Math.cos(randomAngle) * randomRadius;
-        let oy = Math.sin(randomAngle) * randomRadius;
-        let xLocation = x + ox;
-        let yLocation = y + oy;
-
-        ctx.fillRect(xLocation, yLocation, 1, 1);
-    }
-}
-
-let updateToolState = underscore.debounce(function () {
+const updateToolState = underscore.debounce(function () {
 
     let message = {
         tool: client.state.tool,
@@ -264,7 +188,7 @@ function processDrawAction(remoteClient, x, y) {
 
     if (state.tool === 'pencil') {
         let ss = "rgba(" + c.r + "," + c.g + "," + c.b + "," + 0.1 + ")";
-        drawSketchy(remoteClient, x, y, ss);
+        drawSketchy(ctx, remoteClient, x, y, ss);
     } else if (state.tool === 'line'){
         drawLine(ctx, remoteClient.x, remoteClient.y, x, y, cs, state.size);
     } else if (state.tool === 'brush') {
@@ -380,10 +304,10 @@ $(document).on('keydown keypress keyup', function (evt) {
     }
 });
 
-let saveTileAt = function (x, y, tileCanvas) {
+const saveTileAt = function (x, y, tileCanvas) {
     let key = x + '/' + y;
 
-    let onSaveResponse = function(code){
+    const onSaveResponse = function(code){
         switch(code) {
             case 201:
                 break; //successfully saved.
@@ -419,7 +343,7 @@ let saveTileAt = function (x, y, tileCanvas) {
     tileSource.saveTileAt(x, y, tileCanvas, onSaveResponse);
 };
 
-let updateDirtyTiles = underscore.throttle(function () {
+const updateDirtyTiles = underscore.throttle(function () {
     Object.keys(tileSource.tileCollection).forEach(function (tileKey) {
         if (tileSource.tileCollection[tileKey].dirty) {
             let tile = tileSource.tileCollection[tileKey];
