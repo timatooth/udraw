@@ -3,8 +3,7 @@ import React from 'react'
 //import DrawingCanvas from './components/DrawingCanvas.jsx'
 import {CursorContainer} from './components/CursorContainer.jsx'
 import {Toolbar} from './components/Toolbar.jsx'
-//import EventHub from './EventHub'
-//import WebSocketConnection from './net/WebSocketConnection'
+
 
 import css from '../sass/style.scss'
 
@@ -19,13 +18,6 @@ export class UdrawApp extends React.Component {
 
     constructor(){
         super();
-        //this.eventHub = new EventHub();
-        //this.netConnection = new WebSocketConnection({eventHub: this.eventHub})
-        //this.updateState = this.updateState.bind(this);
-    }
-
-    componentDidMount(){
-        //subscribe renders
     }
 
     render() {
@@ -35,7 +27,7 @@ export class UdrawApp extends React.Component {
             <div>
                 <CursorContainer store={store} clientStates={clientStates} badEventHub={ badEventHub} />
                 <canvas id="paper" width="640" height="640"></canvas>
-                <Toolbar legacyClient={legacyClient} />
+                <Toolbar legacyClient={legacyClient} badEventHub={ badEventHub} />
             </div>
         );
     }

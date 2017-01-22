@@ -5,7 +5,7 @@
  /**
  * This guy is a dirty escape hatch to pass events into the new React UI
  * environment so it can re-render as changes happen.
- * 
+ *
  * This should only be here to assist the migration to a full React/Redux
  * design. *touch wood*
  */

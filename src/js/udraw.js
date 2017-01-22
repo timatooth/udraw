@@ -21,8 +21,7 @@ import EventHub from './EventHub.js'
 import RestTileSource from './RestTileSource'
 import {createStore } from 'redux'
 import { udrawAppReducer } from './reducers/udrawapp'
-
-import {drawLine, drawSketchy, drawBrush, eraseRegion, sprayCan} from './drawing'
+import { drawLine, drawSketchy, drawBrush, eraseRegion, sprayCan } from './drawing'
 
 const EMIT_DELAY = 10;
 const tileSize = 256;
@@ -44,6 +43,24 @@ let extent = {
     height: window.innerHeight * ratio
 };
 
+//client factory
+function Client(){
+    return {
+        state: {
+            tool: 'move',
+            color: '#222222',
+            size: 4,
+            opacity: 1
+        },
+        x: 0,
+        y: 0,
+        m1Down: false,
+        offsetX: 0,
+        offsetY: 0,
+        points: [],
+        pointCount: 0
+    }
+}
 
 /**
 * This guy is a dirty escape hatch to pass events into the new React UI
@@ -64,21 +81,7 @@ let tileSource = new RestTileSource({
  * Hold all information about the state of the local client
  * @type Client
  */
-let client = {
-    state: {
-        tool: 'move',
-        color: '#222222',
-        size: 4,
-        opacity: 1
-    },
-    x: 0,
-    y: 0,
-    m1Down: false,
-    offsetX: 0,
-    offsetY: 0,
-    points: [],
-    pointCount: 0
-};
+let client = Client();
 
 let store = createStore( udrawAppReducer );
 
@@ -87,14 +90,14 @@ ReactDOM.render(
     document.getElementById('udrawapp')
 );
 
-let canvas = document.getElementById("paper");
+const canvas = document.getElementById("paper");
 canvas.width = window.innerWidth + tileSize * 2;
 canvas.height = window.innerHeight + tileSize * 2;
-let ctx = canvas.getContext('2d');
+const ctx = canvas.getContext('2d');
 /** Screen ratio is 2 for hdpi/retina displays */
 let ratio = 1;
 
-let socket = new io('http://localhost:3001', {reconnection: true});
+const socket = new io('http://localhost:3001', {reconnection: true});
 
 const notify = underscore.debounce(function (title, message, type) {
     console.log(title, message, type)
@@ -137,6 +140,11 @@ const updateToolState = underscore.debounce(function () {
 
     socket.emit('status', message);
 }, 200);
+
+//React bridge Tool change to old state object to send updateToolState
+badEventHub.on('tool:change', () => {
+    updateToolState()
+})
 
 //send out current tool state every 2 seconds
 setInterval(function () {
@@ -231,8 +239,8 @@ function updatePixelColor(x, y) {
 }
 
 let updateUrl = underscore.debounce(function (key) {
-    //history.replaceState(null, null, key); disabled for now
-}, 500);
+    //history.replaceState(null, null, key); //disabled for now
+}, 1000);
 
 /**
  * Handle Screen panning.
@@ -413,25 +421,6 @@ function parseUriArgs() {
 /*--------------------------------------------------------
  * Network socket event handling section.
  */
-function addClient(packet) {
-    clientStates[packet.id] = {
-        //cursor: $('<div class="cursor">').appendTo('#cursors'),
-        state: {
-            tool: 'line',
-            color: '#222222',
-            size: 1,
-            opacity: 0.8
-        },
-        x: 0,
-        y: 0,
-        updated: $.now(),
-        offset: {x: 0, y: 0},
-        points: [],
-        pointCount: 0,
-        offsetX: 0,
-        offsetY: 0
-    };
-}
 socket.on('connect', function () {
     updateToolState();
 });
@@ -451,23 +440,15 @@ socket.on('pong', function () {
 
 socket.on('states', function (data) {
     Object.keys(data).forEach(function (key) {
-        clientStates[key] = {};
+        clientStates[key] = Client();
         clientStates[key].state = data[key];
-        //clientStates[key].cursor = $('<div class="cursor">').appendTo('#cursors');
         clientStates[key].updated = $.now();
-        clientStates[key].x = 0;
-        clientStates[key].y = 0;
-        clientStates[key].points = [];
-        clientStates[key].pointCount = 0;
-        clientStates[key].offsetX = 0;
-        clientStates[key].offsetY = 0;
-
     });
 });
 
 socket.on('move', function (packet) {
     if (!clientStates.hasOwnProperty(packet.id)) {
-        addClient(packet);
+        clientStates[packet.id] = Client();
     } else {
         clientStates[packet.id].updated = $.now();
     }
@@ -509,7 +490,7 @@ socket.on('move', function (packet) {
 
 socket.on('status', function (packet) {
     if (!clientStates.hasOwnProperty(packet.id)) {
-        addClient(packet);
+        clientStates[packet.id] = Client()
     }
     clientStates[packet.id].state = packet;
     clientStates[packet.id].updated = $.now();
@@ -517,7 +498,7 @@ socket.on('status', function (packet) {
 
 socket.on('pan', function (packet) {
     if (!clientStates.hasOwnProperty(packet.id)) {
-        addClient(packet);
+        clientStates[packet.id] = Client()
     }
     clientStates[packet.id].offsetX = packet.offsetX;
     clientStates[packet.id].offsetY = packet.offsetY;
