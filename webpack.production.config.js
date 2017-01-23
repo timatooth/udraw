@@ -1,6 +1,6 @@
-var path = require('path');
-var webpack = require('webpack');
-var HtmlWebpackPlugin = require('html-webpack-plugin');
+const path = require('path');
+const webpack = require('webpack');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
     entry: {
@@ -10,21 +10,26 @@ module.exports = {
     },
     output: {
         path: path.resolve(__dirname, 'public'),
-        filename: "js/udraw-bundle.js",
+        filename: "js/udraw-bundle.js"
     },
     module: {
         loaders: [
             {
                 test: /\.jsx?$/, //this covers .js and .jsx extensions
                 exclude: /(node_modules|bower_components)/,
-                loaders: ['react-hot', 'babel?presets[]=react,presets[]=es2015'],
+                loaders: ['babel-loader?presets[]=react,presets[]=es2015'],
             },
             {
                 test: /\.scss$/,
-                loaders: ["style", "css", "sass"]
+                loaders: ["style-loader", "css-loader", "sass-loader"]
             },
             {
-                test: /\.png$/, loader: "file-loader"
+                test: /\.(png|jpg)$/,
+                loader: "file-loader?name=images/[name].[ext]"
+            },
+            {
+                test: /\.(eot|svg|ttf|woff|woff2)$/,
+                loader: 'file-loader?name=fonts/[name].[ext]'
             }
         ]
     },

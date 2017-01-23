@@ -97,7 +97,7 @@ const ctx = canvas.getContext('2d');
 /** Screen ratio is 2 for hdpi/retina displays */
 let ratio = 1;
 
-const socket = new io('http://localhost:3001', {reconnection: true});
+const socket = new io('', {reconnection: true});
 
 const notify = underscore.debounce(function (title, message, type) {
     console.log(title, message, type)

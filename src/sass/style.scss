@@ -1,5 +1,5 @@
-@import url('/css/vendor/font-awesome.css');
-@import url('/css/vendor/ionicons.css');
+@import url('../../public/css/vendor/font-awesome.css');
+@import url('../../public/css/vendor/ionicons.css');
 
 @import 'params';
 
@@ -10,6 +10,8 @@ html, body {
   height: 100%;
   font-family: 'Helvetica Neue', 'Helvetica', 'Open Sans', sans-serif;
   overflow: hidden;
+  background-image: url('../../public/images/seamlesspaper.jpg');
+  background-repeat: repeat;
 }
 
 .noselect {

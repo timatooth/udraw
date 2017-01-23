@@ -19,14 +19,19 @@ module.exports = {
             {
                 test: /\.jsx?$/, //this covers .js and .jsx extensions
                 exclude: /(node_modules|bower_components)/,
-                loaders: ['react-hot', 'babel?presets[]=react,presets[]=es2015'],
+                loaders: ['react-hot-loader', 'babel-loader?presets[]=react,presets[]=es2015'],
             },
             {
                 test: /\.scss$/,
-                loaders: ["style", "css", "sass"]
+                loaders: ["style-loader", "css-loader", "sass-loader"]
             },
             {
-                test: /\.png$/, loader: "file-loader"
+                test: /\.(png|jpg)$/,
+                loader: "file-loader?name=images/[name].[ext]"
+            },
+            {
+                test: /\.(eot|svg|ttf|woff|woff2)$/,
+                loader: 'file-loader?name=public/fonts/[name].[ext]'
             }
         ]
     },
