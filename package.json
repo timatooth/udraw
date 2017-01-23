@@ -6,17 +6,18 @@
   "readme": "README.md",
   "repository": "https://github.com/timatooth/udraw",
   "engines": {
-    "node": ">=4.6.0"
+    "node": ">=6.9.0"
   },
   "scripts": {
     "start": "node devServer.js",
-    "start:canvasapi": "node ",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build:production": "node_modules/.bin/webpack -p --config webpack.production.config.js --output-public-path https://cdn.udraw.me/static",
-    "build:staging": "node_modules/.bin/webpack -p --config webpack.production.config.js --output-public-path https://cdn.udraw.me/static-develop"
+    "build:production": "node_modules/.bin/webpack -p --config webpack.production.config.js --output-public-path https://cdn.udraw.me/static/",
+    "build:staging": "node_modules/.bin/webpack -p --config webpack.production.config.js --output-public-path https://cdn.udraw.me/static-develop/"
   },
   "keywords": [
     "websocket",
+    "react",
+    "socket.io",
     "redis",
     "drawing",
     "canvas"
