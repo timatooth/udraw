@@ -1,0 +1,24 @@
+version: '3'
+
+volumes:
+  data-volume:
+
+services:
+  udraw:
+    build: .
+    ports:
+      - "3000:3000"
+      - "3001:3001"
+    environment:
+      - REDIS_HOST=redis
+    volumes:
+      - data-volume:/opt/udraw
+  redis:
+    image: redis:3.2.6-alpine
+  
+  nginx:
+    image: nginx:1.11.9-alpine
+    volumes:
+      - data-volume:/opt/udraw
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    
