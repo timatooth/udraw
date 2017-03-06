@@ -5,12 +5,21 @@ const http = require('http');
 const socketio = require('socket.io');
 const StatsD = require('node-dogstatsd').StatsD;
 const dogstatsd = new StatsD();
+const Raven = require('raven');
 
 const websocketServer = () => {
+    // Must configure Raven before doing anything else with it
+    Raven.config(process.env.SENTRY_KEY).install();
+
     let app = require('express')();
+
+    //sentry.io
+    app.use(Raven.requestHandler());
+    app.use(Raven.errorHandler());
+
     let httpServer = require('http').Server(app);
     let io = socketio(httpServer);
-    
+
     let tileRedis = redis.createClient(
         process.env.REDIS_PORT || 6379,
         process.env.REDIS_HOST || 'localhost',

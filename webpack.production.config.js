@@ -35,7 +35,10 @@ module.exports = {
     },
     plugins: [
         new webpack.DefinePlugin({
-            'process.env': { 'NODE_ENV': JSON.stringify('production') }
+            'process.env': {
+              'NODE_ENV': JSON.stringify('production'),
+              'SENTRY_KEY': JSON.stringify(process.env.SENTRY_KEY || '')
+            }
         }),
         new HtmlWebpackPlugin({
           title: 'Custom template',

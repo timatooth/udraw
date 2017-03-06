@@ -11,6 +11,10 @@ const path = require('path');
 
 const StatsD = require('node-dogstatsd').StatsD;
 const dogstatsd = new StatsD();
+const Raven = require('raven');
+
+// Must configure Raven before doing anything else with it
+Raven.config(process.env.SENTRY_KEY).install();
 
 /** Boundary limit for fetching tiles */
 const tileRadius = 300;
@@ -25,8 +29,12 @@ const canvasApiServer = () => {
         process.env.REDIS_HOST || 'localhost',
         { return_buffers: true }
     );
-    
+
     let app = express();
+    // The request handler must be the first middleware on the app
+    app.use(Raven.requestHandler());
+    app.use(Raven.errorHandler());
+
     let httpServer = http.Server(app);
     
     app.set('trust proxy', 'loopback');
