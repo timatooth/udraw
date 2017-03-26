@@ -14,7 +14,7 @@ const dogstatsd = new StatsD();
 const Raven = require('raven');
 
 // Must configure Raven before doing anything else with it
-Raven.config(process.env.SENTRY_KEY).install();
+Raven.config(process.env.SENTRY_DSN).install();
 
 /** Boundary limit for fetching tiles */
 const tileRadius = 300;

@@ -9,7 +9,7 @@ const Raven = require('raven');
 
 const websocketServer = () => {
     // Must configure Raven before doing anything else with it
-    Raven.config(process.env.SENTRY_KEY).install();
+    Raven.config(process.env.SENTRY_DSN).install();
 
     let app = require('express')();
 
