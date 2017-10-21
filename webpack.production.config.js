@@ -37,7 +37,8 @@ module.exports = {
         new webpack.DefinePlugin({
             'process.env': {
               'NODE_ENV': JSON.stringify('production'),
-              'SENTRY_KEY': JSON.stringify(process.env.SENTRY_KEY || '')
+              'SENTRY_DSN': JSON.stringify(process.env.SENTRY_DSN || ''),
+              'SENTRY_PUBLIC_DSN': JSON.stringify(process.env.SENTRY_PUBLIC_DSN || ''),
             }
         }),
         new HtmlWebpackPlugin({
