@@ -90,7 +90,7 @@ export default class ColorPanel extends React.Component {
     handleGlobalMouseMovePuckTarget(evt){
         let x, y, dX, dY;
 
-        if (evt instanceof TouchEvent) {
+        if (window.TouchEvent && evt instanceof TouchEvent) {
             x = evt.touches[0].clientX
             y = evt.touches[0].clientY
         } else {
