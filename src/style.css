@@ -1,7 +1,5 @@
-@import url('../../public/css/vendor/font-awesome.css');
-@import url('../../public/css/vendor/ionicons.css');
-
-@import 'params';
+@import url('../public/css/vendor/font-awesome.css');
+@import url('../public/css/vendor/ionicons.css');
 
 /** Globbal stuff */
 html, body {
@@ -10,7 +8,7 @@ html, body {
   height: 100%;
   font-family: 'Helvetica Neue', 'Helvetica', 'Open Sans', sans-serif;
   overflow: hidden;
-  background-image: url('../../public/images/seamlesspaper.jpg');
+  background-image: url('../public/images/seamlesspaper.jpg');
   background-repeat: repeat;
 }
 
@@ -30,8 +28,8 @@ html, body {
 #paper {
     /* @1x offset by tileSize */
     position: relative;
-    top: -$tileSize;
-    left: -$tileSize;
+    top: -256px;
+    left: -256px;
 
     /* @2x Offset offset by tileSize / 2 */
     @media
@@ -40,8 +38,8 @@ html, body {
     only screen and (min-device-pixel-ratio: 2),
     only screen and (min-resolution: 2dppx) {
         position: relative;
-        top: -$tileSize / 2;
-        left: -$tileSize / 2;
+        top: -128px;
+        left: -128px;
     }
 
     /* @3x Offset offset by tileSize / 3 */
@@ -51,8 +49,8 @@ html, body {
     only screen and (min-device-pixel-ratio: 3),
     only screen and (min-resolution: 3dppx) {
         position: relative;
-        top: -$tileSize / 3;
-        left: -$tileSize / 3;
+        top: -85px;
+        left: -85px;
     }
 }
 
@@ -61,12 +59,12 @@ html, body {
     position:relative;
     pointer-events: none; /* the irony */
     z-index: 10;
-    
+
     .Cursor {
         position: absolute;
         width:15px;
         height:22px;
-        background:url('../../public/images/pointer.png') no-repeat -4px 0;
+        background:url('../public/images/pointer.png') no-repeat -4px 0;
         z-index: 99999;
     }
 }

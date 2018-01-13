@@ -11,7 +11,7 @@ import underscore from 'underscore'
 import io from 'socket.io-client'
 import FastClick from 'fastclick'
 
-import css from '../sass/style.scss'
+import css from '../style.css'
 
 import React from 'react'
 import ReactDOM from 'react-dom'

@@ -1,6 +1,6 @@
-from node:7.4.0-alpine
+FROM node:9.4-alpine
 COPY . /opt/udraw
 WORKDIR /opt/udraw
-#VOLUME /opt/udraw
-RUN npm install --production
+RUN npm install
+RUN npm run build:production
 CMD node server

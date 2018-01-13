@@ -5,7 +5,7 @@ import {CursorContainer} from './components/CursorContainer.jsx'
 import {Toolbar} from './components/Toolbar.jsx'
 
 
-import css from '../sass/style.scss'
+import css from '../style.css'
 
 /**
  * Boots up the app

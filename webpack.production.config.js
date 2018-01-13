@@ -20,8 +20,8 @@ module.exports = {
                 loaders: ['babel-loader?presets[]=react,presets[]=es2015'],
             },
             {
-                test: /\.scss$/,
-                loaders: ["style-loader", "css-loader", "sass-loader"]
+                test: /\.css$/,
+                loaders: ["style-loader", "css-loader"]
             },
             {
                 test: /\.(png|jpg)$/,
