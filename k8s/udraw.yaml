@@ -94,7 +94,7 @@ spec:
         - containerPort: 3000
         - containerPort: 3001
       - name: nginx
-        image: nginx:1.13
+        image: nginx:1.13-alpine
         ports:
         - containerPort: 80
         volumeMounts:
@@ -106,42 +106,6 @@ spec:
           readOnly: true
 
 ---
-apiVersion: apps/v1beta2 # for versions before 1.9.0 use apps/v1beta2
-kind: Deployment
-metadata:
-  name: redis
-  labels:
-    app: redis
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: redis
-  template:
-    metadata:
-      labels:
-        app: redis
-    spec:
-      containers:
-      - name: redis
-        image: redis
-        imagePullPolicy: IfNotPresent
-        ports:
-        - containerPort: 6379
-
----
-kind: Service
-apiVersion: v1
-metadata:
-  name: redis
-spec:
-  selector:
-    app: redis
-  ports:
-  - protocol: TCP
-    port: 6379
-
----
 kind: Service
 apiVersion: v1
 metadata:
@@ -151,13 +115,12 @@ spec:
   selector:
     app: udraw
   ports:
-  - name: canvasapi
-    protocol: TCP
-    port: 3000
-  - name: websocket
-    protocol: TCP
-    port: 3001
+  # - name: canvasapi
+  #   protocol: TCP
+  #   port: 3000
+  # - name: websocket
+  #   protocol: TCP
+  #   port: 3001
   - name: nginx
     protocol: TCP
     port: 80
-    targetPort: 80
