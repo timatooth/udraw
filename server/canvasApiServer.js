@@ -23,7 +23,7 @@ const patchPass = 'meh patch pass yo';
 const staticDir = path.join(__dirname, '../public')
 
 const canvasApiServer = () => {
-    
+
     let tileRedis = redis.createClient(
         process.env.REDIS_PORT || 6379,
         process.env.REDIS_HOST || 'localhost',
@@ -36,17 +36,17 @@ const canvasApiServer = () => {
     app.use(Raven.errorHandler());
 
     let httpServer = http.Server(app);
-    
+
     app.set('trust proxy', 'loopback');
     app.set('x-powered-by', false);
-    
+
     const putLimiter = rateLimit({
         /* config */
         delayAfter: 0,
         max: 150
     });
-    
-    
+
+
     //Express Middleware
     app.use('/', express.static(staticDir));
     app.use(morgan('combined'));
@@ -67,15 +67,15 @@ const canvasApiServer = () => {
     app.get('/',(req, res) => {
         res.sendFile(path.join(staticDir, 'index.html'));
     });
-    
+
     app.get('/:x/:y', (req, res) => {
         res.sendFile(path.join(staticDir, 'index.html'));
     });
-    
+
     app.get('/ogimage/:x/:y', (req, res) => {
         res.sendFile(path.join(staticDir, 'images/og-image.png'));
     });
-    
+
     app.put('/canvases/:name/:zoom/:x/:y', putLimiter, (req, res) => {
         let p = req.params;
         if (p.name !== "main") {
@@ -90,9 +90,9 @@ const canvasApiServer = () => {
         {
             return res.sendStatus(416); //requested outside range
         }
-        
+
         const key = "tile:" + req.params.name + ':' + req.params.zoom + ':' + req.params.x + ':' + req.params.y;
-        
+
         tileRedis.hget(key, "protection", (err, data) => {
             if (Number(data) === 0) {
                 saveTile(key, req, res);
@@ -108,19 +108,19 @@ const canvasApiServer = () => {
             }
         });
     });
-    
+
     const saveTile = (key, req, res) => {
         tileRedis.hset(key, "data", req.body);
         tileRedis.hset(key, "lastuser", req.ip);
         tileRedis.hset(key, "lastupdate", Date.now() / 1000);
         tileRedis.hset(key, "protection", 0);
-        
+
         res.sendStatus(201);
         tileRedis.incr('putcount');
         tileRedis.hincrby("user:" + req.ip, "putcount", 1);
         dogstatsd.increment('tile.saves');
     };
-    
+
     app.get('/canvases/:name/:zoom/:x/:y', (req, res) => {
         let p = req.params;
         if (p.name !== "main") {
@@ -133,7 +133,7 @@ const canvasApiServer = () => {
         Number(p.y) > tileRadius / 2) {
             return res.sendStatus(416); //requested outside range
         }
-        
+
         const key = req.params.name + ':' + req.params.zoom + ':' + req.params.x + ':' + req.params.y;
         tileRedis.hget("tile:" + key, "data", (err, reply) => {
             if (err !== null) {
@@ -150,7 +150,7 @@ const canvasApiServer = () => {
             }
         });
     });
-    
+
     app.patch('/canvases/:name/:zoom/:x/:y', (req, res) => {
         if (('creds' in req.body) && req.body.creds === patchPass) {
             const key = "tile:" + req.params.name + ':' + req.params.zoom + ':' + req.params.x + ':' + req.params.y;
@@ -165,7 +165,7 @@ const canvasApiServer = () => {
             res.sendStatus(401);
         }
     });
-    
+
     return httpServer;
 }
 

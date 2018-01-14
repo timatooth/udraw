@@ -8,6 +8,7 @@ const dogstatsd = new StatsD();
 const Raven = require('raven');
 
 const websocketServer = () => {
+    console.log ("Creating websocket server");
     // Must configure Raven before doing anything else with it
     Raven.config(process.env.SENTRY_DSN).install();
 
@@ -25,20 +26,21 @@ const websocketServer = () => {
         process.env.REDIS_HOST || 'localhost',
         { return_buffers: true }
     );
-    
+
     /** Store the socket id with tool states and pan offsets */
     let clientStates = {};
-    
+
     io.on('connection', (socket) => {
         let ip = socket.request.connection.remoteAddress;
+        console.log("Got websocket connection from" + ip);
         tileRedis.incr("totalconnections");
         tileRedis.incr("currentconnections");
         tileRedis.hset("user:" + ip, "lastconnect", Date.now() / 1000 | 0);
         tileRedis.hincrby("user:" + ip, "connectcount", 1);
         dogstatsd.increment('websocket.connections');
-        
+
         socket.emit('states', clientStates);
-        
+
         socket.on('disconnect', () => {
             if (clientStates.hasOwnProperty(socket.id)) {
                 delete clientStates[socket.id];
@@ -54,7 +56,7 @@ const websocketServer = () => {
                 y > -r + client.offsetY &&
                 y < r + client.offsetY
         }
-        
+
         socket.on('move', (msg) => {
             let id = socket.id;
             msg.id = id;
@@ -69,7 +71,7 @@ const websocketServer = () => {
             });
             dogstatsd.increment('websocket.move');
         });
-        
+
         socket.on('pan', (msg) => {
             msg.id = socket.id;
             socket.broadcast.emit('pan', msg);
@@ -78,11 +80,11 @@ const websocketServer = () => {
             }
             dogstatsd.increment('websocket.pan');
         });
-        
+
         socket.on('ping', () => {
             socket.emit('pong');
         });
-        
+
         socket.on('status', (msg) => {
             if (msg.size > 120 || msg.size < 1 || msg.opacity > 1 || msg.opacity < 0) {
                 tileRedis.sadd("malicious", ip);
@@ -93,9 +95,9 @@ const websocketServer = () => {
             socket.broadcast.emit('status', msg);
             dogstatsd.increment('websocket.statuschange');
         });
-        
+
     });
-    
+
     return httpServer;
 }
 
