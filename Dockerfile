@@ -1,4 +1,5 @@
-FROM node:9.4-alpine
+FROM node:9.8-alpine
+LABEL maintainer="tsullivan@timatooth.com"
 COPY . /opt/udraw
 WORKDIR /opt/udraw
 RUN npm install

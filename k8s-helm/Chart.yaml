@@ -1,0 +1,15 @@
+name: udraw
+version: 1.0.0
+description: A multiplayer HTML5 canvas drawing server
+keywords:
+  - nodejs
+  - canvas
+  - redis
+home: https://udraw.me
+sources:
+  - https://github.com/timatooth/udraw
+maintainers:
+  - name: Tim Sullivan
+    email: tsullivan@timatooth.com
+    url: http://timatooth.com
+engine: gotpl
