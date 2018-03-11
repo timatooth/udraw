@@ -13,6 +13,8 @@ const StatsD = require('node-dogstatsd').StatsD;
 const dogstatsd = new StatsD();
 const Raven = require('raven');
 
+const S3Adapter = require('./s3adapter');
+
 // Must configure Raven before doing anything else with it
 Raven.config(process.env.SENTRY_DSN).install();
 
@@ -29,6 +31,8 @@ const canvasApiServer = () => {
         process.env.REDIS_HOST || 'localhost',
         { return_buffers: true }
     );
+
+    let adapter = S3Adapter(process.env.UDRAW_S3_BUCKET);
 
     let app = express();
     // The request handler must be the first middleware on the app
@@ -92,24 +96,16 @@ const canvasApiServer = () => {
         }
 
         const key = "tile:" + req.params.name + ':' + req.params.zoom + ':' + req.params.x + ':' + req.params.y;
-
-        tileRedis.hget(key, "protection", (err, data) => {
-            if (Number(data) === 0) {
-                saveTile(key, req, res);
-            } else {
-                tileRedis.hget(key, "lastuser", (err, user) => {
-                    console.log(String(user));
-                    if (String(user) === req.ip) {
-                        saveTile(key, req, res);
-                    } else {
-                        res.sendStatus(403);
-                    }
-                });
+        cacheTile(key, req, res);
+        adapter.saveTileAt(req.params.name, req.params.zoom, req.params.x, req.params.y, req.body, (result) => {
+            if(!result) {
+                console.log("Saving " + key +" to S3 FAILED")
             }
         });
+
     });
 
-    const saveTile = (key, req, res) => {
+    const cacheTile = (key, req, res) => {
         tileRedis.hset(key, "data", req.body);
         tileRedis.hset(key, "lastuser", req.ip);
         tileRedis.hset(key, "lastupdate", Date.now() / 1000);
@@ -139,9 +135,35 @@ const canvasApiServer = () => {
             if (err !== null) {
                 console.log(err);
                 res.sendStatus(500);
-            } else if (reply === null) {
-                res.sendStatus(204); //make them create the tile
+            } else if (reply === null) { // no tile in cache
+                let cacheKey = "tile:" + key;
+                //check persistent storage
+                adapter.getTileAt(req.params.name, req.params.zoom, req.params.x, req.params.y, (data) => {
+                    // if we have data, an existing tile was found, send the payload & cache it in redis
+                    if(data !== null){
+                        //cache it
+                        tileRedis.hset(cacheKey, "data", data);
+                        tileRedis.hset(cacheKey, "lastuser", req.ip);
+                        tileRedis.hset(cacheKey, "lastupdate", Date.now() / 1000);
+                        tileRedis.hset(cacheKey, "protection", 0);
+                        res.set('Content-Type', 'image/png');
+                        res.send(data);
+                        dogstatsd.increment('cache.miss');
+                    } else {
+                        // cache not found result
+                        tileRedis.hset(cacheKey, "data", "miss"); //special case of no tile
+                        tileRedis.hset(cacheKey, "lastuser", req.ip);
+                        tileRedis.hset(cacheKey, "lastupdate", Date.now() / 1000);
+                        tileRedis.hset(cacheKey, "protection", 0);
+                        res.sendStatus(204); //make them create the tile (client side)
+                        dogstatsd.increment('cache.emptymiss');
+                    }
+                });
+            } else if (reply.equals(Buffer("miss")))  {
+                dogstatsd.increment('cache.emptyhit');
+                res.sendStatus(204); //make them create the tile (client side)
             } else {
+                dogstatsd.increment('cache.hit');
                 tileRedis.incr('getcount');
                 tileRedis.hincrby("user:" + req.ip, "getcount", 1);
                 dogstatsd.increment('tile.gets');

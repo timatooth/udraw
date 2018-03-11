@@ -25,6 +25,7 @@
   "author": "Tim Sullivan",
   "license": "MIT",
   "dependencies": {
+    "aws-sdk": "^2.207.0",
     "body-parser": "^1.15.2",
     "connect-datadog": "0.0.6",
     "cors": "^2.8.1",

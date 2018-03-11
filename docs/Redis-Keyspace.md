@@ -28,4 +28,3 @@ user:ip | `lastuser` | **last user or ip to save tile**
 user:ip | `distancedrawn` | **How far the user has drawn in pixels** *unused*
 user:ip | `putcount` | **Total put requests from user**
 user:ip | `getcount` | **Total tile get requests from user**
-
