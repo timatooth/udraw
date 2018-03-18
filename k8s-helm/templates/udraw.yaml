@@ -90,6 +90,8 @@ spec:
         envFrom:
         - configMapRef:
             name: udraw-config
+        - secretRef:
+            name: svc-udraw
         ports:
         - containerPort: 3000
         - containerPort: 3001

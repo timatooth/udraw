@@ -1,16 +1,4 @@
 ---
-kind: PersistentVolumeClaim
-apiVersion: v1
-metadata:
-  name: redis-data-claim
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 1Gi
-
----
 apiVersion: apps/v1beta2 # for versions before 1.9.0 use apps/v1beta2
 kind: Deployment
 metadata:
@@ -34,13 +22,6 @@ spec:
         ports:
         - containerPort: 6379
           name: redis
-        volumeMounts:
-        - mountPath: "/var/lib/redis"
-          name: redis-data
-      volumes:
-        - name: redis-data
-          persistentVolumeClaim:
-            claimName: redis-data-claim
 
 ---
 kind: Service
@@ -54,3 +35,4 @@ spec:
   - protocol: TCP
     port: 6379
     containerPort: redis
+    name: redis
