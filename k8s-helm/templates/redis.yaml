@@ -1,19 +1,21 @@
 ---
+# TODO probably replace this with stable/redis instead.
+
 apiVersion: apps/v1beta2 # for versions before 1.9.0 use apps/v1beta2
 kind: Deployment
 metadata:
-  name: redis
+  name: {{ .Release.Name }}-redis
   labels:
-    app: redis
+    app: {{ .Release.Name }}-redis
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: redis
+      app: {{ .Release.Name }}-redis
   template:
     metadata:
       labels:
-        app: redis
+        app: {{ .Release.Name }}-redis
     spec:
       containers:
       - name: redis
@@ -27,10 +29,10 @@ spec:
 kind: Service
 apiVersion: v1
 metadata:
-  name: redis
+  name: {{ .Release.Name }}-redis
 spec:
   selector:
-    app: redis
+    app: {{ .Release.Name }}-redis
   ports:
   - protocol: TCP
     port: 6379

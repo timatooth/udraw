@@ -1,0 +1,21 @@
+---
+
+# Create an Ingress for nginx-ingress-controller for exposing to the web.
+ingress:
+  enabled: false
+
+# OR
+# Type of Service to create for Websocket & HTTP connections
+# eg ClusterIP for nginx ingress or LoadBalancer in a Cloud.
+serviceType: LoadBalancer
+
+# udraw tile persistent storage
+storage:
+  # currently only doing S3
+  type: s3
+
+  s3:
+    region: 'ap-southeast-2'
+    bucket: 'my-tiles-bucket'
+    AWS_ACCESS_KEY_ID: ''
+    AWS_SECRET_ACCESS_KEY: ''

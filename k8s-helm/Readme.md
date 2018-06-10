@@ -1,3 +1,5 @@
 # udraw Kubernetes Helm Chart
 
-    helm install k8s-helm --name udraw
+A quick way to get up and running on a Kubernetes cluster:
+
+    helm install udraw-helm

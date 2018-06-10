@@ -1,20 +1,19 @@
+{{ if .Values.ingress.enabled }}
 ---
-# Source: udraw/templates/udraw-ingress.yaml
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: udraw
+  name: {{.Release.Name}}-udraw
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
-    # not specifying the annotation will result in both controllers fighting to satisfy the Ingress.
+    # not specifying the annotation will result in other possible
+    # controllers fighting to satisfy the Ingress.
     kubernetes.io/ingress.class: nginx
 spec:
   tls:
-  - hosts:
-    - udraw.me
-    - www.udraw.me
+  - hosts: {{ .Values.nginx.hosts }}
   backend:
-    serviceName: udraw
+    serviceName: {{.Release.Name}}-udraw
     servicePort: 80
   rules:
   - host: udraw.me
@@ -31,3 +30,4 @@ spec:
         backend:
           serviceName: udraw
           servicePort: 80
+{{ end }}
