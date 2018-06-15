@@ -1,21 +1,24 @@
 ---
-# TODO probably replace this with stable/redis instead.
-
 apiVersion: apps/v1beta2 # for versions before 1.9.0 use apps/v1beta2
 kind: Deployment
 metadata:
-  name: {{ .Release.Name }}-redis
+  name: {{ template "udraw.fullname" . }}-redis
   labels:
     app: {{ .Release.Name }}-redis
+    chart: {{ template "udraw.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: {{ .Release.Name }}-redis
+      release: {{ .Release.Name }}
   template:
     metadata:
       labels:
         app: {{ .Release.Name }}-redis
+        release: {{ .Release.Name }}
     spec:
       containers:
       - name: redis
@@ -24,17 +27,4 @@ spec:
         ports:
         - containerPort: 6379
           name: redis
-
----
-kind: Service
-apiVersion: v1
-metadata:
-  name: {{ .Release.Name }}-redis
-spec:
-  selector:
-    app: {{ .Release.Name }}-redis
-  ports:
-  - protocol: TCP
-    port: 6379
-    containerPort: redis
-    name: redis
+          protocol: TCP
