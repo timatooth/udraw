@@ -39,6 +39,11 @@ spec:
             name: {{ .Release.Name }}-udrawconfig
         - secretRef:
             name: {{.Release.Name}}-s3-secret
+        env:
+        - name: UDRAW_S3_BUCKET
+          value: {{ .Values.storage.s3.bucket }}
+        - name: AWS_DEFAULT_REGION
+          value: {{ .Values.storage.s3.region }}
         ports:
         - containerPort: 3000
         - containerPort: 3001

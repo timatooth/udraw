@@ -10,6 +10,7 @@ data:
 
     server {
       listen 80 default_server;
+      server_name udraw.me www.udraw.me;
       index index.html;
 
       location /canvases/ {
