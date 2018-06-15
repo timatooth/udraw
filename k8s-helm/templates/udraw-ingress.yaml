@@ -5,29 +5,37 @@ kind: Ingress
 metadata:
   name: {{.Release.Name}}-udraw
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
-    # not specifying the annotation will result in other possible
-    # controllers fighting to satisfy the Ingress.
-    kubernetes.io/ingress.class: nginx
+   {{- range $key, $value := .Values.ingress.annotations }}
+     {{ $key }}: {{ $value | quote }}
+   {{- end }}
 spec:
   tls:
-  - hosts: {{ .Values.nginx.hosts }}
-  backend:
-    serviceName: {{.Release.Name}}-udraw
-    servicePort: 80
+  - hosts:
+    - {{ .Values.ingress.hostname }}
+  # backend:
+  #   serviceName: {{.Release.Name}}-udraw
+  #   servicePort: 3000
   rules:
-  - host: udraw.me
+  - host: {{ .Values.ingress.hostname }}
     http:
       paths:
       - path: /
         backend:
-          serviceName: udraw
+          serviceName: {{.Release.Name}}-udrawcanvasapi
           servicePort: 80
-  - host: www.udraw.me
+      - path: "/socket.io/"
+        backend:
+          serviceName: {{.Release.Name}}-udrawwebsocket
+          servicePort: 80
+  - host: www.{{ .Values.ingress.hostname }}
     http:
       paths:
       - path: /
         backend:
-          serviceName: udraw
+          serviceName: {{.Release.Name}}-udrawcanvasapi
+          servicePort: 80
+      - path: "/socket.io/"
+        backend:
+          serviceName: {{.Release.Name}}-udrawwebsocket
           servicePort: 80
 {{ end }}

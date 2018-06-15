@@ -1,0 +1,27 @@
+---
+apiVersion: apps/v1beta2 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-udrawwebsocket
+  labels:
+    app: {{ .Release.Name }}-udrawwebsocket
+spec:
+  replicas: {{ .Values.websocket.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-udrawwebsocket
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-udrawwebsocket
+    spec:
+      containers:
+      - name: udraw-websocket
+        image: {{ .Values.image }}
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        command: ['node', 'server']
+        envFrom:
+        - configMapRef:
+            name: {{ .Release.Name }}-udrawconfig
+        ports:
+        - containerPort: 3001

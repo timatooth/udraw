@@ -1,0 +1,12 @@
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: {{.Release.Name}}-udrawwebsocket
+spec:
+  selector:
+    app: {{.Release.Name}}-udrawwebsocket
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 3001

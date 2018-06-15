@@ -1,13 +1,32 @@
 ---
+# image to pull from DockerHub
+image: timatooth/udraw:latest
+imagePullPolicy: Always
 
-# Create an Ingress for nginx-ingress-controller for exposing to the web.
+canvasapi:
+  replicas: 2
+websocket:
+  replicas: 1
+
+# I use
 ingress:
-  enabled: false
+  # install stable/nginx-ingress helm chart with this release
+  # see 'nginx-ingress' section for configuration
+  nginxIngressEnabled: true
+  # create an Ingress rule for udraw
+  enabled: true
+  # URL to address your udraw installation
+  hostname: udraw.local
+  annotations:
+    kubernetes.io/ingress.class: nginx
 
-# OR
-# Type of Service to create for Websocket & HTTP connections
-# eg ClusterIP for nginx ingress or LoadBalancer in a Cloud.
-serviceType: LoadBalancer
+#### Nginx Ingress Controller subchart settings
+# only applys if you have set "installNginxIngress: true"
+nginx-ingress:
+  controller:
+    service:
+      # how udraw is exposed
+      type: NodePort
 
 # udraw tile persistent storage
 storage:

@@ -2,37 +2,23 @@
 apiVersion: apps/v1beta2 # for versions before 1.9.0 use apps/v1beta2
 kind: Deployment
 metadata:
-  name: {{ .Release.Name }}-udraw
+  name: {{ .Release.Name }}-udrawcanvasapi
   labels:
-    app: {{ .Release.Name }}-udraw
+    app: {{ .Release.Name }}-udrawcanvasapi
 spec:
-  replicas: 1
+  replicas: {{ .Values.canvasapi.replicas }}
   selector:
     matchLabels:
-      app: {{ .Release.Name }}-udraw
+      app: {{ .Release.Name }}-udrawcanvasapi
   template:
     metadata:
       labels:
-        app: {{ .Release.Name }}-udraw
+        app: {{ .Release.Name }}-udrawcanvasapi
     spec:
-      volumes:
-      - name: nginx-config
-        configMap:
-          name: {{ .Release.Name }}-udrawnginxconfig
-      - name: nginx-staticfiles
-        emptyDir: {}
-      initContainers:
-      - name: copy-staticfiles
-        image: timatooth/udraw
-        imagePullPolicy: IfNotPresent
-        command: ['cp', '-rv', '/opt/udraw/public/', '/nginx-staticfiles']
-        volumeMounts:
-        - name: nginx-staticfiles
-          mountPath: /nginx-staticfiles
       containers:
-      - name: udraw
-        image: timatooth/udraw
-        imagePullPolicy: IfNotPresent
+      - name: udraw-canvasapi
+        image: {{ .Values.image }}
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
         command: ['node', 'server']
         envFrom:
         - configMapRef:
@@ -46,16 +32,3 @@ spec:
           value: {{ .Values.storage.s3.region }}
         ports:
         - containerPort: 3000
-        - containerPort: 3001
-      - name: nginx
-        image: nginx:1.13-alpine
-        ports:
-        - containerPort: 80
-          name: http
-        volumeMounts:
-        - name: nginx-config
-          mountPath: /etc/nginx/conf.d
-          readOnly: true
-        - name: nginx-staticfiles
-          mountPath: /usr/share/nginx/html
-          readOnly: true

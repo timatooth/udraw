@@ -2,19 +2,11 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: {{.Release.Name}}-udraw
+  name: {{.Release.Name}}-udrawcanvasapi
 spec:
-  type: {{ .Values.serviceType }}
   selector:
-    app: {{.Release.Name}}-udraw
+    app: {{.Release.Name}}-udrawcanvasapi
   ports:
-  # - name: canvasapi
-  #   protocol: TCP
-  #   port: 3000
-  # - name: websocket
-  #   protocol: TCP
-  #   port: 3001
-  - name: canvasapi
-    protocol: TCP
+  - protocol: TCP
     port: 80
-    targetPort: 80
+    targetPort: 3000
