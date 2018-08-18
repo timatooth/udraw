@@ -2,4 +2,4 @@
 
 A quick way to get up and running on a Kubernetes cluster:
 
-    helm install udraw-helm
+    helm upgrade --install udraw k8s-helm/ -f ../udraw-values.yaml
