@@ -1,10 +1,14 @@
 ---
-apiVersion: apps/v1beta2 # for versions before 1.9.0 use apps/v1beta2
+apiVersion: apps/v1beta2
 kind: Deployment
 metadata:
   name: {{ .Release.Name }}-udrawcanvasapi
   labels:
     app: {{ .Release.Name }}-udrawcanvasapi
+    chart: {{ template "udraw.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    componenet: canvasapi
 spec:
   replicas: {{ .Values.canvasapi.replicas }}
   selector:

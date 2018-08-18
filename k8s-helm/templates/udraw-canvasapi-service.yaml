@@ -3,6 +3,12 @@ kind: Service
 apiVersion: v1
 metadata:
   name: {{.Release.Name}}-udrawcanvasapi
+  labels:
+    app: {{ .Release.Name }}-udrawcanvasapi
+    chart: {{ template "udraw.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    componenet: canvasapi
 spec:
   selector:
     app: {{.Release.Name}}-udrawcanvasapi

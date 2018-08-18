@@ -5,6 +5,10 @@ metadata:
   name: {{ .Release.Name }}-udrawwebsocket
   labels:
     app: {{ .Release.Name }}-udrawwebsocket
+    chart: {{ template "udraw.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    component: websocket
 spec:
   replicas: {{ .Values.websocket.replicas }}
   selector:

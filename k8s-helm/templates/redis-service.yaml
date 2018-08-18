@@ -8,6 +8,7 @@ metadata:
     chart: {{ template "udraw.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
+    componenet: canvasapi
 spec:
   selector:
     app: {{ .Release.Name }}-redis

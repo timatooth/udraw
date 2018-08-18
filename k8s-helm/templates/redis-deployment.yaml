@@ -1,5 +1,5 @@
 ---
-apiVersion: apps/v1beta2 # for versions before 1.9.0 use apps/v1beta2
+apiVersion: apps/v1beta2
 kind: Deployment
 metadata:
   name: {{ template "udraw.fullname" . }}-redis
@@ -8,6 +8,7 @@ metadata:
     chart: {{ template "udraw.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
+    componenet: canvasapi
 spec:
   replicas: 1
   selector:

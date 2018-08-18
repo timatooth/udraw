@@ -3,6 +3,10 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: {{ .Release.Name }}-udrawconfig
+  labels:
+    chart: {{ template "udraw.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
   namespace: default
 data:
   REDIS_HOST: {{ .Release.Name }}-redis
