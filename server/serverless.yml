@@ -17,6 +17,9 @@ service: udraw-canvasapi # NOTE: update this with your service name
 # Check out our docs for more details
 # frameworkVersion: "=X.X.X"
 
+plugins:
+  - serverless-apigwy-binary
+
 provider:
   name: aws
   runtime: nodejs8.10
@@ -55,10 +58,12 @@ functions:
           path: /
           method: ANY
           cors: true
+          contentHandling: CONVERT_TO_BINARY
       - http:
           path: /{proxy+}
           method: ANY
           cors: true
+          contentHandling: CONVERT_TO_BINARY
 
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events

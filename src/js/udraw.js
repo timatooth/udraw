@@ -75,6 +75,7 @@ let badEventHub = new EventHub();
 let tileSource = new RestTileSource({
     debug: debug,
     //url: 'https://udraw.me' //default is /
+    url: 'https://fwut9zz5zd.execute-api.ap-southeast-2.amazonaws.com/dev'
 });
 
 /**

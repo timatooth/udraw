@@ -2,7 +2,7 @@
 const express = require('express');
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
-//const cors = require('cors');
+const cors = require('cors');
 
 const path = require('path');
 
@@ -29,11 +29,13 @@ const canvasApiApp = () => {
     app.use(morgan('combined'));
     app.use(bodyParser.raw({type: 'image/png', limit: '250kb'}));
     app.use(bodyParser.json({type: 'application/json', limit: '250kb'}));
-    //app.use(cors());
+    app.use(cors());
 
     app.get('/',(req, res) => { //todo remove cloudfrount ae?
         res.sendFile(path.join(staticDir, 'index.html'));
     });
+
+    app.options('/canvases/:name/:zoom/:x/:y', cors()) // enable pre-flight request
 
     app.put('/canvases/:name/:zoom/:x/:y', (req, res) => {
         let p = req.params;
