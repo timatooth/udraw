@@ -1,7 +1,7 @@
 /*
  udraw
 
- (c) 2015-2017 Tim Sullivan
+ (c) 2015-2019 Tim Sullivan
  udraw may be freely distributed under the MIT license.
  For all details and documentation: github.com/timatooth/udraw
  */
@@ -97,7 +97,8 @@ const ctx = canvas.getContext('2d');
 /** Screen ratio is 2 for hdpi/retina displays */
 let ratio = 1;
 
-const socket = new io('', {reconnection: true});
+//deprecated this shit.
+const socket = new io('', {reconnection: false});
 
 const notify = underscore.debounce(function (title, message, type) {
     console.log(title, message, type)
