@@ -54,8 +54,11 @@ const canvasApiApp = () => {
         const key = "tile:" + req.params.name + ':' + req.params.zoom + ':' + req.params.x + ':' + req.params.y;
 
         adapter.saveTileAt(req.params.name, req.params.zoom, req.params.x, req.params.y, req.body, (result) => {
-            if(!result) {
+            if (!result) {
                 console.log("Saving " + key +" to S3 FAILED")
+            } else {
+                console.log("Saved tile", key)
+                res.sendStatus(201);
             }
         });
     });

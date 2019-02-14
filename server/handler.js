@@ -16,6 +16,8 @@ const handler = serverless(canvasApiApp(),{
   /// ARGG WTF is it image/png or */*?????
   binary: ['*/*']
 });
+
+
 module.exports.main = async (event, context) => {
   return await handler(event, context);
 };

@@ -15,13 +15,8 @@ const S3Adapter = (bucketName) => {
                 Key: pathToKey(canvasName, zoom, x, y)
             }, (err, data) => {
                 if (err) {
-                    console.log("error", pathToKey(canvasName, zoom, x, y))
-                    console.log(err, err.stack);
                     cb(null)
                 } else {
-                    console.log("got", pathToKey(canvasName, zoom, x, y))
-                    console.log(data)
-                    console.log("length", data.Body.length)
                     cb(data.Body)
                 }
             })
