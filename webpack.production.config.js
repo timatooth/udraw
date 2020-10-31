@@ -13,23 +13,23 @@ module.exports = {
         filename: "js/udraw-bundle.js"
     },
     module: {
-        loaders: [
+        rules: [
             {
                 test: /\.jsx?$/, //this covers .js and .jsx extensions
                 exclude: /(node_modules|bower_components)/,
-                loaders: ['babel-loader?presets[]=react,presets[]=es2015'],
+                use: ['babel-loader'],
             },
             {
                 test: /\.css$/,
-                loaders: ["style-loader", "css-loader"]
+                use: ["style-loader", "css-loader"]
             },
             {
                 test: /\.(png|jpg)$/,
-                loader: "file-loader?name=images/[name].[ext]"
+                use: "file-loader?name=images/[name].[ext]"
             },
             {
                 test: /\.(eot|svg|ttf|woff|woff2)$/,
-                loader: 'file-loader?name=fonts/[name].[ext]'
+                use: 'file-loader?name=fonts/[name].[ext]'
             }
         ]
     },

@@ -1,1 +1,7 @@
-{ "presets": ["es2015", "react"] }
+{
+    "presets": [
+      ["@babel/preset-react", {
+        "runtime": "automatic"
+      }]
+    ]
+  }

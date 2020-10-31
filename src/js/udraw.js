@@ -25,6 +25,9 @@ import { drawLine, drawSketchy, drawBrush, eraseRegion, sprayCan } from './drawi
 
 const EMIT_DELAY = 10;
 const tileSize = 256;
+/** Screen ratio is 2 for hdpi/retina displays */
+let ratio = 1;
+
 
 /** shows tile boundaries and extra console output */
 const debug = false;
@@ -95,8 +98,6 @@ const canvas = document.getElementById("paper");
 canvas.width = window.innerWidth + tileSize * 2;
 canvas.height = window.innerHeight + tileSize * 2;
 const ctx = canvas.getContext('2d');
-/** Screen ratio is 2 for hdpi/retina displays */
-let ratio = 1;
 
 //deprecated this shit.
 const socket = new io('', {reconnection: false});

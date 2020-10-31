@@ -3,10 +3,10 @@ var webpack = require('webpack');
 var HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
+    mode: 'development',
+    devtool: 'inline-source-map',
     entry: {
         app: [
-            'webpack-dev-server/client?http://0.0.0.0:8080', // WebpackDevServer host and port
-            'webpack/hot/only-dev-server', // "only" prevents reload on syntax errors
             "./src/js/udraw.js"
         ]
     },
@@ -15,27 +15,34 @@ module.exports = {
         filename: "js/udraw-bundle.js",
     },
     module: {
-        loaders: [
+        rules: [
             {
                 test: /\.jsx?$/, //this covers .js and .jsx extensions
                 exclude: /(node_modules|bower_components)/,
-                loaders: ['react-hot-loader', 'babel-loader?presets[]=react,presets[]=es2015'],
+                use: ['babel-loader'],
             },
             {
                 test: /\.css$/,
-                loaders: ["style-loader", "css-loader"]
+                use: ["style-loader", "css-loader"]
             },
             {
                 test: /\.(png|jpg)$/,
-                loader: "file-loader?name=images/[name].[ext]"
+                use: "file-loader?name=images/[name].[ext]"
             },
             {
                 test: /\.(eot|svg|ttf|woff|woff2)$/,
-                loader: 'file-loader?name=public/fonts/[name].[ext]'
+                use: 'file-loader?name=public/fonts/[name].[ext]'
             }
         ]
     },
     plugins: [
+        new webpack.DefinePlugin({
+            'process.env': {
+              'NODE_ENV': JSON.stringify('production'),
+              'SENTRY_DSN': JSON.stringify(process.env.SENTRY_DSN || ''),
+              'SENTRY_PUBLIC_DSN': JSON.stringify(process.env.SENTRY_PUBLIC_DSN || ''),
+            }
+        }),
         new webpack.HotModuleReplacementPlugin(), //not needed when using webpack-dev-server from CLI
         new HtmlWebpackPlugin({
           title: 'Custom template',
