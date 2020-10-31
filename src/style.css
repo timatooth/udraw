@@ -1,5 +1,5 @@
-@import url('../public/css/vendor/font-awesome.css');
-@import url('../public/css/vendor/ionicons.css');
+@import url('./css/vendor/font-awesome.css');
+@import url('./css/vendor/ionicons.css');
 
 /** Globbal stuff */
 html, body {
@@ -8,7 +8,7 @@ html, body {
   height: 100%;
   font-family: 'Helvetica Neue', 'Helvetica', 'Open Sans', sans-serif;
   overflow: hidden;
-  background-image: url('../public/images/seamlesspaper.jpg');
+  background-image: url('./images/seamlesspaper.jpg');
   background-repeat: repeat;
 }
 
@@ -59,14 +59,14 @@ html, body {
     position:relative;
     pointer-events: none; /* the irony */
     z-index: 10;
+}
 
-    .Cursor {
-        position: absolute;
-        width:15px;
-        height:22px;
-        background:url('../public/images/pointer.png') no-repeat -4px 0;
-        z-index: 99999;
-    }
+.CursorContainer .Cursor {
+    position: absolute;
+    width:15px;
+    height:22px;
+    background:url('./images/pointer.png') no-repeat -4px 0;
+    z-index: 99999;
 }
 
 /* Toolbar component styling */

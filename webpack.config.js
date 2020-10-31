@@ -11,14 +11,14 @@ module.exports = {
         ]
     },
     output: {
-        path: path.resolve(__dirname, 'public'),
-        filename: "js/udraw-bundle.js",
+        path: path.resolve(__dirname, 'dist'),
+        filename: "udraw-bundle.js",
     },
     module: {
         rules: [
             {
                 test: /\.jsx?$/, //this covers .js and .jsx extensions
-                exclude: /(node_modules|bower_components)/,
+                exclude: /(node_modules)/,
                 use: ['babel-loader'],
             },
             {
@@ -27,22 +27,15 @@ module.exports = {
             },
             {
                 test: /\.(png|jpg)$/,
-                use: "file-loader?name=images/[name].[ext]"
+                use: "file-loader"
             },
             {
                 test: /\.(eot|svg|ttf|woff|woff2)$/,
-                use: 'file-loader?name=public/fonts/[name].[ext]'
+                use: 'file-loader'
             }
         ]
     },
     plugins: [
-        new webpack.DefinePlugin({
-            'process.env': {
-              'NODE_ENV': JSON.stringify('production'),
-              'SENTRY_DSN': JSON.stringify(process.env.SENTRY_DSN || ''),
-              'SENTRY_PUBLIC_DSN': JSON.stringify(process.env.SENTRY_PUBLIC_DSN || ''),
-            }
-        }),
         new webpack.HotModuleReplacementPlugin(), //not needed when using webpack-dev-server from CLI
         new HtmlWebpackPlugin({
           title: 'Custom template',
