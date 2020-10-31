@@ -41,7 +41,6 @@
     "react": "^17.0.1",
     "react-color": "^2.19.3",
     "react-dom": "^17.0.1",
-    "react-motion": "0.5.2",
     "redis": "^2.4.2",
     "redux": "^3.6.0",
     "socket.io": "^2.3.0",

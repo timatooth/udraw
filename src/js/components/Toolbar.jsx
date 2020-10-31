@@ -1,6 +1,5 @@
 import React from 'react';
 import ColorPanel from './ColorPanel.jsx'
-import {ToolMenu} from './ToolMenu.jsx'
 
 const TOOL_ICONS = {
     brush: 'fa fa-paint-brush',
@@ -58,32 +57,33 @@ export class Toolbar extends React.Component {
 
     componentDidMount() {
         //temp hacky observer to bridge the jquery and old state over
-        setInterval(() => {
-            let {legacyClient} = this.props
-            this.prev = this.prev || Object.assign({}, legacyClient);
+        // setInterval(() => {
+        //     let {legacyClient} = this.props
+        //     this.prev = this.prev || Object.assign({}, legacyClient);
 
-            if(JSON.stringify(this.prev) !== JSON.stringify(legacyClient) ){
-                this.prev = Object.assign({}, legacyClient);
-                this.setState({
-                    offset: {
-                        x: legacyClient.offsetX,
-                        y: legacyClient.offsetY
-                    },
-                    toolState: legacyClient.state
-                })
-            }
-        }, 10); //woo polling!
+        //     if(JSON.stringify(this.prev) !== JSON.stringify(legacyClient) ){
+        //         this.prev = Object.assign({}, legacyClient);
+        //         this.setState({
+        //             offset: {
+        //                 x: legacyClient.offsetX,
+        //                 y: legacyClient.offsetY
+        //             },
+        //             toolState: legacyClient.state
+        //         })
+        //     }
+        // }, 10); //woo polling!
     }
 
-    onToolClick(toolName){
+    onToolClick(tool){
+        console.log('tool click', tool)
         //Problem: still keeping state in 2 places
-        this.props.legacyClient.state.tool = toolName
+        this.props.legacyClient.state.tool = tool.props.name
 
         this.props.badEventHub.trigger("tool:change");
 
         this.setState({
             toolState: Object.assign({}, this.props.legacyClient.state, {
-                tool: toolName
+                tool: tool.props.name
             })
         })
     }
@@ -99,11 +99,15 @@ export class Toolbar extends React.Component {
     }
 
     render() {
-        let activeTool = this.state.toolState.tool;
+        let active = this.state.toolState.tool;
         return (
             <div className="Toolbar">
-                <ToolMenu onToolClick={this.onToolClick} />
                 <ColorPanel onColorChange={this.onColorChange} size={this.state.toolState.size } onSizeChange={this.onSizeChange} />
+                <Tool name="move" active={active == "move"} onClick={this.onToolClick} />
+                <Tool name="line" active={active == "line"} onClick={this.onToolClick} />
+                <Tool name="brush" active={active == "brush"} onClick={this.onToolClick} />
+                <Tool name="eraser" active={active == "eraser"} onClick={this.onToolClick} />
+                <Tool name="spray" active={active == "spray"} onClick={this.onToolClick} />
                 <div className="noselect">
                     {this.state.offset.x + ", " + this.state.offset.y }
                 </div>

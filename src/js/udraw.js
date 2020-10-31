@@ -139,7 +139,7 @@ const updateToolState = underscore.debounce(function () {
         offsetX: client.offsetX,
         offsetY: client.offsetY
     };
-    localStorage.setItem("toolsettings", JSON.stringify(client.state));
+    //localStorage.setItem("toolsettings", JSON.stringify(client.state));
 
     socket.emit('status', message);
 }, 200);
@@ -150,9 +150,9 @@ badEventHub.on('tool:change', () => {
 })
 
 //send out current tool state every 2 seconds
-setInterval(function () {
-    updateToolState();
-}, 1000 * 2);
+// setInterval(function () {
+//     updateToolState();
+// }, 1000 * 2);
 
 function drawTile(e, tile) {
     let destinationX = (tile.x * tileSize) - client.offsetX
