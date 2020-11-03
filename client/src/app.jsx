@@ -12,6 +12,7 @@ function uuidv4() {
 }
 
 
+
 export class UdrawApp extends React.Component {
 
     constructor(props){
@@ -27,12 +28,33 @@ export class UdrawApp extends React.Component {
             peers: []
         };
 
+        //PeerJS loading
         this.peer = new Peer(this.state.username);
 
+        //This pointer event handler bindings
         this.handleChange = this.handleChange.bind(this);
         this.onConnectClick = this.onConnectClick.bind(this);
         this.onPointerMove = this.onPointerMove.bind(this);
         this.onCallClick = this.onCallClick.bind(this);
+
+        this._loadTiles();
+    }
+
+    _loadTiles(){
+        console.log("LOADING TILES")
+        //console.log(this.tileApiLoader)
+        const TILE_SIZE = 256;
+        const API_URL = "https://2k1sinfqyc.execute-api.ap-southeast-2.amazonaws.com/dev/canvases/main/1"
+
+        for (let x = 0; x < 5; x++){
+            for(let y = 0; y < 5; y++){
+                const tile = PIXI.Sprite.from(`${API_URL}/${x}/${y}.png`);
+                tile.x = TILE_SIZE * x;
+                tile.y = TILE_SIZE * y;
+                this.props.pixiApp.stage.addChild(tile);
+            }
+
+        }
     }
 
     onPointerMove(event){
@@ -45,7 +67,11 @@ export class UdrawApp extends React.Component {
             p.send({m: this.state.tool});
         })
     }
-    
+
+    onPan(){
+
+    }
+
 
     componentDidMount(){
 
@@ -65,10 +91,10 @@ export class UdrawApp extends React.Component {
                     let videoSprite = PIXI.Sprite.from(videoElement);
 
                     videoSprite.anchor.set(0.5);
-                    videoSprite.width = 50;
-                    videoSprite.height = 50;
+                    videoSprite.width = 133;
+                    videoSprite.height = 100;
                     videoSprite.x = 0;
-                    videoSprite.y = 50;
+                    videoSprite.y = 100;
 
                     let container = self.props.pixiApp.stage.getChildByName(call.peer)
                     container.addChild(videoSprite);
