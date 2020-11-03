@@ -11,8 +11,6 @@ function uuidv4() {
     });
 }
 
-
-
 export class UdrawApp extends React.Component {
 
     constructor(props){
@@ -37,41 +35,60 @@ export class UdrawApp extends React.Component {
         this.onPointerMove = this.onPointerMove.bind(this);
         this.onCallClick = this.onCallClick.bind(this);
 
+        this.tileCache = {};
+
         this._loadTiles();
     }
 
     _loadTiles(){
-        console.log("LOADING TILES")
-        //console.log(this.tileApiLoader)
         const TILE_SIZE = 256;
         const API_URL = "https://2k1sinfqyc.execute-api.ap-southeast-2.amazonaws.com/dev/canvases/main/1"
+        let extentWidth = window.innerWidth / TILE_SIZE;
+        let extentHeight = window.innerHeight / TILE_SIZE;
 
-        for (let x = 0; x < 5; x++){
-            for(let y = 0; y < 5; y++){
-                const tile = PIXI.Sprite.from(`${API_URL}/${x}/${y}.png`);
-                tile.x = TILE_SIZE * x;
-                tile.y = TILE_SIZE * y;
-                this.props.pixiApp.stage.addChild(tile);
+        let offsetX = -Math.floor(this.props.pixiApp.stage.position.x / TILE_SIZE);
+        let offsetY = -Math.floor(this.props.pixiApp.stage.position.y / TILE_SIZE);
+
+        for (let x = offsetX - 1; x < offsetX + extentWidth + 1; x++) {
+            for (let y = offsetY - 1; y < offsetY + extentHeight + 1; y++) {
+                const tileUri = `${API_URL}/${x}/${y}.png`;
+                if (!this.tileCache.hasOwnProperty(tileUri)){
+                    const tile = PIXI.Sprite.from(tileUri);
+                    tile.x = TILE_SIZE * x;
+                    tile.y = TILE_SIZE * y;
+                    this.props.pixiApp.stage.addChild(tile);
+                    this.tileCache[tileUri] = true;
+                    const basicText = new PIXI.Text(`(${x}, ${y})`)
+                    tile.addChild(basicText);
+                }
             }
 
         }
     }
 
     onPointerMove(event){
+        let local = this.props.pixiApp.stage.toLocal(event.data.global);
+
+        //any mouse button down = pan
+        if (event.data.buttons > 0){
+            let dX = this.state.tool.x - local.x;
+            let dY = this.state.tool.y - local.y;
+            this.props.pixiApp.stage.position.x -= dX;
+            this.props.pixiApp.stage.position.y -= dY;
+
+            this._loadTiles();
+            return;
+        }
+
         this.setState({tool: {
-            x: event.data.global.x,
-            y: event.data.global.y
+            x: local.x,
+            y: local.y
         }})
 
         this.state.peers.forEach((p) => {
             p.send({m: this.state.tool});
         })
     }
-
-    onPan(){
-
-    }
-
 
     componentDidMount(){
 
@@ -144,11 +161,11 @@ export class UdrawApp extends React.Component {
     onConnectClick() {
         const conn = this.peer.connect(this.state.connectToPeer);
         conn.on('open', () => {
-            this.props.pixiApp.renderer.backgroundColor = 0x00FF00;
 
             this.setState({
                 peers: [conn]
             })
+
         });
     }
 
@@ -168,12 +185,13 @@ export class UdrawApp extends React.Component {
     }
 
     render() {
+        let connectButtonText = ((this.state.peers.length > 0) ? "Connected" : "Connect");
         return (
             <div>
             <p>My peer ID: {this.state.username}</p>
             <label htmlFor="connectToPeer">Connect To:</label>
             <input name="connectToPeer" onChange={this.handleChange} type="text" defaultValue={this.state.connectToPeer} />
-            <button onClick={this.onConnectClick}>Connect</button>
+            <button onClick={this.onConnectClick}>{connectButtonText}</button>
             <button onClick={this.onCallClick}>Call</button>
             <p>{this.state.lastMessage}</p>
             <p>x,y: {this.state.tool.x},{this.state.tool.y}</p>

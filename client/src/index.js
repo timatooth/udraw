@@ -9,8 +9,8 @@ import './style.css';
 
 const app = new PIXI.Application({
     backgroundColor: 0x1099bb,
-    //width: window.innerWidth,
-    //height: window.innerHeight
+    width: window.innerWidth,
+    height: window.innerHeight
 });
 app.stage.interactive = true;
 document.body.appendChild(app.view);
