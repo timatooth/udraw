@@ -1,4 +1,5 @@
 service: udraw-canvasapi
+frameworkVersion: '3'
 
 plugins:
   - serverless-apigw-binary
@@ -6,33 +7,26 @@ plugins:
 provider:
   name: aws
   endpointType: REGIONAL
-  runtime: nodejs8.10
+  runtime: nodejs16.x
   region: ap-southeast-2
   stage: dev
   environment:
     UDRAW_S3_BUCKET: udraw-tiles
 
-  iamRoleStatements:
-    - Effect: Allow
-      Action:
-      - s3:ListBucket
-      Resource:
-      - 'arn:aws:s3:::udraw-tiles'
-    - Effect: Allow
-      Action:
-      - s3:PutObject
-      - s3:GetObject
-      Resource:
-      - 'arn:aws:s3:::udraw-tiles/*'
-
-# you can add packaging information here
-#package:
-#  include:
-#    - include-me.js
-#    - include-me-dir/**
-#  exclude:
-#    - exclude-me.js
-#    - exclude-me-dir/**
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+          - s3:ListBucket
+          Resource:
+          - 'arn:aws:s3:::udraw-tiles'
+        - Effect: Allow
+          Action:
+          - s3:PutObject
+          - s3:GetObject
+          Resource:
+          - 'arn:aws:s3:::udraw-tiles/*'
 
 custom:
   # https://www.npmjs.com/package/serverless-apigw-binary
@@ -43,7 +37,7 @@ custom:
   siteAcmArn: 'arn:aws:acm:us-east-1:644068571316:certificate/e6c100e3-d2db-4794-9310-87b9071a3f55'
   s3Sync:
     - bucketName: ${self:custom.siteName}
-      localDir: ../public
+      localDir: ../dist
 
 functions:
   canvas:
@@ -55,22 +49,15 @@ functions:
           path: /{proxy+}
           method: GET
           cors: true
-          #contentHandling: CONVERT_TO_BINARY
       - http:
           path: /{proxy+}
           method: PUT
           cors: true
-          #contentHandling: CONVERT_TO_BINARY
       - http:
           path: /{proxy+}
           method: OPTIONS
           cors: true
 
-#    Define function environment variables here
-#    environment:
-#      variable2: value2
-
-# you can add CloudFormation resource templates here
 resources:
   Description: udraw Canvas Tile API serverless stack
 
@@ -138,8 +125,4 @@ resources:
           ViewerCertificate:
             AcmCertificateArn: ${self:custom.siteAcmArn}
             SslSupportMethod: 'sni-only'
-            MinimumProtocolVersion: 'TLSv1.1_2016'
-#  Outputs:
-#     NewOutput:
-#       Description: "Description for the output"
-#       Value: "Some output value"
+            MinimumProtocolVersion: 'TLSv1.2_2021'
