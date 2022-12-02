@@ -13,8 +13,7 @@ config.entry.app.unshift("webpack-dev-server/client?http://localhost:8080");
 let compiler = webpack(config);
 
 let server = new webpackDevServer(compiler, {
-    contentBase: path.resolve(__dirname, 'public'),
-    hot: true,
+    //contentBase: path.resolve(__dirname, 'public'),
     historyApiFallback: true, //allow /z/x/y request to reach index instead of 404,
     proxy: {
         "/canvases/*": "http://localhost:3000",

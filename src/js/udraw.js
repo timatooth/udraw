@@ -15,11 +15,11 @@ import css from '../style.css'
 
 import React from 'react'
 import ReactDOM from 'react-dom'
-import { UdrawApp} from './UdrawApp.jsx'
+import { UdrawApp } from './UdrawApp.jsx'
 import EventHub from './EventHub.js'
 
 import RestTileSource from './RestTileSource'
-import {createStore } from 'redux'
+import { createStore } from 'redux'
 import { udrawAppReducer } from './reducers/udrawapp'
 import { drawLine, drawSketchy, drawBrush, eraseRegion, sprayCan } from './drawing'
 
@@ -47,7 +47,7 @@ let extent = {
 };
 
 //client factory
-function Client(){
+function Client() {
     return {
         state: {
             tool: 'move',
@@ -87,7 +87,7 @@ let tileSource = new RestTileSource({
  */
 let client = Client();
 
-let store = createStore( udrawAppReducer );
+let store = createStore(udrawAppReducer);
 
 ReactDOM.render(
     <UdrawApp store={store} legacyClient={client} clientStates={clientStates} badEventHub={badEventHub} />,
@@ -100,7 +100,7 @@ canvas.height = window.innerHeight + tileSize * 2;
 const ctx = canvas.getContext('2d');
 
 //deprecated this shit.
-const socket = new io('', {reconnection: false});
+const socket = new io('', { reconnection: false });
 
 const notify = underscore.debounce(function (title, message, type) {
     console.log(title, message, type)
@@ -139,9 +139,9 @@ const updateToolState = underscore.debounce(function () {
         offsetX: client.offsetX,
         offsetY: client.offsetY
     };
-    localStorage.setItem("toolsettings", JSON.stringify(client.state));
+    //ocalStorage.setItem("toolsettings", JSON.stringify(client.state));
 
-    socket.emit('status', message);
+    // socket.emit('status', message);
 }, 200);
 
 //React bridge Tool change to old state object to send updateToolState
@@ -187,7 +187,7 @@ function panScreen(dx, dy) {
             offsetY: client.offsetY * ratio
         };
 
-        socket.emit('pan', panMessage);
+        //socket.emit('pan', panMessage);
         lastEmit = $.now();
     }
 }
@@ -200,7 +200,7 @@ function processDrawAction(remoteClient, x, y) {
     if (state.tool === 'pencil') {
         let ss = "rgba(" + c.r + "," + c.g + "," + c.b + "," + 0.1 + ")";
         drawSketchy(ctx, remoteClient, x, y, ss);
-    } else if (state.tool === 'line'){
+    } else if (state.tool === 'line') {
         drawLine(ctx, remoteClient.x, remoteClient.y, x, y, cs, state.size);
     } else if (state.tool === 'brush') {
         //drawCircle(ctx, x, y, cs, state.size / 2);
@@ -284,7 +284,7 @@ $(document).on('keydown keypress keyup', function (evt) {
         case 83:
             panScreen(0, s); //down
             break;
-            //tools
+        //tools
         case 66: //b
             $('.brush-tool').click();
             break;
@@ -318,8 +318,8 @@ $(document).on('keydown keypress keyup', function (evt) {
 const saveTileAt = function (x, y, tileCanvas) {
     let key = x + '/' + y;
 
-    const onSaveResponse = function(code){
-        switch(code) {
+    const onSaveResponse = function (code) {
+        switch (code) {
             case 201:
                 break; //successfully saved.
             case 413:
@@ -428,7 +428,7 @@ socket.on('connect', function () {
     updateToolState();
 });
 
-socket.on('error', function(err){
+socket.on('error', function (err) {
     console.log("socket error");
     console.log(err);
 });
@@ -461,9 +461,9 @@ socket.on('move', function (packet) {
     let y = packet.y - client.offsetY;
     //is the user in our viewport extent?
     if (packet.x > client.offsetX + tileSize &&
-            packet.x < extent.width + client.offsetX + tileSize * 2 &&
-            packet.y > client.offsetY &&
-            packet.y < extent.height + client.offsetY + tileSize * 2) {
+        packet.x < extent.width + client.offsetX + tileSize * 2 &&
+        packet.y > client.offsetY &&
+        packet.y < extent.height + client.offsetY + tileSize * 2) {
         let screenX = (packet.x - (tileSize) - client.offsetX) / ratio;
         let screenY = (packet.y - (tileSize) - client.offsetY) / ratio;
         //update the cursor
@@ -527,10 +527,10 @@ let resizeLayout = underscore.debounce(function () {
     //hdpi support
     let devicePixelRatio = window.devicePixelRatio || 1;
     let backingStoreRatio = ctx.webkitBackingStorePixelRatio ||
-            ctx.mozBackingStorePixelRatio ||
-            ctx.msBackingStorePixelRatio ||
-            ctx.oBackingStorePixelRatio ||
-            ctx.backingStorePixelRatio || 1;
+        ctx.mozBackingStorePixelRatio ||
+        ctx.msBackingStorePixelRatio ||
+        ctx.oBackingStorePixelRatio ||
+        ctx.backingStorePixelRatio || 1;
 
 
     ratio = devicePixelRatio / backingStoreRatio;
@@ -589,7 +589,7 @@ $(canvas).on('mousedown touchstart', function (evt) {
             y: ((client.y / ratio) * ratio) + client.offsetY,
             d1: false //they aren't really drawing yet...
         };
-        socket.emit('move', message);
+        //socket.emit('move', message);
     } else {
         if (evt.which === 2) {
             evt.preventDefault(); // remove up/down cursor.
@@ -629,7 +629,7 @@ $(canvas).on('mouseup mouseleave touchend touchcancel', function (evt) {
             y: ((client.y / ratio) * ratio) + client.offsetY,
             d1: client.m1Down
         };
-        socket.emit('move', moveMessage);
+        //socket.emit('move', moveMessage);
     } else {
         if (evt.which === 2) {
             client.m3Down = false;
@@ -696,7 +696,7 @@ $(canvas).on('mousemove touchmove', function (evt) {
                 y: ((y / ratio) * ratio) + client.offsetY,
                 d1: client.m1Down
             };
-            socket.emit('move', moveMessage);
+            ///socket.emit('move', moveMessage);
             lastEmit = $.now();
         }
     } else if (client.m3Down || (client.m1Down && client.state.tool === 'move') || touchPanning) {
@@ -711,7 +711,7 @@ $(canvas).on('mousemove touchmove', function (evt) {
                 y: ((y / ratio) * ratio) + client.offsetY,
                 d1: client.m1Down
             };
-            socket.emit('move', moveMessage);
+            //socket.emit('move', moveMessage);
             lastEmit = $.now();
         }
     }
