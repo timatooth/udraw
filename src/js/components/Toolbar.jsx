@@ -48,31 +48,13 @@ export class Toolbar extends React.Component {
         super();
         this.state = {
             toolState: {},
-            offset: { x: 0, y: 0 }
+            offset: { x: 0, y: 0 },
+            resizedPuckYet: false
         };
 
         this.onToolClick = this.onToolClick.bind(this)
         this.onColorChange = this.onColorChange.bind(this)
         this.onSizeChange = this.onSizeChange.bind(this)
-    }
-
-    componentDidMount() {
-        //temp hacky observer to bridge the jquery and old state over
-        // setInterval(() => {
-        //     let { legacyClient } = this.props
-        //     this.prev = this.prev || Object.assign({}, legacyClient);
-
-        //     if (JSON.stringify(this.prev) !== JSON.stringify(legacyClient)) {
-        //         this.prev = Object.assign({}, legacyClient);
-        //         this.setState({
-        //             offset: {
-        //                 x: legacyClient.offsetX,
-        //                 y: legacyClient.offsetY
-        //             },
-        //             toolState: legacyClient.state
-        //         })
-        //     }
-        // }, 10); //woo polling!
     }
 
     onToolClick(tool) {
@@ -96,17 +78,15 @@ export class Toolbar extends React.Component {
 
     onSizeChange(size){
         this.props.legacyClient.state.size = size
+        this.setState({resizedPuckYet: true})
     }
 
     render() {
-        let activeTool = this.state.toolState.tool;
-
-        let childButtonIcons = ['pencil', 'paint-brush', 'eraser', 'arrows', 'eyedropper', 'certificate', 'stop'];
-
+        let tiptext = (!this.state.resizedPuckYet ? "Drag Puck to change size" : "");
         return (
             <div className="Toolbar">
                 <ColorPanel onColorChange={this.onColorChange} size={this.state.toolState.size} onSizeChange={this.onSizeChange} />
-                <p>Drag Colour Puck to Change size</p>
+                <p>{tiptext}</p>
                 <Tool name="pencil" onClick={this.onToolClick} />
                 <Tool name="line" onClick={this.onToolClick} />
                 <Tool name="brush" onClick={this.onToolClick} />
@@ -114,16 +94,8 @@ export class Toolbar extends React.Component {
                 <Tool name="spray" onClick={this.onToolClick} />
                 <Tool name="eraser" onClick={this.onToolClick} />
                 <Tool name="eyedropper" onClick={this.onToolClick} />
-
-                
-                <div className="noselect">
-                    {this.state.offset.x + ", " + this.state.offset.y}
-                </div>
             </div>
         );
     }
 }
-//
-//Toolbar.propTypes = {
-//    eventHub: React.PropTypes.object.isRequired
-//};
+
