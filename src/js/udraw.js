@@ -187,60 +187,6 @@ function processMoveAction(client, x, y) {
     client.y = y;
 }
 
-/**
- * Key event bindings
- */
-$(document).on('keydown keypress keyup', function (evt) {
-    let s = 40;
-    switch (evt.keyCode) {
-        //move keys
-        case 37:
-        case 65:
-            panScreen(-s, 0); //left
-            break;
-        case 39:
-        case 68:
-            panScreen(s, 0); //right
-            break;
-        case 38:
-        case 87:
-            panScreen(0, -s); //up
-            break;
-        case 40:
-        case 83:
-            panScreen(0, s); //down
-            break;
-        //tools
-        case 66: //b
-            $('.brush-tool').click();
-            break;
-        case 69:
-            $('.eyedropper-tool').click();
-            break;
-        case 76: //l
-            $('.line-tool').click();
-            break;
-        case 77: //m
-            $('.move-tool').click();
-            break;
-        case 88: //x
-            $('.eraser-tool').click();
-            break;
-        case 187:
-            //+
-            $('.brush-tools').show();
-            $('.size-range').first().val(Number($('.size-range').first().val()) + 1);
-            $('.size-range').trigger('change');
-            break;
-        case 189:
-            //-
-            $('.brush-tools').show();
-            $('.size-range').first().val(Number($('.size-range').first().val()) - 1);
-            $('.size-range').trigger('change');
-            break;
-    }
-});
-
 const saveTileAt = function (x, y, tileCanvas) {
     let key = x + '/' + y;
 
@@ -408,12 +354,7 @@ $(canvas).on('mousedown touchstart', function (evt) {
         client.y = evt.offsetY * ratio;
     }
 
-    //admin protection
-    if (client.m1Down && client.state.tool === 'wand') {
-        let tileX = Math.floor((client.x + client.offsetX) / tileSize);
-        let tileY = Math.floor((client.y + client.offsetY) / tileSize);
-        //protectTileAt(tileX, tileY); redo
-    } else if (client.m1Down && client.state.tool === 'eyedropper') {
+    if (client.m1Down && client.state.tool === 'eyedropper') {
         updatePixelColor(client.x, client.y);
     }
 
