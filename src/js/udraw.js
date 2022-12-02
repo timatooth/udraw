@@ -8,7 +8,6 @@
 'use strict';
 import $ from 'jquery'
 import underscore from 'underscore'
-import FastClick from 'fastclick'
 
 import React from 'react'
 import ReactDOM from 'react-dom'
@@ -520,9 +519,6 @@ function initTheBusiness() {
 
 
     $("#paper").focus(); // key events in canvas
-
-    //mobile fast touching
-    FastClick.attach(document.body);
 }
 
 initTheBusiness();
