@@ -1,0 +1,5 @@
+# Deployment
+
+```sh
+serverless deploy
+```

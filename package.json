@@ -11,8 +11,8 @@
   "scripts": {
     "start": "node devServer.js",
     "test": "echo \"Error: no test specified lol\" && exit 1",
-    "build:production": "node_modules/.bin/webpack -p --config webpack.production.config.js",
-    "build:staging": "node_modules/.bin/webpack -p --config webpack.production.config.js"
+    "build:production": "node_modules/.bin/webpack --config webpack.production.config.js",
+    "build:staging": "node_modules/.bin/webpack --config webpack.production.config.js"
   },
   "keywords": [
     "websocket",
@@ -62,6 +62,7 @@
     "react-hot-loader": "^4.13.0",
     "style-loader": "^2.0.0",
     "webpack": "^5.3.2",
+    "webpack-cli": "^5.0.0",
     "webpack-dev-server": "^4.11.1"
   }
 }
