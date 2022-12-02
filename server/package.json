@@ -17,6 +17,6 @@
   },
   "devDependencies": {
     "serverless-apigw-binary": "^0.4.4",
-    "serverless-s3-sync": "^1.7.2"
+    "serverless-s3-sync": "^1.17.3"
   }
 }
