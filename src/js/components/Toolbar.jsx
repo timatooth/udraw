@@ -61,7 +61,6 @@ export class Toolbar extends React.Component {
         //FIXME: still keeping state in 2 places
         let toolName = tool.props.name;
         this.props.legacyClient.state.tool = toolName
-        this.props.badEventHub.trigger("tool:change");
 
         this.setState({
             toolState: Object.assign({}, this.props.legacyClient.state, {
@@ -73,7 +72,6 @@ export class Toolbar extends React.Component {
     onColorChange(color){
         this.props.legacyClient.state.color = color.hex
         this.props.legacyClient.state.opacity = color.rgb.a
-        this.props.badEventHub.trigger("tool:change");
     }
 
     onSizeChange(size){
