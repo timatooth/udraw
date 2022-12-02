@@ -7,7 +7,6 @@
  */
 'use strict';
 import $ from 'jquery'
-import underscore from 'underscore'
 
 import React from 'react'
 import ReactDOM from 'react-dom'
@@ -74,9 +73,9 @@ canvas.width = window.innerWidth + tileSize * 2;
 canvas.height = window.innerHeight + tileSize * 2;
 const ctx = canvas.getContext('2d');
 
-const notify = underscore.debounce(function (title, message, type) {
+const notify = (title, message, type) => {
     console.log(title, message, type)
-}, 500);
+};
 
 
 function inIframe() {
@@ -281,7 +280,7 @@ const saveTileAt = function (x, y, tileCanvas) {
     tileSource.saveTileAt(x, y, tileCanvas, onSaveResponse);
 };
 
-const updateDirtyTiles = underscore.throttle(function () {
+const updateDirtyTiles = function () {
     Object.keys(tileSource.tileCollection).forEach(function (tileKey) {
         if (tileSource.tileCollection[tileKey].dirty) {
             let tile = tileSource.tileCollection[tileKey];
@@ -303,7 +302,7 @@ const updateDirtyTiles = underscore.throttle(function () {
             }
         }
     });
-}, 400);
+};
 
 /**
  * Called every 5s. Removes tiles from memory which are more than
@@ -348,13 +347,7 @@ function parseUriArgs() {
     return null;
 }
 
-
-/**
- * Resizes the canvas when the window is resized. Debounced to only
- * call every 500ms.
- * @type {function}
- */
-let resizeLayout = underscore.debounce(function () {
+let resizeLayout = function () {
     //hdpi support
     let devicePixelRatio = window.devicePixelRatio || 1;
     let backingStoreRatio = ctx.webkitBackingStorePixelRatio ||
@@ -384,7 +377,8 @@ let resizeLayout = underscore.debounce(function () {
     }
 
     drawTiles();
-}, 500); // Maximum run of once per 500 milliseconds
+};
+
 if (!inIframe()) { //disable resizing inside iframe. Buggy on iphone
     window.addEventListener("resize", resizeLayout, false);
 }
