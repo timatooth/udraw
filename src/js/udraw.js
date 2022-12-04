@@ -7,36 +7,22 @@
  */
 'use strict';
 import $ from 'jquery'
-import underscore from 'underscore'
-import io from 'socket.io-client'
-import FastClick from 'fastclick'
-
-import css from '../style.css'
 
 import React from 'react'
 import ReactDOM from 'react-dom'
 import { UdrawApp } from './UdrawApp.jsx'
-import EventHub from './EventHub.js'
 
 import RestTileSource from './RestTileSource'
-import { createStore } from 'redux'
-import { udrawAppReducer } from './reducers/udrawapp'
 import { drawLine, drawSketchy, drawBrush, eraseRegion, sprayCan } from './drawing'
 
-const EMIT_DELAY = 10;
 const tileSize = 256;
 /** Screen ratio is 2 for hdpi/retina displays */
 let ratio = 1;
 
 
 /** shows tile boundaries and extra console output */
-const debug = false;
-let lastPing = $.now();
-/**
- * Store states of other connected clients
- * @type type
- */
-let clientStates = {};
+const DEBUG_MODE = false;
+
 /**
  * The visible region to draw on screen.
  * @type Extent
@@ -65,18 +51,8 @@ function Client() {
     }
 }
 
-/**
-* This guy is a dirty escape hatch to pass events into the new React UI
-* environment so it can re-render as changes happen.
-*
-* This should only be here to assist the migration to a full React/Redux
-* design. *touch wood*
-*/
-let badEventHub = new EventHub();
-
-
 let tileSource = new RestTileSource({
-    debug: debug,
+    debug: DEBUG_MODE,
     //url: 'https://udraw.me' //default is /
     url: 'https://2k1sinfqyc.execute-api.ap-southeast-2.amazonaws.com/dev'
 });
@@ -87,10 +63,8 @@ let tileSource = new RestTileSource({
  */
 let client = Client();
 
-let store = createStore(udrawAppReducer);
-
 ReactDOM.render(
-    <UdrawApp store={store} legacyClient={client} clientStates={clientStates} badEventHub={badEventHub} />,
+    <UdrawApp legacyClient={client} />,
     document.getElementById('udrawapp')
 );
 
@@ -99,12 +73,9 @@ canvas.width = window.innerWidth + tileSize * 2;
 canvas.height = window.innerHeight + tileSize * 2;
 const ctx = canvas.getContext('2d');
 
-//deprecated this shit.
-const socket = new io('', { reconnection: false });
-
-const notify = underscore.debounce(function (title, message, type) {
+const notify = (title, message, type) => {
     console.log(title, message, type)
-}, 500);
+};
 
 
 function inIframe() {
@@ -129,31 +100,6 @@ function hexToRgb(hex) {
     };
 }
 
-const updateToolState = underscore.debounce(function () {
-
-    let message = {
-        tool: client.state.tool,
-        color: client.state.color,
-        size: client.state.size,
-        opacity: client.state.opacity,
-        offsetX: client.offsetX,
-        offsetY: client.offsetY
-    };
-    //ocalStorage.setItem("toolsettings", JSON.stringify(client.state));
-
-    // socket.emit('status', message);
-}, 200);
-
-//React bridge Tool change to old state object to send updateToolState
-badEventHub.on('tool:change', () => {
-    updateToolState()
-})
-
-//send out current tool state every 2 seconds
-setInterval(function () {
-    updateToolState();
-}, 1000 * 2);
-
 function drawTile(e, tile) {
     let destinationX = (tile.x * tileSize) - client.offsetX
     let destinationY = (tile.y * tileSize) - client.offsetY
@@ -176,20 +122,6 @@ function panScreen(dx, dy) {
     client.offsetX += dx;
     client.offsetY += dy;
     requestAnimationFrame(drawTiles);
-
-    if ((window.history && history.pushState)) {
-        updateUrl("/" + client.offsetX + "/" + client.offsetY);
-    }
-
-    if ($.now() - lastEmit > EMIT_DELAY) { //only send pan message every 60ms
-        let panMessage = {
-            offsetX: client.offsetX * ratio,
-            offsetY: client.offsetY * ratio
-        };
-
-        //socket.emit('pan', panMessage);
-        lastEmit = $.now();
-    }
 }
 
 function processDrawAction(remoteClient, x, y) {
@@ -203,7 +135,6 @@ function processDrawAction(remoteClient, x, y) {
     } else if (state.tool === 'line') {
         drawLine(ctx, remoteClient.x, remoteClient.y, x, y, cs, state.size);
     } else if (state.tool === 'brush') {
-        //drawCircle(ctx, x, y, cs, state.size / 2);
         drawBrush(ctx, remoteClient.x, remoteClient.y, x, y, cs, state.size);
     } else if (state.tool === 'eraser') {
         eraseRegion(ctx, x, y, state.size);
@@ -237,13 +168,8 @@ function updatePixelColor(x, y) {
         client.state.opacity = 0.03;
     }
 
-    updateToolState();
     return colorString;
 }
-
-let updateUrl = underscore.debounce(function (key) {
-    //history.replaceState(null, null, key); //disabled for now
-}, 1000);
 
 /**
  * Handle Screen panning.
@@ -260,60 +186,6 @@ function processMoveAction(client, x, y) {
     client.x = x;
     client.y = y;
 }
-
-/**
- * Key event bindings
- */
-$(document).on('keydown keypress keyup', function (evt) {
-    let s = 40;
-    switch (evt.keyCode) {
-        //move keys
-        case 37:
-        case 65:
-            panScreen(-s, 0); //left
-            break;
-        case 39:
-        case 68:
-            panScreen(s, 0); //right
-            break;
-        case 38:
-        case 87:
-            panScreen(0, -s); //up
-            break;
-        case 40:
-        case 83:
-            panScreen(0, s); //down
-            break;
-        //tools
-        case 66: //b
-            $('.brush-tool').click();
-            break;
-        case 69:
-            $('.eyedropper-tool').click();
-            break;
-        case 76: //l
-            $('.line-tool').click();
-            break;
-        case 77: //m
-            $('.move-tool').click();
-            break;
-        case 88: //x
-            $('.eraser-tool').click();
-            break;
-        case 187:
-            //+
-            $('.brush-tools').show();
-            $('.size-range').first().val(Number($('.size-range').first().val()) + 1);
-            $('.size-range').trigger('change');
-            break;
-        case 189:
-            //-
-            $('.brush-tools').show();
-            $('.size-range').first().val(Number($('.size-range').first().val()) - 1);
-            $('.size-range').trigger('change');
-            break;
-    }
-});
 
 const saveTileAt = function (x, y, tileCanvas) {
     let key = x + '/' + y;
@@ -354,7 +226,7 @@ const saveTileAt = function (x, y, tileCanvas) {
     tileSource.saveTileAt(x, y, tileCanvas, onSaveResponse);
 };
 
-const updateDirtyTiles = underscore.throttle(function () {
+const updateDirtyTiles = function () {
     Object.keys(tileSource.tileCollection).forEach(function (tileKey) {
         if (tileSource.tileCollection[tileKey].dirty) {
             let tile = tileSource.tileCollection[tileKey];
@@ -376,7 +248,7 @@ const updateDirtyTiles = underscore.throttle(function () {
             }
         }
     });
-}, 400);
+};
 
 /**
  * Called every 5s. Removes tiles from memory which are more than
@@ -421,109 +293,7 @@ function parseUriArgs() {
     return null;
 }
 
-/*--------------------------------------------------------
- * Network socket event handling section.
- */
-socket.on('connect', function () {
-    updateToolState();
-});
-
-socket.on('error', function (err) {
-    console.log("socket error");
-    console.log(err);
-});
-
-socket.on('ping', function () {
-    socket.emit('pong');
-});
-
-socket.on('pong', function () {
-    let latency = $.now() - lastPing;
-});
-
-socket.on('states', function (data) {
-    Object.keys(data).forEach(function (key) {
-        clientStates[key] = Client();
-        clientStates[key].state = data[key];
-        clientStates[key].updated = $.now();
-    });
-});
-
-socket.on('move', function (packet) {
-    if (!clientStates.hasOwnProperty(packet.id)) {
-        clientStates[packet.id] = Client();
-    } else {
-        clientStates[packet.id].updated = $.now();
-    }
-
-    let remoteClient = clientStates[packet.id];
-    let x = packet.x - client.offsetX;
-    let y = packet.y - client.offsetY;
-    //is the user in our viewport extent?
-    if (packet.x > client.offsetX + tileSize &&
-        packet.x < extent.width + client.offsetX + tileSize * 2 &&
-        packet.y > client.offsetY &&
-        packet.y < extent.height + client.offsetY + tileSize * 2) {
-        let screenX = (packet.x - (tileSize) - client.offsetX) / ratio;
-        let screenY = (packet.y - (tileSize) - client.offsetY) / ratio;
-        //update the cursor
-        //$(clientStates[packet.id].cursor).show(); //if was hidden
-        // $(clientStates[packet.id].cursor).css({
-        //     transform: "translate(" + (screenX ) + "px, " + (screenY) + "px)"
-        // });
-
-        if (packet.d1) { //mouse1 down
-            processDrawAction(remoteClient, x, y);
-
-            //dirty the tile
-            //set the 'tile' to be recached
-            let tileX = Math.floor((x + client.offsetX) / tileSize);
-            let tileY = Math.floor((y + client.offsetY) / tileSize);
-            let key = tileX + '/' + tileY;
-            tileSource.tileCollection[key].dirty = true;
-            updateDirtyTiles();
-        }
-
-    }
-
-    clientStates[packet.id].x = x;
-    clientStates[packet.id].y = y;
-    badEventHub.trigger('clientStates:move', clientStates, client.offsetX, client.offsetY);
-});
-
-socket.on('status', function (packet) {
-    if (!clientStates.hasOwnProperty(packet.id)) {
-        clientStates[packet.id] = Client()
-    }
-    clientStates[packet.id].state = packet;
-    clientStates[packet.id].updated = $.now();
-});
-
-socket.on('pan', function (packet) {
-    if (!clientStates.hasOwnProperty(packet.id)) {
-        clientStates[packet.id] = Client()
-    }
-    clientStates[packet.id].offsetX = packet.offsetX;
-    clientStates[packet.id].offsetY = packet.offsetY;
-    clientStates[packet.id].updated = $.now();
-});
-
-// Remove inactive clients after 30 seconds of inactivity
-setInterval(function () {
-    Object.keys(clientStates).forEach(function (key) {
-        if ($.now() - clientStates[key].updated > 1000 * 30) {
-            //clientStates[key].cursor.remove(); //remove cursor
-            delete clientStates[key]; //remove states
-        }
-    });
-}, 1000);
-
-/**
- * Resizes the canvas when the window is resized. Debounced to only
- * call every 500ms.
- * @type {function}
- */
-let resizeLayout = underscore.debounce(function () {
+let resizeLayout = function () {
     //hdpi support
     let devicePixelRatio = window.devicePixelRatio || 1;
     let backingStoreRatio = ctx.webkitBackingStorePixelRatio ||
@@ -553,21 +323,11 @@ let resizeLayout = underscore.debounce(function () {
     }
 
     drawTiles();
-}, 500); // Maximum run of once per 500 milliseconds
+};
+
 if (!inIframe()) { //disable resizing inside iframe. Buggy on iphone
     window.addEventListener("resize", resizeLayout, false);
 }
-
-/* History URI API */
-window.onpopstate = function () {
-    let givenOffsets = parseUriArgs();
-
-    if (givenOffsets !== null) {
-        client.offsetX = givenOffsets[0];
-        client.offsetY = givenOffsets[1];
-    }
-    drawTiles();
-};
 
 /********************************************************
  * CANVAS jQuery events
@@ -583,13 +343,6 @@ $(canvas).on('mousedown touchstart', function (evt) {
         client.x = evt.originalEvent.touches[0].clientX * ratio + tileSize; //caveat adding tilesize?
         client.y = evt.originalEvent.touches[0].clientY * ratio + tileSize;
         client.m1Down = true;
-        //send a move setting drawing to true to say where they draw from
-        let message = {
-            x: ((client.x / ratio) * ratio) + client.offsetX,
-            y: ((client.y / ratio) * ratio) + client.offsetY,
-            d1: false //they aren't really drawing yet...
-        };
-        //socket.emit('move', message);
     } else {
         if (evt.which === 2) {
             evt.preventDefault(); // remove up/down cursor.
@@ -601,12 +354,7 @@ $(canvas).on('mousedown touchstart', function (evt) {
         client.y = evt.offsetY * ratio;
     }
 
-    //admin protection
-    if (client.m1Down && client.state.tool === 'wand') {
-        let tileX = Math.floor((client.x + client.offsetX) / tileSize);
-        let tileY = Math.floor((client.y + client.offsetY) / tileSize);
-        //protectTileAt(tileX, tileY); redo
-    } else if (client.m1Down && client.state.tool === 'eyedropper') {
+    if (client.m1Down && client.state.tool === 'eyedropper') {
         updatePixelColor(client.x, client.y);
     }
 
@@ -623,13 +371,6 @@ $(canvas).on('mouseup mouseleave touchend touchcancel', function (evt) {
         evt.preventDefault();
         client.m1Down = false;
         updateDirtyTiles();
-        //send a move setting drawing to false
-        let moveMessage = {
-            x: ((client.x / ratio) * ratio) + client.offsetX,
-            y: ((client.y / ratio) * ratio) + client.offsetY,
-            d1: client.m1Down
-        };
-        //socket.emit('move', moveMessage);
     } else {
         if (evt.which === 2) {
             client.m3Down = false;
@@ -643,16 +384,12 @@ $(canvas).on('mouseup mouseleave touchend touchcancel', function (evt) {
 
 });
 
-/** Stores time for when last mouse movement packet was sent **/
-let lastEmit = $.now();
-
 /**
  * When the mouse moves process draw actions or movement.
  * This could do with a re-write, Cyclomatic complexity < 15
  * @param {jQuery} evt Incoming event
  */
 $(canvas).on('mousemove touchmove', function (evt) {
-    let moveMessage;
     let x, y;
     let touchPanning = false; //flag for mobile devices panning
     if (evt.type === "touchmove") {
@@ -689,33 +426,11 @@ $(canvas).on('mousemove touchmove', function (evt) {
         //update 'last' position values for next draw call
         client.x = x;
         client.y = y;
-
-        if ($.now() - lastEmit > 30) {
-            moveMessage = {
-                x: ((x / ratio) * ratio) + client.offsetX,
-                y: ((y / ratio) * ratio) + client.offsetY,
-                d1: client.m1Down
-            };
-            ///socket.emit('move', moveMessage);
-            lastEmit = $.now();
-        }
     } else if (client.m3Down || (client.m1Down && client.state.tool === 'move') || touchPanning) {
         processMoveAction(client, x, y);
     } else if (client.m1Down && client.state.tool === 'eyedropper') {
         updatePixelColor(x, y);
-    } else {
-        //just a regular mouse move? this needs refactoring
-        if ($.now() - lastEmit > 60) {
-            moveMessage = {
-                x: ((x / ratio) * ratio) + client.offsetX,
-                y: ((y / ratio) * ratio) + client.offsetY,
-                d1: client.m1Down
-            };
-            //socket.emit('move', moveMessage);
-            lastEmit = $.now();
-        }
     }
-
 });
 
 $(canvas).on('wheel mousewheel', function (evt) {
@@ -739,9 +454,6 @@ function initTheBusiness() {
 
 
     $("#paper").focus(); // key events in canvas
-
-    //mobile fast touching
-    FastClick.attach(document.body);
 }
 
 initTheBusiness();
