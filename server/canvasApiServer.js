@@ -12,7 +12,7 @@ const S3Adapter = require('./s3adapter');
 const tileRadius = 300;
 
 //location of static web files
-const staticDir = path.join(__dirname, '../public')
+const staticDir = path.join(__dirname, '../dist')
 
 const canvasApiApp = () => {
 
