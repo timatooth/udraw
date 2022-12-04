@@ -21,7 +21,8 @@ let server = new webpackDevServer(compiler, {
     headers: {
         'Access-Control-Allow-Origin': 'http://localhost:3000',
         'Access-Control-Allow-Credentials': 'true'
-    }
+    },
+    allowedHosts: 'all'
 });
 
 server.listen(8080);
