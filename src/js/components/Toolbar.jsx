@@ -81,19 +81,19 @@ export class Toolbar extends React.Component {
 
     render() {
         let tiptext = (!this.state.resizedPuckYet ? "Drag Puck to change size" : "");
+
+        let toolList = Object.keys(TOOL_ICONS).map((t) => {
+            return (
+              <Tool key={t} name={t} onClick={this.onToolClick} active={this.state.toolState.tool == t} />
+            )
+        })
+
         return (
             <div className="Toolbar">
                 <ColorPanel onColorChange={this.onColorChange} size={this.state.toolState.size} onSizeChange={this.onSizeChange} />
                 <p>{tiptext}</p>
-                <Tool name="pencil" onClick={this.onToolClick} />
-                <Tool name="line" onClick={this.onToolClick} />
-                <Tool name="brush" onClick={this.onToolClick} />
-                <Tool name="move" onClick={this.onToolClick} />
-                <Tool name="spray" onClick={this.onToolClick} />
-                <Tool name="eraser" onClick={this.onToolClick} />
-                <Tool name="eyedropper" onClick={this.onToolClick} />
+                {toolList}
             </div>
         );
     }
 }
-

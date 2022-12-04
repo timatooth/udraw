@@ -1,5 +1,4 @@
 import React from 'react'
-//import ColorPicker from 'react-color'
 import ChromePicker from 'react-color'
 
 
