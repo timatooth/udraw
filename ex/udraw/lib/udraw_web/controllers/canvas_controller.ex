@@ -1,5 +1,6 @@
 defmodule UdrawWeb.CanvasController do
   use UdrawWeb, :controller
+  require Logger
 
   def options(conn, _params) do
     conn
@@ -21,11 +22,11 @@ defmodule UdrawWeb.CanvasController do
            body
          ) do
       {:ok, _result} ->
-        IO.puts("Saved tile #{key}")
+        Logger.info("Saved tile #{key}")
         send_resp(conn, 201, "")
 
       {:error, _reason} ->
-        IO.puts("Saving #{key} to S3 FAILED")
+        Logger.error("Saving #{key} to S3 FAILED")
         send_resp(conn, 500, "")
     end
   end
@@ -35,9 +36,6 @@ defmodule UdrawWeb.CanvasController do
   end
 
   def get_tile(conn, %{"name" => "main", "zoom" => "1"} = params) do
-    key = "#{params["name"]}:#{params["zoom"]}:#{params["x"]}:#{params["y"]}"
-    IO.puts(key)
-
     case Udraw.S3Adapter.get_tile_at(params["name"], params["zoom"], params["x"], params["y"]) do
       {:ok, data} ->
         conn
