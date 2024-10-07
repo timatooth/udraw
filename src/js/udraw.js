@@ -55,7 +55,7 @@ let tileSource = new RestTileSource({
     debug: DEBUG_MODE,
     //url: 'https://udraw.me' //default is /
     //url: 'https://2k1sinfqyc.execute-api.ap-southeast-2.amazonaws.com/dev'
-    url: 'http://localhost:4000/api'
+    url: `${window.location.href}api`
 });
 
 /**
@@ -458,3 +458,6 @@ function initTheBusiness() {
 }
 
 initTheBusiness();
+
+//this is just a hack to make esbuild happy
+export default tileSource;

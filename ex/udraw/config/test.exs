@@ -7,7 +7,7 @@ import Config
 # Run `mix help test` for more information.
 config :udraw, Udraw.Repo,
   username: "postgres",
-  password: "postgres",
+  password: "foobar1234t3t4turboxyz",
   hostname: "localhost",
   database: "udraw_test#{System.get_env("MIX_TEST_PARTITION")}",
   pool: Ecto.Adapters.SQL.Sandbox,
