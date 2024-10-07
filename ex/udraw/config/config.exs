@@ -9,7 +9,8 @@ import Config
 
 config :udraw,
   ecto_repos: [Udraw.Repo],
-  generators: [timestamp_type: :utc_datetime]
+  generators: [timestamp_type: :utc_datetime],
+  s3_bucket: "udraw-tiles"
 
 # Configures the endpoint
 config :udraw, UdrawWeb.Endpoint,
@@ -64,3 +65,12 @@ config :phoenix, :json_library, Jason
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"
+
+config :ex_aws,
+  region: "ap-southeast-2",
+  access_key_id: [{:system, "AWS_ACCESS_KEY_ID"}, {:awscli, "default", 30}, :instance_role],
+  secret_access_key: [
+    {:system, "AWS_SECRET_ACCESS_KEY"},
+    {:awscli, "default", 30},
+    :instance_role
+  ]

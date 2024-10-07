@@ -2,28 +2,46 @@ defmodule UdrawWeb.Router do
   use UdrawWeb, :router
 
   pipeline :browser do
-    plug :accepts, ["html"]
-    plug :fetch_session
-    plug :fetch_live_flash
-    plug :put_root_layout, html: {UdrawWeb.Layouts, :root}
-    plug :protect_from_forgery
-    plug :put_secure_browser_headers
+    plug(:accepts, ["html"])
+    plug(:fetch_session)
+    plug(:fetch_live_flash)
+    plug(:put_root_layout, html: {UdrawWeb.Layouts, :root})
+    plug(:protect_from_forgery)
+    plug(:put_secure_browser_headers)
   end
 
   pipeline :api do
-    plug :accepts, ["json"]
+    plug(:accepts, ["json", "image/png"])
+    plug(:cors_plug)
+  end
+
+  pipeline :tile_radius_check do
+    plug(UdrawWeb.Plugs.TileRadiusCheck)
   end
 
   scope "/", UdrawWeb do
-    pipe_through :browser
+    pipe_through(:browser)
 
-    get "/", PageController, :home
+    get("/", PageController, :home)
   end
 
   # Other scopes may use custom stacks.
   # scope "/api", UdrawWeb do
   #   pipe_through :api
   # end
+
+  scope "/api", UdrawWeb do
+    pipe_through([:api, :tile_radius_check])
+
+    options("/canvases/:name/:zoom/:x/:y", CanvasController, :options)
+    put("/canvases/:name/:zoom/:x/:y", CanvasController, :put_tile)
+    get("/canvases/:name/:zoom/:x/:y", CanvasController, :get_tile)
+  end
+
+  defp cors_plug(conn, _opts) do
+    conn
+    |> UdrawWeb.Cors.call([])
+  end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development
   if Application.compile_env(:udraw, :dev_routes) do
@@ -35,10 +53,10 @@ defmodule UdrawWeb.Router do
     import Phoenix.LiveDashboard.Router
 
     scope "/dev" do
-      pipe_through :browser
+      pipe_through(:browser)
 
-      live_dashboard "/dashboard", metrics: UdrawWeb.Telemetry
-      forward "/mailbox", Plug.Swoosh.MailboxPreview
+      live_dashboard("/dashboard", metrics: UdrawWeb.Telemetry)
+      forward("/mailbox", Plug.Swoosh.MailboxPreview)
     end
   end
 end

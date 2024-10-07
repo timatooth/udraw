@@ -54,7 +54,8 @@ function Client() {
 let tileSource = new RestTileSource({
     debug: DEBUG_MODE,
     //url: 'https://udraw.me' //default is /
-    url: 'https://2k1sinfqyc.execute-api.ap-southeast-2.amazonaws.com/dev'
+    //url: 'https://2k1sinfqyc.execute-api.ap-southeast-2.amazonaws.com/dev'
+    url: 'http://localhost:4000/api'
 });
 
 /**
