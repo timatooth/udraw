@@ -37,7 +37,7 @@ config :esbuild,
   version: "0.17.11",
   udraw: [
     args:
-      ~w(js/app.js --bundle --target=es2017 --outdir=../priv/static/assets --external:/fonts/* --external:/images/* --loader:.js=jsx --loader:.css=css --loader:.png=copy --loader:.jpg=copy --loader:.ttf=copy --loader:.woff=copy --loader:.eot=copy --loader:.woff2=copy --loader:.svg=copy),
+      ~w(js/app.js --bundle --target=es2017 --outdir=../priv/static/assets --external:/fonts/* --external:/images/* --loader:.js=jsx --loader:.css=css --loader:.png=file --loader:.jpg=file --loader:.ttf=file --loader:.woff=file --loader:.eot=file --loader:.woff2=file --loader:.svg=file),
     cd: Path.expand("../assets", __DIR__),
     env: %{"NODE_PATH" => Path.expand("../deps", __DIR__)}
   ]

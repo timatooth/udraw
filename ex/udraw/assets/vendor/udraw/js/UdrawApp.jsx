@@ -1,6 +1,5 @@
 import React from 'react'
 import {Toolbar} from './components/Toolbar.jsx'
-import _style from '../style.css'
 
 export class UdrawApp extends React.Component {
 
