@@ -53,13 +53,24 @@ export class UdrawApp extends React.Component {
             for (let y = offsetY - 1; y < offsetY + extentHeight + 1; y++) {
                 const tileUri = `${API_URL}/${x}/${y}.png`;
                 if (!this.tileCache.hasOwnProperty(tileUri)){
-                    const tile = PIXI.Sprite.from(tileUri);
-                    tile.x = TILE_SIZE * x;
-                    tile.y = TILE_SIZE * y;
-                    this.props.pixiApp.stage.addChild(tile);
-                    this.tileCache[tileUri] = true;
-                    const basicText = new PIXI.Text(`(${x}, ${y})`)
-                    tile.addChild(basicText);
+                    let container = new PIXI.Container();
+                    
+                    //const texture = await PIXI.Assets.load(tileUri);
+                    //const tile = PIXI.Sprite.from(tileUri);
+                    let cache = this.tileCache
+                    let tile = createTileSprite(tileUri).then((tile) => {
+                        container.addChild(tile);
+                        cache[tileUri] = true;
+                    });
+                    container.x = TILE_SIZE * x;
+                    container.y = TILE_SIZE * y;
+                    
+                    
+                    const basicText = new PIXI.Text({text: `(${x}, ${y})`})
+                    //container.addChild(tile);
+                    container.addChild(basicText);
+                    console.log("adding a text ele")
+                    this.props.pixiApp.stage.addChild(container);
                 }
             }
 
@@ -197,5 +208,18 @@ export class UdrawApp extends React.Component {
             <p>x,y: {this.state.tool.x},{this.state.tool.y}</p>
             </div>
             );
+        }
+    }
+
+    async function createTileSprite(tileUri) {
+        try {
+            // Load the texture from the URL
+            const texture = await PIXI.Assets.load(tileUri);
+            
+            // Create a sprite from the loaded texture
+            const tile = new PIXI.Sprite(texture);
+            return tile;
+        } catch (error) {
+            console.error('Failed to load texture:', error);
         }
     }

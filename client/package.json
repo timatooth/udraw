@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "esbuild --bundle src/index.jsx --outdir=out --sourcemap --bundle --loader:.png=file --target=chrome58",
     "watch": "esbuild --bundle src/index.jsx --outdir=out --sourcemap --bundle --loader:.png=file --target=chrome58 --watch",
-    "serve": "esbuild --bundle src/index.jsx --outdir=out --sourcemap --bundle --loader:.png=file --target=chrome58 --watch --servedir=out",
+    "serve": "esbuild --bundle src/index.jsx --outdir=out --sourcemap --bundle --loader:.png=file --format=esm --watch --servedir=out",
     "start": "webpack serve"
   },
   "repository": {
@@ -25,7 +25,7 @@
   },
   "dependencies": {
     "peerjs": "^1.5.4",
-    "pixi.js": "^5.3.3",
+    "pixi.js": "^8.3.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   }

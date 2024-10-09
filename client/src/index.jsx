@@ -1,4 +1,6 @@
-import * as PIXI from 'pixi.js';
+//import * as PIXI from 'pixi.js';
+
+import { Application } from 'pixi.js';
 import React from 'react'
 import { StrictMode } from 'react';
 
@@ -7,14 +9,19 @@ import {UdrawApp} from './app.jsx'
 
 import './style.css';
 
-
-const app = new PIXI.Application({
+const options = {
     backgroundColor: 0x1099bb,
-    width: window.innerWidth,
-    height: window.innerHeight
-});
+    width: window.innerWidth * window.devicePixelRatio,
+    height: window.innerHeight * devicePixelRatio,
+    resolution: 1 / window.devicePixelRatio
+}
+
+const app = new Application();
+await app.init(options);
+
 app.stage.interactive = true;
-document.body.appendChild(app.view);
+document.body.appendChild(app.canvas);
+
 
 
 const container = document.getElementById('root');
