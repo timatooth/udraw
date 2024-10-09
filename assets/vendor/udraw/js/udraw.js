@@ -313,9 +313,9 @@ const handleMouseUpOrTouchEnd = (evt) => {
     }
 };
 
-const handleMouseMoveOrTouchMove = (evt) => {
-    let x, y;
-    let touchPanning = false;
+//processing mouse movement
+const getCoordinatesFromEvent = (evt) => {
+    let x, y, touchPanning = false;
 
     if (evt.type === "touchmove") {
         evt.preventDefault();
@@ -329,26 +329,65 @@ const handleMouseMoveOrTouchMove = (evt) => {
         y = evt.offsetY * ratio;
     }
 
-    if (client.m1Down && client.state.tool !== 'move' && client.state.tool !== 'wand' && client.state.tool !== 'eyedropper' && !touchPanning) {
-        processDrawAction(client, x, y);
-        const shadow = client.state.tool === 'brush' ? client.state.size * 0.8 : 0;
-        
-        for (let i = -(client.state.size / 2) - shadow; i < (client.state.size / 2) + shadow; i += 1) {
-            const tileX = Math.floor((x + client.offsetX + i) / tileSize);
-            const tileY = Math.floor((y + client.offsetY + i) / tileSize);
-            const key = `${tileX}/${tileY}`;
+    return { x, y, touchPanning };
+};
 
-            tileSource.tileCollection[key].dirty = true;
-            tileSource.tileCollection[key].filthy = true;
-        }
-        client.x = x;
-        client.y = y;
-    } else if (client.m3Down || (client.m1Down && client.state.tool === 'move') || touchPanning) {
-        processMoveAction(client, x, y);
-    } else if (client.m1Down && client.state.tool === 'eyedropper') {
-        updatePixelColor(x, y);
+const handleDrawing = (client, x, y) => {
+    processDrawAction(client, x, y);
+    const shadow = client.state.tool === 'brush' ? client.state.size * 0.8 : 0;
+
+    for (let i = -(client.state.size / 2) - shadow; i < (client.state.size / 2) + shadow; i += 1) {
+        const tileX = Math.floor((x + client.offsetX + i) / tileSize);
+        const tileY = Math.floor((y + client.offsetY + i) / tileSize);
+        const key = `${tileX}/${tileY}`;
+
+        tileSource.tileCollection[key].dirty = true;
+        tileSource.tileCollection[key].filthy = true;
+    }
+
+    client.x = x;
+    client.y = y;
+};
+
+const handleMouseMoveOrTouchMove = (evt) => {
+    const { x, y, touchPanning } = getCoordinatesFromEvent(evt);
+
+    const action = determineAction(client, touchPanning);
+
+    switch (action) {
+        case 'draw':
+            handleDrawing(client, x, y);
+            break;
+        case 'move':
+            processMoveAction(client, x, y);
+            break;
+        case 'eyedropper':
+            updatePixelColor(x, y);
+            break;
+        default:
+            // Do nothing for unhandled actions or no action needed
+            break;
     }
 };
+
+const determineAction = (client, touchPanning) => {
+    if (touchPanning) return 'move';
+    if (client.m1Down) {
+        switch (client.state.tool) {
+            case 'move':
+                return 'move';
+            case 'eyedropper':
+                return 'eyedropper';
+            default:
+                return 'draw';
+        }
+    } else if (client.m3Down) {
+        return 'move';
+    }
+    return null;
+};
+
+//end of handling drawing movement
 
 const handleWheelEvent = (evt) => {
     evt.preventDefault();
