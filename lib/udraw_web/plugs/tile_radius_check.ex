@@ -8,7 +8,10 @@ defmodule UdrawWeb.Plugs.TileRadiusCheck do
   def call(conn, _opts) do
     params = conn.params
     x = String.to_integer(params["x"])
-    y = String.to_integer(params["y"])
+
+    y =
+      String.trim_trailing(params["y"], ".png")
+      |> String.to_integer()
 
     if x < -(@tile_radius / 2) || x > @tile_radius / 2 || y < -(@tile_radius / 2) ||
          y > @tile_radius / 2 do

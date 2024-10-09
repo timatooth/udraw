@@ -25,11 +25,6 @@ defmodule UdrawWeb.Router do
     get("/", PageController, :home)
   end
 
-  # Other scopes may use custom stacks.
-  # scope "/api", UdrawWeb do
-  #   pipe_through :api
-  # end
-
   scope "/api", UdrawWeb do
     pipe_through([:api, :tile_radius_check])
 

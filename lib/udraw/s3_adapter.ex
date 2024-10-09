@@ -9,7 +9,8 @@ defmodule Udraw.S3Adapter do
   @bucket_name Application.get_env(:udraw, :s3_bucket)
 
   def path_to_key(canvas_name, zoom, x, y) do
-    "#{canvas_name}/#{zoom}/#{x}/#{y}.png"
+    y_stripped = String.trim_trailing(y, ".png")
+    "#{canvas_name}/#{zoom}/#{x}/#{y_stripped}.png"
   end
 
   def get_tile_at(canvas_name, zoom, x, y) do
