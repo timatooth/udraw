@@ -1,6 +1,6 @@
 {
   "name": "udraw",
-  "version": "1.0.1",
+  "version": "1.1.1",
   "description": "Multiplayer tiled canvas drawing platform",
   "main": "server/index.js",
   "readme": "README.md",
@@ -17,16 +17,12 @@
   "keywords": [
     "websocket",
     "react",
-    "socket.io",
-    "redis",
     "drawing",
     "canvas"
   ],
   "author": "Tim Sullivan",
   "license": "MIT",
   "dependencies": {
-    "@babel/preset-react": "^7.12.1",
-    "jquery": "^3.6.1",
     "react": "^17.0.2",
     "react-color": "^2.19.3",
     "react-dom": "^17.0.2"

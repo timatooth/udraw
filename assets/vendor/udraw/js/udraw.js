@@ -1,5 +1,4 @@
 'use strict';
-import $ from 'jquery'
 import React from 'react'
 import ReactDOM from 'react-dom'
 import { UdrawApp } from './UdrawApp.jsx'
@@ -274,11 +273,11 @@ if (!inIframe()) {
     window.addEventListener("resize", resizeLayout, false);
 }
 
-$(canvas).on('mousedown touchstart', (evt) => {
+const handleMouseDownOrTouchStart = (evt) => {
     if (evt.type === "touchstart") {
         evt.preventDefault();
-        client.x = evt.originalEvent.touches[0].clientX * ratio + tileSize;
-        client.y = evt.originalEvent.touches[0].clientY * ratio + tileSize;
+        client.x = evt.touches[0].clientX * ratio + tileSize;
+        client.y = evt.touches[0].clientY * ratio + tileSize;
         client.m1Down = true;
     } else {
         if (evt.which === 2) {
@@ -294,9 +293,10 @@ $(canvas).on('mousedown touchstart', (evt) => {
     if (client.m1Down && client.state.tool === 'eyedropper') {
         updatePixelColor(client.x, client.y);
     }
-});
+};
 
-$(canvas).on('mouseup mouseleave touchend touchcancel', (evt) => {
+
+const handleMouseUpOrTouchEnd = (evt) => {
     if (evt.type === "touchend" || evt.type === "touchcancel") {
         evt.preventDefault();
         client.m1Down = false;
@@ -311,16 +311,17 @@ $(canvas).on('mouseup mouseleave touchend touchcancel', (evt) => {
         client.x = evt.offsetX;
         client.y = evt.offsetY;
     }
-});
+};
 
-$(canvas).on('mousemove touchmove', (evt) => {
+const handleMouseMoveOrTouchMove = (evt) => {
     let x, y;
     let touchPanning = false;
+
     if (evt.type === "touchmove") {
         evt.preventDefault();
-        x = evt.originalEvent.touches[0].clientX * ratio + tileSize;
-        y = evt.originalEvent.touches[0].clientY * ratio + tileSize;
-        if (evt.originalEvent.touches.length > 1) {
+        x = evt.touches[0].clientX * ratio + tileSize;
+        y = evt.touches[0].clientY * ratio + tileSize;
+        if (evt.touches.length > 1) {
             touchPanning = true;
         }
     } else {
@@ -347,12 +348,27 @@ $(canvas).on('mousemove touchmove', (evt) => {
     } else if (client.m1Down && client.state.tool === 'eyedropper') {
         updatePixelColor(x, y);
     }
-});
+};
 
-$(canvas).on('wheel mousewheel', (evt) => {
+const handleWheelEvent = (evt) => {
     evt.preventDefault();
-    panScreen(Math.floor(evt.originalEvent.deltaX), Math.floor(evt.originalEvent.deltaY));
-});
+    panScreen(Math.floor(evt.deltaX), Math.floor(evt.deltaY));  // evt.originalEvent.deltaX -> evt.deltaX
+};
+
+canvas.addEventListener('mousedown', handleMouseDownOrTouchStart);
+canvas.addEventListener('touchstart', handleMouseDownOrTouchStart);
+
+canvas.addEventListener('mouseup', handleMouseUpOrTouchEnd);
+canvas.addEventListener('mouseleave', handleMouseUpOrTouchEnd);
+canvas.addEventListener('touchend', handleMouseUpOrTouchEnd);
+canvas.addEventListener('touchcancel', handleMouseUpOrTouchEnd);
+
+canvas.addEventListener('mousemove', handleMouseMoveOrTouchMove);
+canvas.addEventListener('touchmove', handleMouseMoveOrTouchMove);
+
+canvas.addEventListener('wheel', handleWheelEvent);
+canvas.addEventListener('mousewheel', handleWheelEvent);  // Legacy support for older browsers
+
 
 const initTheBusiness = () => {
     const givenOffsets = parseUriArgs();
@@ -361,8 +377,6 @@ const initTheBusiness = () => {
         [client.offsetX, client.offsetY] = givenOffsets;
     }
     resizeLayout();
-
-    $("#paper").focus();
 };
 
 initTheBusiness();
