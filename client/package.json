@@ -26,7 +26,7 @@
   "dependencies": {
     "peerjs": "^1.5.4",
     "pixi.js": "^5.3.3",
-    "react": "^17.0.1",
-    "react-dom": "^17.0.1"
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
   }
 }
