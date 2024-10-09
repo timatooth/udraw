@@ -87,7 +87,7 @@ export class UdrawApp extends React.Component {
             this.props.pixiApp.stage.position.x -= dX;
             this.props.pixiApp.stage.position.y -= dY;
 
-            this._loadTiles();
+            //this._loadTiles();
             return;
         }
 
