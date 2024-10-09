@@ -1,5 +1,5 @@
-export function drawLine(ctx, fromx, fromy, tox, toy, color, size) {
-    ctx.beginPath(); //need to enclose in begin/close for colour settings to work
+export const drawLine = (ctx, fromx, fromy, tox, toy, color, size) => {
+    ctx.beginPath();
     ctx.strokeStyle = color;
     ctx.lineWidth = size;
     ctx.lineCap = 'butt';
@@ -7,72 +7,66 @@ export function drawLine(ctx, fromx, fromy, tox, toy, color, size) {
     ctx.lineTo(tox, toy);
     ctx.stroke();
     ctx.closePath();
-}
+};
 
-export function drawSketchy(ctx, remoteClient, x, y, colorString) {
-    let i, dx, dy, d;
-    //push past points to client
-    let points = remoteClient.points;
+export const drawSketchy = (ctx, remoteClient, x, y, colorString) => {
+    const points = remoteClient.points;
+    const threshold = 4000;
 
-    //store the
     points.push([x + remoteClient.offsetX, y + remoteClient.offsetY]);
     ctx.lineWidth = 1;
     ctx.strokeStyle = colorString;
     ctx.beginPath();
-    ctx.moveTo(remoteClient.x, remoteClient.y); //prev
-    ctx.lineTo(x, y); //latest
+    ctx.moveTo(remoteClient.x, remoteClient.y);
+    ctx.lineTo(x, y);
     ctx.stroke();
-    let pointCount = remoteClient.pointCount;
-    let threshold = 4000;
-    //credit to mrdoob's 'harmony' drawing page.
-    for (i = 0; i < points.length; i++) {
-        dx = points[i][0] - points[pointCount][0];
-        dy = points[i][1] - points[pointCount][1];
-        d = dx * dx + dy * dy;
+
+    const pointCount = remoteClient.pointCount;
+
+    points.forEach((point, i) => {
+        const dx = point[0] - points[pointCount][0];
+        const dy = point[1] - points[pointCount][1];
+        const d = dx * dx + dy * dy;
 
         if (d < threshold && Math.random() > (d / threshold)) {
             ctx.beginPath();
             ctx.moveTo(points[pointCount][0] + (dx * 0.3) - remoteClient.offsetX, points[pointCount][1] + (dy * 0.3) - remoteClient.offsetY);
-            ctx.lineTo(points[i][0] - (dx * 0.3) - remoteClient.offsetX, points[i][1] - (dy * 0.3) - remoteClient.offsetY);
+            ctx.lineTo(point[0] - (dx * 0.3) - remoteClient.offsetX, point[1] - (dy * 0.3) - remoteClient.offsetY);
             ctx.stroke();
         }
-    }
-    remoteClient.pointCount++;
-}
+    });
 
-export function drawBrush(ctx, fromx, fromy, tox, toy, color, size) {
-    ctx.beginPath(); //need to enclose in begin/close for colour settings to work
+    remoteClient.pointCount++;
+};
+
+export const drawBrush = (ctx, fromx, fromy, tox, toy, color, size) => {
+    ctx.beginPath();
     ctx.strokeStyle = color;
     ctx.lineWidth = size;
     ctx.lineCap = "round";
-    //shadow
-    ctx.shadowBlur = size * 0; //disabled shadow
+    ctx.shadowBlur = 0; // Disabled shadow
     ctx.shadowColor = "black";
-    //
     ctx.moveTo(fromx, fromy);
     ctx.lineTo(tox, toy);
     ctx.stroke();
     ctx.closePath();
-    ctx.shadowBlur = 0; //set back to 0 othewise all drawings are shadowed?
-}
+    ctx.shadowBlur = 0;
+};
 
-export function eraseRegion(ctx, x, y, radius) {
-    ctx.clearRect(x - radius, y - radius, radius, radius);
-}
+export const eraseRegion = (ctx, x, y, radius) => {
+    ctx.clearRect(x - radius, y - radius, radius * 2, radius * 2);
+};
 
-export function sprayCan(ctx, x, y, color, size) {
-    // Particle count
-    let count = size * 4;
+export const sprayCan = (ctx, x, y, color, size) => {
+    const count = size * 4;
     ctx.fillStyle = color;
+
     for (let i = 0; i < count; i++) {
-        let randomAngle = Math.random() * (2 * Math.PI);
-        let randomRadius = Math.random() * size;
-        let ox = Math.cos(randomAngle) * randomRadius;
-        let oy = Math.sin(randomAngle) * randomRadius;
-        let xLocation = x + ox;
-        let yLocation = y + oy;
+        const randomAngle = Math.random() * (2 * Math.PI);
+        const randomRadius = Math.random() * size;
+        const xLocation = x + Math.cos(randomAngle) * randomRadius;
+        const yLocation = y + Math.sin(randomAngle) * randomRadius;
 
         ctx.fillRect(xLocation, yLocation, 1, 1);
     }
-}
-
+};
