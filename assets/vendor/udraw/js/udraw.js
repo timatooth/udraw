@@ -274,23 +274,26 @@ if (!inIframe()) {
 }
 
 const handleMouseDownOrTouchStart = (evt) => {
-    if (evt.type === "touchstart") {
+    const isTouch = evt.type === "touchstart";
+
+    if (isTouch) {
         evt.preventDefault();
         client.x = evt.touches[0].clientX * ratio + tileSize;
         client.y = evt.touches[0].clientY * ratio + tileSize;
-        client.m1Down = true;
     } else {
+        client.x = evt.offsetX * ratio;
+        client.y = evt.offsetY * ratio;
+
         if (evt.which === 2) {
             evt.preventDefault();
             client.m3Down = true;
-        } else {
-            client.m1Down = true;
+            return;
         }
-        client.x = evt.offsetX * ratio;
-        client.y = evt.offsetY * ratio;
     }
 
-    if (client.m1Down && client.state.tool === 'eyedropper') {
+    client.m1Down = true;
+
+    if (client.state.tool === 'eyedropper') {
         updatePixelColor(client.x, client.y);
     }
 };
@@ -391,9 +394,10 @@ const determineAction = (client, touchPanning) => {
 
 const handleWheelEvent = (evt) => {
     evt.preventDefault();
-    panScreen(Math.floor(evt.deltaX), Math.floor(evt.deltaY));  // evt.originalEvent.deltaX -> evt.deltaX
+    panScreen(Math.floor(evt.deltaX), Math.floor(evt.deltaY));
 };
 
+// event listeners
 canvas.addEventListener('mousedown', handleMouseDownOrTouchStart);
 canvas.addEventListener('touchstart', handleMouseDownOrTouchStart);
 
