@@ -198,11 +198,7 @@ const updateDirtyTiles = () => {
             
             tileSource.tileCollection[tileKey].canvas = ofc;
             tileSource.tileCollection[tileKey].dirty = false;
-            
-            if (tile.filthy) {
-                saveTileAt(tile.x, tile.y, ofc);
-                tile.filthy = false;
-            }
+            saveTileAt(tile.x, tile.y, ofc);
         }
     });
 };
@@ -345,7 +341,6 @@ const handleDrawing = (client, x, y) => {
         const key = `${tileX}/${tileY}`;
 
         tileSource.tileCollection[key].dirty = true;
-        tileSource.tileCollection[key].filthy = true;
     }
 
     client.x = x;
