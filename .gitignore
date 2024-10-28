@@ -4,6 +4,8 @@ nbproject/
 .DS_Store
 dist/
 .idea/
+*.db
+*.db-
 public/js/
 public/*.png
 public/*.html
