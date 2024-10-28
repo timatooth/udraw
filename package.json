@@ -1,6 +1,6 @@
 {
   "name": "udraw",
-  "version": "1.0.1",
+  "version": "1.1.1",
   "description": "Multiplayer tiled canvas drawing platform",
   "main": "server/index.js",
   "readme": "README.md",
@@ -17,35 +17,14 @@
   "keywords": [
     "websocket",
     "react",
-    "socket.io",
-    "redis",
     "drawing",
     "canvas"
   ],
   "author": "Tim Sullivan",
   "license": "MIT",
   "dependencies": {
-    "@babel/preset-react": "^7.12.1",
-    "jquery": "^3.6.1",
     "react": "^17.0.2",
     "react-color": "^2.19.3",
     "react-dom": "^17.0.2"
-  },
-  "devDependencies": {
-    "@babel/core": "^7.12.3",
-    "@babel/preset-env": "^7.12.1",
-    "babel-loader": "^8.1.0",
-    "babel-preset-es2015": "^6.24.1",
-    "babel-register": "^6.26.0",
-    "clean-webpack-plugin": "^3.0.0",
-    "css-loader": "^5.0.0",
-    "file-loader": "^6.2.0",
-    "html-webpack-plugin": "^4.5.0",
-    "jsxobj": "^1.1.0",
-    "react-hot-loader": "^4.13.0",
-    "style-loader": "^2.0.0",
-    "webpack": "^5.76.0",
-    "webpack-cli": "^5.0.0",
-    "webpack-dev-server": "^4.11.1"
   }
 }
