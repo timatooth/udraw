@@ -8,7 +8,7 @@ import Config
 config :udraw, Udraw.Repo,
   username: "postgres",
   password: "foobar1234t3t4turboxyz",
-  hostname: "localhost",
+  hostname: "postgres",
   database: "udraw_test#{System.get_env("MIX_TEST_PARTITION")}",
   pool: Ecto.Adapters.SQL.Sandbox,
   pool_size: System.schedulers_online() * 2
