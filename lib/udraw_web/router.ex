@@ -28,9 +28,9 @@ defmodule UdrawWeb.Router do
   scope "/api", UdrawWeb do
     pipe_through([:api, :tile_radius_check])
 
-    options("/canvases/:name/:zoom/:x/:y", CanvasController, :options)
-    put("/canvases/:name/:zoom/:x/:y", CanvasController, :put_tile)
-    get("/canvases/:name/:zoom/:x/:y", CanvasController, :get_tile)
+    options("/canvases/:name/:zoom/:x/:y", TileController, :options)
+    put("/canvases/:name/:zoom/:x/:y", TileController, :put_tile)
+    get("/canvases/:name/:zoom/:x/:y", TileController, :get_tile)
   end
 
   defp cors_plug(conn, _opts) do

@@ -1,4 +1,4 @@
-defmodule UdrawWeb.CanvasController do
+defmodule UdrawWeb.TileController do
   use UdrawWeb, :controller
   require Logger
 
