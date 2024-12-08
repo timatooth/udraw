@@ -5,7 +5,7 @@ nbproject/
 dist/
 .idea/
 *.db
-*.db-
+*.db-*
 public/js/
 public/*.png
 public/*.html

@@ -3,7 +3,7 @@ import Config
 # Configure your database
 config :udraw, Udraw.Repo,
   username: "postgres",
-  password: "foobar1234t3t4turboxyz",
+  password: "toothpix-db-pass",
   hostname: "localhost",
   database: "udraw_dev",
   stacktrace: true,

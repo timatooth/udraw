@@ -68,9 +68,9 @@ import_config "#{config_env()}.exs"
 
 config :ex_aws,
   region: "ap-southeast-2",
-  access_key_id: [{:system, "AWS_ACCESS_KEY_ID"}, {:awscli, "default", 30}, :instance_role],
+  access_key_id: [{:system, "AWS_ACCESS_KEY_ID"}, {:awscli, "timatooth", 30}, :instance_role],
   secret_access_key: [
     {:system, "AWS_SECRET_ACCESS_KEY"},
-    {:awscli, "default", 30},
+    {:awscli, "timatooth", 30},
     :instance_role
   ]

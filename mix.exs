@@ -36,7 +36,7 @@ defmodule Udraw.MixProject do
       {:phoenix_ecto, "~> 4.5"},
       {:ecto_sql, "~> 3.10"},
       {:ecto_sqlite3, ">= 0.0.0", only: [:dev, :test]},
-      {:postgrex, ">= 0.0.0", only: :prod},
+      {:postgrex, ">= 0.0.0"},
       {:phoenix_html, "~> 4.1"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
       # TODO bump on release to {:phoenix_live_view, "~> 1.0.0"},
@@ -61,11 +61,12 @@ defmodule Udraw.MixProject do
       {:dns_cluster, "~> 0.1.1"},
       {:bandit, "~> 1.5"},
       # mine
-      {:ex_aws, "~> 2.1"},
-      {:ex_aws_s3, "~> 2.0"},
+      {:ex_aws, "~> 2.5"},
+      {:ex_aws_s3, "~> 2.5.5"},
       {:hackney, "~> 1.9"},
       {:sweet_xml, "~> 0.6"},
-      {:configparser_ex, "~> 4.0"}
+      {:configparser_ex, "~> 4.0"},
+      {:req, "~> 0.5.8"}
     ]
   end
 
