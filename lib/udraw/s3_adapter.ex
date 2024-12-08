@@ -6,7 +6,7 @@ defmodule Udraw.S3Adapter do
 
   alias ExAws.S3
 
-  @bucket_name Application.get_env(:udraw, :s3_bucket)
+  @bucket_name Application.compile_env(:udraw, :s3_bucket)
 
   def path_to_key(canvas_name, zoom, x, y) do
     y_stripped = String.trim_trailing(y, ".png")
