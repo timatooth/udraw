@@ -8,6 +8,7 @@ defmodule UdrawWeb.UserRegistrationLive do
     ~H"""
     <div class="mx-auto max-w-sm">
       <.header class="text-center">
+        <img src={~p"/images/logo.svg"} width="480" />
         Register for an account
         <:subtitle>
           Already registered?

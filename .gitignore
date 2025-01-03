@@ -1,4 +1,3 @@
-static/
 node_modules/
 nbproject/
 .DS_Store
@@ -6,10 +5,6 @@ dist/
 .idea/
 *.db
 *.db-*
-public/js/
-public/*.png
-public/*.html
-npm-debug.log
 .elixir_ls/
 log/
 .bundle/

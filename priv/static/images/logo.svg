@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 100">
+  <!-- Pencil -->
+  <g transform="translate(20, 30) rotate(15)">
+    <!-- Pencil body -->
+    <rect x="0" y="0" width="80" height="20" fill="#FFD700" rx="2"/>
+    <!-- Pencil tip -->
+    <path d="M80,0 L95,10 L80,20 Z" fill="#FFA500"/>
+    <path d="M95,10 L100,10 L95,12 L95,8 Z" fill="#4A4A4A"/>
+    <!-- Wood texture lines -->
+    <line x1="10" y1="0" x2="10" y2="20" stroke="#FFB347" stroke-width="1"/>
+    <line x1="30" y1="0" x2="30" y2="20" stroke="#FFB347" stroke-width="1"/>
+    <line x1="50" y1="0" x2="50" y2="20" stroke="#FFB347" stroke-width="1"/>
+    <line x1="70" y1="0" x2="70" y2="20" stroke="#FFB347" stroke-width="1"/>
+    <!-- Eraser -->
+    <rect x="-15" y="0" width="15" height="20" fill="#FF69B4" rx="2"/>
+    <rect x="-20" y="0" width="5" height="20" fill="#DDD" rx="1"/>
+  </g>
+  
+  <!-- Text -->
+  <g transform="translate(120, 60)">
+    <!-- μ character -->
+    <text font-family="Arial" font-size="50" fill="#4A4A4A" font-weight="bold">μ</text>
+    <!-- "draw" text -->
+    <text x="35" font-family="Arial" font-size="50" fill="#4A4A4A" font-weight="bold">draw</text>
+  </g>
+  
+  <!-- Decorative elements -->
+  <circle cx="250" cy="30" r="8" fill="#FF69B4" opacity="0.6"/>
+  <circle cx="270" cy="20" r="5" fill="#FFD700" opacity="0.6"/>
+  <circle cx="260" cy="45" r="6" fill="#FFA500" opacity="0.6"/>
+</svg>

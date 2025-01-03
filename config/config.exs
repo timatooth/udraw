@@ -37,7 +37,7 @@ config :esbuild,
   version: "0.17.11",
   udraw: [
     args:
-      ~w(js/app.js --bundle --target=es2017 --outdir=../priv/static/assets --loader:.js=jsx --loader:.css=css --loader:.png=file --loader:.jpg=file --loader:.ttf=file --loader:.woff=file --loader:.eot=file --loader:.woff2=file --loader:.svg=file),
+      ~w(js/app.js css/udraw.css vendor/udraw/js/udraw.js --bundle --target=es2017 --outdir=../priv/static/assets --loader:.js=jsx --loader:.css=css --loader:.png=file --loader:.jpg=file --loader:.ttf=file --loader:.woff=file --loader:.eot=file --loader:.woff2=file --loader:.svg=file),
     cd: Path.expand("../assets", __DIR__),
     env: %{"NODE_PATH" => Path.expand("../deps", __DIR__)}
   ]
@@ -48,8 +48,8 @@ config :tailwind,
   udraw: [
     args: ~w(
       --config=tailwind.config.js
-      --input=css/tailwind.css
-      --output=../priv/static/assets/tailwind.css
+      --input=css/app.css
+      --output=../priv/static/assets/app.css
     ),
     cd: Path.expand("../assets", __DIR__)
   ]

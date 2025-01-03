@@ -1,87 +1,81 @@
 @import "vendor/font-awesome.css";
 @import "vendor/ionicons.css";
 
-/* This file is for your main application CSS */
-/** Globbal stuff */
-html, body {
-    margin: 0px;
-    padding: 0px;
-    height: 100%;
-    font-family: 'Helvetica Neue', 'Helvetica', 'Open Sans', sans-serif;
+/* Prevent scroll bars for oversized canvas element */
+#udrawapp {
     overflow: hidden;
-    background-image: url('../images/seamlesspaper.jpg');
-    background-repeat: repeat;
-  }
-  
-  .noselect {
-      -webkit-touch-callout: none; /* iOS Safari */
-      -webkit-user-select: none;   /* Chrome/Safari/Opera */
-      -khtml-user-select: none;    /* Konqueror */
-      -moz-user-select: none;      /* Firefox */
-      -ms-user-select: none;       /* Internet Explorer/Edge */
-      user-select: none;           /* Non-prefixed version, currently
+}
+
+.noselect {
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Chrome/Safari/Opera */
+    -khtml-user-select: none; /* Konqueror */
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* Internet Explorer/Edge */
+    user-select: none; /* Non-prefixed version, currently
                                     not supported by any browser */
-  }
-  
-  /* Expand the canvas out beyond the window viewport by length of tile on each
+}
+
+/* Expand the canvas out beyond the window viewport by length of tile on each
      side
   */
-  #paper {
-      /* @1x offset by tileSize */
-      position: relative;
-      top: -256px;
-      left: -256px;
-  
-      /* @2x Offset offset by tileSize / 2 */
-      @media
-      only screen and (-webkit-min-device-pixel-ratio: 2),
-      only screen and (min--moz-device-pixel-ratio: 2),
-      only screen and (min-device-pixel-ratio: 2),
-      only screen and (min-resolution: 2dppx) {
-          position: relative;
-          top: -128px;
-          left: -128px;
-      }
-  
-      /* @3x Offset offset by tileSize / 3 */
-      @media
-      only screen and (-webkit-min-device-pixel-ratio: 3),
-      only screen and (min--moz-device-pixel-ratio: 3),
-      only screen and (min-device-pixel-ratio: 3),
-      only screen and (min-resolution: 3dppx) {
-          position: relative;
-          top: -85px;
-          left: -85px;
-      }
-  }
-  
-  /* Cursors */
-  .CursorContainer {
-      position:relative;
-      pointer-events: none; /* the irony */
-      z-index: 10;
-  }
-  
-  .CursorContainer .Cursor {
-      position: absolute;
-      width:15px;
-      height:22px;
-      background:url('../images/pointer.png') no-repeat -4px 0;
-      z-index: 99999;
-  }
-  
-  /* Toolbar component styling */
-  .Toolbar {
+#paper {
+    background-image: url("../images/seamlesspaper.jpg");
+    background-repeat: repeat;
+    /* @1x offset by tileSize */
+    position: relative;
+    top: -256px;
+    left: -256px;
+    overflow: hidden;
+
+    /* @2x Offset offset by tileSize / 2 */
+    @media only screen and (-webkit-min-device-pixel-ratio: 2),
+        only screen and (min--moz-device-pixel-ratio: 2),
+        only screen and (min-device-pixel-ratio: 2),
+        only screen and (min-resolution: 2dppx) {
+        position: relative;
+        top: -128px;
+        left: -128px;
+    }
+
+    /* @3x Offset offset by tileSize / 3 */
+    @media only screen and (-webkit-min-device-pixel-ratio: 3),
+        only screen and (min--moz-device-pixel-ratio: 3),
+        only screen and (min-device-pixel-ratio: 3),
+        only screen and (min-resolution: 3dppx) {
+        position: relative;
+        top: -85px;
+        left: -85px;
+    }
+}
+
+/* Cursors */
+.CursorContainer {
+    position: relative;
+    pointer-events: none; /* the irony */
+    z-index: 10;
+}
+
+.CursorContainer .Cursor {
+    position: absolute;
+    width: 15px;
+    height: 22px;
+    background: url("../images/pointer.png") no-repeat -4px 0;
+    z-index: 99999;
+}
+
+/* Toolbar component styling */
+.Toolbar {
     position: fixed;
     left: 0px;
     top: 0px;
     width: 4em;
     height: 100%;
     background-color: #eee;
-    background-color: rgba(240,240,240,0.9);
+    background-color: rgba(240, 240, 240, 0.9);
     color: #555;
-    font-family: 'Helvetica Neue', 'Open Sans', sans-serif;
-    font-weight: 300;
+    /* font-family: "Helvetica Neue", "Open Sans", sans-serif; */
+    /* font-weight: 300; */
     text-align: center;
     z-index: 9;
-  }
+}
