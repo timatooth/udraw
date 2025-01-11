@@ -9,8 +9,12 @@ config :bcrypt_elixir, :log_rounds, 1
 # to provide built-in test partitioning in CI environment.
 # Run `mix help test` for more information.
 config :udraw, Udraw.Repo,
-  database: "udraw_test#{System.get_env("MIX_TEST_PARTITION")}.db",
-  pool: Ecto.Adapters.SQL.Sandbox
+  database: "udraw_test#{System.get_env("MIX_TEST_PARTITION")}",
+  username: "postgres",
+  password: "toothpix-db-pass",
+  hostname: "localhost",
+  pool: Ecto.Adapters.SQL.Sandbox,
+  pool_size: System.schedulers_online() * 2
 
 # We don't run a server during test. If one is required,
 # you can enable the server option below.
