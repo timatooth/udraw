@@ -1,8 +1,3 @@
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-
 name: Elixir CI
 
 on:
@@ -15,29 +10,27 @@ permissions:
   contents: read
 
 jobs:
-  build:
+  build-test-job:
+    services:
+      # Label used to access the service container
+      postgres:
+        # Docker Hub image
+        image: postgres:17-alpine
+        # Provide the password for postgres
+        env:
+          POSTGRES_PASSWORD: toothpix-db-pass
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          # Maps tcp port 5432 on service container to the host
+          - 5432:5432
 
     name: Build and test
-    runs-on: ubuntu-latest
-
-    #services:
-      # Label used to access the service container
-      # Doesn't work, nxdomain for some reason...
-      # postgres:
-      #   # Docker Hub image
-      #   image: postgres:17-alpine
-      #   # Provide the password for postgres
-      #   env:
-      #     POSTGRES_PASSWORD: foobar1234t3t4turboxyz
-      #   # Set health checks to wait until postgres has started
-      #   options: >-
-      #     --health-cmd pg_isready
-      #     --health-interval 10s
-      #     --health-timeout 5s
-      #     --health-retries 5
-      #   ports:
-      #     # Maps tcp port 5432 on service container to the host
-      #     - 5432:5432
+    runs-on: ubuntu-24.04
 
     steps:
     - uses: actions/checkout@v4

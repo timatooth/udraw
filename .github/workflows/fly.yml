@@ -7,8 +7,9 @@ on:
       - completed
 jobs:
   deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     name: Deploy app
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     environment: production
     concurrency: deploy-group # optional: ensure only one action runs at a time
     steps:
