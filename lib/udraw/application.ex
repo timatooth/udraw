@@ -16,6 +16,7 @@ defmodule Udraw.Application do
       {Finch, name: Udraw.Finch},
       # Start a worker by calling: Udraw.Worker.start_link(arg)
       # {Udraw.Worker, arg},
+      Udraw.DrawingServer,
       # Start to serve requests, typically the last entry
       UdrawWeb.Endpoint
     ]
