@@ -15,15 +15,19 @@ defmodule Udraw.S3Adapter do
 
   def get_tile_at(canvas_name, zoom, x, y) do
     key = path_to_key(canvas_name, zoom, x, y)
-    Logger.info("Getting object from S3 at #{key}")
+    Logger.debug("Getting object from S3 at #{key}")
 
     case S3.get_object(@bucket_name, key) |> ExAws.request() do
       {:ok, %{body: body}} ->
         {:ok, body}
 
+      {:error, :not_found} ->
+        Logger.notice("No tile at #{key} in S3")
+        {:error, :not_found}
+
       {:error, reason} ->
         Logger.notice("Error getting tile: #{key} from S3: #{inspect(reason)}")
-        {:error, :not_found}
+        {:error, reason}
     end
   end
 
@@ -33,11 +37,11 @@ defmodule Udraw.S3Adapter do
     case S3.put_object(@bucket_name, key, data) |> ExAws.request() do
       {:ok, _} ->
         Logger.info("Saved tile #{key}")
-        {:ok, true}
+        {:ok, key}
 
       {:error, reason} ->
         Logger.error("Error saving tile to S3 reason: #{inspect(reason)}")
-        {:error, false}
+        {:error, reason}
     end
   end
 end
