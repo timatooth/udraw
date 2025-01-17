@@ -1,4 +1,5 @@
 'use strict';
+
 import React from 'react'
 import ReactDOM from 'react-dom'
 import { UdrawApp } from './UdrawApp.jsx'
@@ -347,6 +348,19 @@ const handleDrawing = (client, x, y) => {
     client.y = y;
 };
 
+const sendGlobalPosition = (x, y) => {
+    const globalX = x + client.offsetX;
+    const globalY = y + client.offsetY;
+    const viewportBounds = {
+        offsetX: client.offsetX,
+        offsetY: client.offsetY,
+        width: extent.width,
+        height: extent.height
+    };
+
+    channel.push("cursor_position", { x: globalX, y: globalY, bounds: viewportBounds });
+};
+
 const handleMouseMoveOrTouchMove = (evt) => {
     const { x, y, touchPanning } = getCoordinatesFromEvent(evt);
 
@@ -364,6 +378,7 @@ const handleMouseMoveOrTouchMove = (evt) => {
             break;
         default:
             // Do nothing for unhandled actions or no action needed
+            sendGlobalPosition(x, y);
             break;
     }
 };
@@ -418,5 +433,26 @@ const initTheBusiness = () => {
 };
 
 initTheBusiness();
+
+//wait 5 seconds then setup channel listeners
+setTimeout(() => {
+    channel.on("cursor_update", (payload) => {
+        const { x, y } = payload;
+
+        // translate global coordinates to screen space for the current user
+        const screenX = x - client.offsetX;
+        const screenY = y - client.offsetY;
+
+        if (screenX >= 0 && screenX <= extent.width + tileSize * 2 && screenY >= 0 && screenY <= extent.height + tileSize * 2) {
+            //clear out the old cursor paint and redraw tiles
+            requestAnimationFrame(drawTiles);
+
+            //draw a line at the cursor position
+            requestAnimationFrame(() => {
+                drawLine(ctx, screenX, screenY, screenX + 10, screenY + 10, "#222222", 15);
+            });
+        }
+      });
+}, 5000);
 
 export default tileSource;

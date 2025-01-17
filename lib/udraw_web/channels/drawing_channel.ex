@@ -25,6 +25,12 @@ defmodule UdrawWeb.DrawingChannel do
     {:noreply, socket}
   end
 
+  @impl true
+  def handle_in("cursor_position", %{"x" => x, "y" => y, "bounds" => bounds}, socket) do
+    broadcast_from!(socket, "cursor_update", %{x: x, y: y, bounds: bounds})
+    {:noreply, socket}
+  end
+
   # It is also common to receive messages from the client and
   # broadcast to everyone in the current topic (draw:lobby).
   @impl true

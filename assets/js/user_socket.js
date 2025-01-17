@@ -59,6 +59,7 @@ socket.connect();
 //   .receive("error", resp => { console.log("Unable to join", resp) })
 //
 const channel = socket.channel("draw:lobby", {});
+window.channel = channel;
 
 channel
   .join()
