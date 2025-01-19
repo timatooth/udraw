@@ -67,8 +67,23 @@ defmodule UdrawWeb.TileController do
   end
 
   def get_tile(conn, %{"name" => "main", "zoom" => "1"} = params) do
+    key = build_key(params)
+
+    case Udraw.TileCacheServer.get_tile(key) do
+      {:ok, data} ->
+        send_resp(conn, 200, data)
+
+      {:error, :tile_not_found} ->
+        Logger.debug("Cache miss for #{key}")
+        fetch_from_s3(conn, params)
+    end
+  end
+
+  defp fetch_from_s3(conn, params) do
     case @adapter.get_tile_at(params["name"], params["zoom"], params["x"], params["y"]) do
       {:ok, data} ->
+        Udraw.TileCacheServer.put_tile(build_key(params), data)
+
         conn
         |> put_resp_content_type("image/png")
         |> send_resp(200, data)
@@ -80,10 +95,5 @@ defmodule UdrawWeb.TileController do
         send_resp(conn, 500, @red_square_png)
     end
   end
-
-  def get_tile(conn, _params) do
-    send_resp(conn, 404, "")
-  end
-
 
 end

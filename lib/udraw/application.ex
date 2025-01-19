@@ -17,6 +17,7 @@ defmodule Udraw.Application do
       # Start a worker by calling: Udraw.Worker.start_link(arg)
       # {Udraw.Worker, arg},
       Udraw.DrawingServer,
+      Udraw.TileCacheServer,
       # Start to serve requests, typically the last entry
       UdrawWeb.Endpoint
     ]
