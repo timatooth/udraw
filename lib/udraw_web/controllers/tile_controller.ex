@@ -1,6 +1,7 @@
 defmodule UdrawWeb.TileController do
   use UdrawWeb, :controller
   require Logger
+  alias Phoenix.PubSub
 
   # Allow dependency injection of the adapter
   @adapter Application.compile_env(:udraw, :s3_adapter, Udraw.S3Adapter)
@@ -53,6 +54,8 @@ defmodule UdrawWeb.TileController do
     case @adapter.save_tile_at(params["name"], params["zoom"], params["x"], params["y"], body) do
       {:ok, _result} ->
         Logger.debug("Saved tile #{key}")
+        # We need to notify the cache server that the tile has been saved so it can purge it
+        PubSub.broadcast!(Udraw.PubSub, "tile:saved", %{key: key})
         send_resp(conn, 201, "")
 
       {:error, reason} ->

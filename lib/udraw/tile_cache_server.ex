@@ -1,6 +1,7 @@
 defmodule Udraw.TileCacheServer do
   use GenServer
   require Logger
+  alias Phoenix.PubSub
 
   # API
 
@@ -20,6 +21,7 @@ defmodule Udraw.TileCacheServer do
   @impl true
   def init(_) do
     :ets.new(:tile_cache, [:set, :protected, :named_table])
+    PubSub.subscribe(Udraw.PubSub, "tile:saved")
     {:ok, :ok}
   end
 
@@ -40,5 +42,12 @@ defmodule Udraw.TileCacheServer do
     :ets.insert(:tile_cache, {key, data})
     Logger.debug("Cache insert for #{key}")
     {:reply, :ok, state}
+  end
+
+  @impl true
+  def handle_info(%{key: key}, state) do
+    Logger.debug("Cache purge for #{key}")
+    :ets.delete(:tile_cache, key)
+    {:noreply, state}
   end
 end
