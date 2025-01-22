@@ -35,6 +35,9 @@ defmodule UdrawWeb.Router do
 
     live "/canvases/:id", CanvasLive.Show, :show
     live "/canvases/:id/show/edit", CanvasLive.Show, :edit
+
+    live "/toolbar", ToolbarLive, :index
+
   end
 
   scope "/api", UdrawWeb do
