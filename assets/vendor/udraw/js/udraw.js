@@ -166,6 +166,9 @@ const saveTileAt = (x, y, tileCanvas) => {
             case 404:
                 notify("Error 404", "Server messing up?", "error");
                 break;
+            case 401:
+                notify("Error 401", "You need to be logged in", "error");
+                break;
             case 403:
                 notify("Protected Region", `This region is protected. (${x}, ${y}) Move over a bit!`, "error");
                 delete tileSource.tileCollection[key];
