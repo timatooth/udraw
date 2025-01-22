@@ -16,18 +16,23 @@ defmodule UdrawWeb.TileController do
   end
 
   def put_tile(conn, %{"name" => "main", "zoom" => "1"} = params) do
-    key = build_key(params)
+    current_user = conn.assigns[:current_user]
 
-    case Plug.Conn.read_body(conn, length: 1_000_000) do
-      {:ok, body, conn} ->
-        if valid_png?(body) do
-          save_tile(conn, key, params, body)
-        else
-          handle_invalid_format(conn, key)
-        end
+    if current_user do
+      key = build_key(params)
+      case Plug.Conn.read_body(conn, length: 1_000_000) do
+        {:ok, body, conn} ->
+          if valid_png?(body) do
+            save_tile(conn, key, params, body)
+          else
+            handle_invalid_format(conn, key)
+          end
 
-      {:error, reason} ->
-        handle_read_body_error(conn, reason)
+        {:error, reason} ->
+          handle_read_body_error(conn, reason)
+      end
+    else
+      send_resp(conn, 401, "unauthorized")
     end
   end
 
@@ -95,5 +100,4 @@ defmodule UdrawWeb.TileController do
         send_resp(conn, 500, @red_square_png)
     end
   end
-
 end
