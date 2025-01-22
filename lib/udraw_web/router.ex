@@ -28,6 +28,13 @@ defmodule UdrawWeb.Router do
     pipe_through(:browser)
 
     get("/", PageController, :home)
+
+    live "/canvases", CanvasLive.Index, :index
+    live "/canvases/new", CanvasLive.Index, :new
+    live "/canvases/:id/edit", CanvasLive.Index, :edit
+
+    live "/canvases/:id", CanvasLive.Show, :show
+    live "/canvases/:id/show/edit", CanvasLive.Show, :edit
   end
 
   scope "/api", UdrawWeb do

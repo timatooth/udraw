@@ -1,0 +1,26 @@
+<.header>
+  Canvas {@canvas.id}
+  <:subtitle>This is a canvas record from your database.</:subtitle>
+  <:actions>
+    <.link patch={~p"/canvases/#{@canvas}/show/edit"} phx-click={JS.push_focus()}>
+      <.button>Edit canvas</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.list>
+  <:item title="Name">{@canvas.name}</:item>
+</.list>
+
+<.back navigate={~p"/canvases"}>Back to canvases</.back>
+
+<.modal :if={@live_action == :edit} id="canvas-modal" show on_cancel={JS.patch(~p"/canvases/#{@canvas}")}>
+  <.live_component
+    module={UdrawWeb.CanvasLive.FormComponent}
+    id={@canvas.id}
+    title={@page_title}
+    action={@live_action}
+    canvas={@canvas}
+    patch={~p"/canvases/#{@canvas}"}
+  />
+</.modal>

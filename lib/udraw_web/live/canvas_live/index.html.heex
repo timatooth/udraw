@@ -1,0 +1,41 @@
+<.header>
+  Listing Canvases
+  <:actions>
+    <.link patch={~p"/canvases/new"}>
+      <.button>New Canvas</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.table
+  id="canvases"
+  rows={@streams.canvases}
+  row_click={fn {_id, canvas} -> JS.navigate(~p"/canvases/#{canvas}") end}
+>
+  <:col :let={{_id, canvas}} label="Name">{canvas.name}</:col>
+  <:action :let={{_id, canvas}}>
+    <div class="sr-only">
+      <.link navigate={~p"/canvases/#{canvas}"}>Show</.link>
+    </div>
+    <.link patch={~p"/canvases/#{canvas}/edit"}>Edit</.link>
+  </:action>
+  <:action :let={{id, canvas}}>
+    <.link
+      phx-click={JS.push("delete", value: %{id: canvas.id}) |> hide("##{id}")}
+      data-confirm="Are you sure?"
+    >
+      Delete
+    </.link>
+  </:action>
+</.table>
+
+<.modal :if={@live_action in [:new, :edit]} id="canvas-modal" show on_cancel={JS.patch(~p"/canvases")}>
+  <.live_component
+    module={UdrawWeb.CanvasLive.FormComponent}
+    id={@canvas.id || :new}
+    title={@page_title}
+    action={@live_action}
+    canvas={@canvas}
+    patch={~p"/canvases"}
+  />
+</.modal>
