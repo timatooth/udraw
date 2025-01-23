@@ -22,6 +22,12 @@ defmodule UdrawWeb.ToolbarLive do
          color: "#FF0000",
          size: 10,
          opacity: 100
+       },
+       canvas_state: %{
+         offset_x: 0,
+         offset_y: 0,
+         cursor_x: 0,
+         cursor_y: 0
        }
      )}
   end
@@ -59,6 +65,13 @@ defmodule UdrawWeb.ToolbarLive do
         <% end %>
       </form>
     </div>
+    <canvas
+      id="canvas"
+      phx-hook="Canvas"
+      data-tool-state={Jason.encode!(@tool_state)}
+      data-canvas-state={Jason.encode!(@canvas_state)}
+    >
+    </canvas>
     """
   end
 
