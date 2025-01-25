@@ -14,8 +14,6 @@ defmodule Udraw.Application do
       {Phoenix.PubSub, name: Udraw.PubSub},
       # Start the Finch HTTP client for sending emails
       {Finch, name: Udraw.Finch},
-      # Start a worker by calling: Udraw.Worker.start_link(arg)
-      # {Udraw.Worker, arg},
       Udraw.DrawingServer,
       Udraw.TileCacheServer,
       # Start to serve requests, typically the last entry
