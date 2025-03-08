@@ -38,15 +38,15 @@ export default function RestTileSource (options) {
     this.restEndpoint = options.url || ''
 }
 
-RestTileSource.prototype.fetchTileAt = function (tileX, tileY, cb) {
+RestTileSource.prototype.fetchTileAt = function (zoom, tileX, tileY, cb) {
     let self = this
-    let key = tileX + '/' + tileY
+    let key = zoom  + '/' + tileX + '/' + tileY;
     /* cache lookup */
     if (this.tileCollection.hasOwnProperty(key)) {
         return cb(200, this.tileCollection[key]) //borrowing http codes
     }
 
-    let endpoint = this.restEndpoint + '/canvases/main/1/' + key
+    let endpoint = this.restEndpoint + '/canvases/main/' + key
 
     let getRequest = new XMLHttpRequest()
     getRequest.responseType = "blob"
@@ -88,10 +88,10 @@ RestTileSource.prototype.fetchTileAt = function (tileX, tileY, cb) {
     }
 }
 
-RestTileSource.prototype.saveTileAt = function (xTile, yTile, tileCanvas, cb) {
-    let key = xTile + '/' + yTile
+RestTileSource.prototype.saveTileAt = function (zoom, xTile, yTile, tileCanvas, cb) {
+    let key = zoom + '/' + xTile + '/' + yTile
     let tileString = tileCanvas.toDataURL()
-    let endpoint = this.restEndpoint + '/canvases/main/1/' + key
+    let endpoint = this.restEndpoint + '/canvases/main/' + key
 
     let blob = b64toBlob(tileString.substr(22), 'image/png')
     let putRequest = new XMLHttpRequest()

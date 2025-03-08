@@ -45,3 +45,4 @@ udraw-*.tar
 npm-debug.log
 /assets/node_modules/
 .vscode/
+original_tiles/

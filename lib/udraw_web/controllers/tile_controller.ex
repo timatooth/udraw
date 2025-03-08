@@ -4,7 +4,7 @@ defmodule UdrawWeb.TileController do
   alias Phoenix.PubSub
 
   # Allow dependency injection of the adapter
-  @adapter Application.compile_env(:udraw, :s3_adapter, Udraw.S3Adapter)
+  @adapter Application.compile_env(:udraw, :adapter, Udraw.S3Adapter)
 
   # Load error png off disk
   @red_square_png File.read!("priv/static/images/checkerboard2.png")
@@ -21,6 +21,7 @@ defmodule UdrawWeb.TileController do
 
     if current_user do
       key = build_key(params)
+
       case Plug.Conn.read_body(conn, length: 1_000_000) do
         {:ok, body, conn} ->
           if valid_png?(body) do
@@ -74,7 +75,7 @@ defmodule UdrawWeb.TileController do
     send_resp(conn, 500, "Failed to process request")
   end
 
-  def get_tile(conn, %{"name" => "main", "zoom" => "1"} = params) do
+  def get_tile(conn, %{"name" => "main"} = params) do
     key = build_key(params)
 
     case Udraw.TileCacheServer.get_tile(key) do

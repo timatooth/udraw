@@ -55,6 +55,16 @@ export class Toolbar extends React.Component {
         this.onToolClick = this.onToolClick.bind(this)
         this.onColorChange = this.onColorChange.bind(this)
         this.onSizeChange = this.onSizeChange.bind(this)
+        this.onZoomIn = this.onZoomIn.bind(this)
+        this.onZoomOut = this.onZoomOut.bind(this)
+    }
+    
+    onZoomIn(){
+      this.props.legacyClient.zoom -= 1;
+    }
+
+    onZoomOut(){
+      this.props.legacyClient.zoom += 1;
     }
 
     onToolClick(tool) {
@@ -93,6 +103,9 @@ export class Toolbar extends React.Component {
                 <ColorPanel onColorChange={this.onColorChange} size={this.state.toolState.size} onSizeChange={this.onSizeChange} />
                 <p>{tiptext}</p>
                 {toolList}
+                <button onClick={this.onZoomIn}>+</button>
+                <div></div>
+                <button onClick={this.onZoomOut}>-</button>
             </div>
         );
     }

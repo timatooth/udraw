@@ -28,7 +28,8 @@ const Client = () => ({
     offsetX: 0,
     offsetY: 0,
     points: [],
-    pointCount: 0
+    pointCount: 0,
+    zoom: 1
 });
 
 const tileSource = new RestTileSource({
@@ -83,7 +84,7 @@ const drawTiles = () => {
         for (let x = client.offsetX; x < client.offsetX + extent.width + tileSize * 2; x += tileSize) {
             const xTile = Math.floor(x / tileSize);
             const yTile = Math.floor(y / tileSize);
-            tileSource.fetchTileAt(xTile, yTile, drawTile);
+            tileSource.fetchTileAt(client.zoom, xTile, yTile, drawTile);
         }
     }
 };
@@ -147,8 +148,8 @@ const processMoveAction = (client, x, y) => {
     client.y = y;
 };
 
-const saveTileAt = (x, y, tileCanvas) => {
-    const key = `${x}/${y}`;
+const saveTileAt = (zoom,x, y, tileCanvas) => {
+    const key = `${zoom}/${x}/${y}`;
 
     const onSaveResponse = (code) => {
         switch (code) {
@@ -186,7 +187,7 @@ const saveTileAt = (x, y, tileCanvas) => {
         }
     };
 
-    tileSource.saveTileAt(x, y, tileCanvas, onSaveResponse);
+    tileSource.saveTileAt(zoom, x, y, tileCanvas, onSaveResponse);
 };
 
 const updateDirtyTiles = () => {

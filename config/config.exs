@@ -10,7 +10,9 @@ import Config
 config :udraw,
   ecto_repos: [Udraw.Repo],
   generators: [timestamp_type: :utc_datetime],
-  s3_bucket: "udraw-tiles"
+  s3_bucket: "udraw-tiles",
+  storage_dir: "original_tiles/",
+  adapter: Udraw.DiskAdapter
 
 # Configures the endpoint
 config :udraw, UdrawWeb.Endpoint,
