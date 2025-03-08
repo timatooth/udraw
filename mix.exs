@@ -66,7 +66,8 @@ defmodule Udraw.MixProject do
       {:hackney, "~> 1.9"},
       {:sweet_xml, "~> 0.6"},
       {:configparser_ex, "~> 4.0"},
-      {:req, "~> 0.5.8"}
+      {:req, "~> 0.5.8"},
+      {:image, "~> 0.37"}
     ]
   end
 
