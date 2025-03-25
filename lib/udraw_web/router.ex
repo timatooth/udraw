@@ -37,7 +37,6 @@ defmodule UdrawWeb.Router do
     live "/canvases/:id/show/edit", CanvasLive.Show, :edit
 
     live "/toolbar", ToolbarLive, :index
-
   end
 
   scope "/api", UdrawWeb do
@@ -63,7 +62,7 @@ defmodule UdrawWeb.Router do
     import Phoenix.LiveDashboard.Router
 
     scope "/dev" do
-      pipe_through(:browser)
+      pipe_through([:browser, :require_admin_user])
 
       live_dashboard("/dashboard", metrics: UdrawWeb.Telemetry)
       forward("/mailbox", Plug.Swoosh.MailboxPreview)

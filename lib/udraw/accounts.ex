@@ -80,6 +80,12 @@ defmodule Udraw.Accounts do
     |> Repo.insert()
   end
 
+  def update_admin_status(%User{} = user, attrs) do
+    user
+    |> User.admin_changeset(attrs)
+    |> Repo.update()
+  end
+
   @doc """
   Returns an `%Ecto.Changeset{}` for tracking user changes.
 
