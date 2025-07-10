@@ -68,7 +68,8 @@ defmodule Udraw.MixProject do
       {:sweet_xml, "~> 0.6"},
       {:configparser_ex, "~> 4.0"},
       {:req, "~> 0.5.8"},
-      {:image, "~> 0.37"}
+      {:image, "~> 0.37"},
+      {:tidewave, "~> 0.1", only: :dev}
     ]
   end
 
