@@ -64,9 +64,9 @@ defmodule Udraw.MixProject do
       # mine
       {:ex_aws, "~> 2.5"},
       {:ex_aws_s3, "~> 2.5.5"},
-      {:hackney, "~> 1.9"},
+      {:hackney, "~> 1.25"},
       {:sweet_xml, "~> 0.6"},
-      {:configparser_ex, "~> 4.0"},
+      {:configparser_ex, "~> 5.0"},
       {:req, "~> 0.5.8"},
       {:image, "~> 0.37"},
       {:tidewave, "~> 0.1", only: :dev}
