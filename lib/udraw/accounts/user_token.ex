@@ -6,12 +6,11 @@ defmodule Udraw.Accounts.UserToken do
   @hash_algorithm :sha256
   @rand_size 32
 
-  # It is very important to keep the reset password token expiry short,
+  # It is very important to keep the magic link token expiry short,
   # since someone with access to the email may take over the account.
-  @reset_password_validity_in_days 1
-  @confirm_validity_in_days 7
+  @magic_link_validity_in_minutes 15
   @change_email_validity_in_days 7
-  @session_validity_in_days 60
+  @session_validity_in_days 14
 
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
@@ -19,6 +18,7 @@ defmodule Udraw.Accounts.UserToken do
     field :token, :binary
     field :context, :string
     field :sent_to, :string
+    field :authenticated_at, :utc_datetime
     belongs_to :user, Udraw.Accounts.User
 
     timestamps(type: :utc_datetime, updated_at: false)
@@ -45,13 +45,14 @@ defmodule Udraw.Accounts.UserToken do
   """
   def build_session_token(user) do
     token = :crypto.strong_rand_bytes(@rand_size)
-    {token, %UserToken{token: token, context: "session", user_id: user.id}}
+    dt = user.authenticated_at || DateTime.utc_now(:second)
+    {token, %UserToken{token: token, context: "session", user_id: user.id, authenticated_at: dt}}
   end
 
   @doc """
   Checks if the token is valid and returns its underlying lookup query.
 
-  The query returns the user found by the token, if any.
+  The query returns the user found by the token, if any, along with the token's creation time.
 
   The token is valid if it matches the value in the database and it has
   not expired (after @session_validity_in_days).
@@ -61,7 +62,7 @@ defmodule Udraw.Accounts.UserToken do
       from token in by_token_and_context_query(token, "session"),
         join: user in assoc(token, :user),
         where: token.inserted_at > ago(@session_validity_in_days, "day"),
-        select: user
+        select: {%{user | authenticated_at: token.authenticated_at}, token.inserted_at}
 
     {:ok, query}
   end
@@ -99,27 +100,23 @@ defmodule Udraw.Accounts.UserToken do
   @doc """
   Checks if the token is valid and returns its underlying lookup query.
 
-  The query returns the user found by the token, if any.
+  If found, the query returns a tuple of the form `{user, token}`.
 
   The given token is valid if it matches its hashed counterpart in the
-  database and the user email has not changed. This function also checks
-  if the token is being used within a certain period, depending on the
-  context. The default contexts supported by this function are either
-  "confirm", for account confirmation emails, and "reset_password",
-  for resetting the password. For verifying requests to change the email,
-  see `verify_change_email_token_query/2`.
+  database. This function also checks if the token is being used within
+  15 minutes. The context of a magic link token is always "login".
   """
-  def verify_email_token_query(token, context) do
+  def verify_magic_link_token_query(token) do
     case Base.url_decode64(token, padding: false) do
       {:ok, decoded_token} ->
         hashed_token = :crypto.hash(@hash_algorithm, decoded_token)
-        days = days_for_context(context)
 
         query =
-          from token in by_token_and_context_query(hashed_token, context),
+          from token in by_token_and_context_query(hashed_token, "login"),
             join: user in assoc(token, :user),
-            where: token.inserted_at > ago(^days, "day") and token.sent_to == user.email,
-            select: user
+            where: token.inserted_at > ago(^@magic_link_validity_in_minutes, "minute"),
+            where: token.sent_to == user.email,
+            select: {user, token}
 
         {:ok, query}
 
@@ -128,19 +125,13 @@ defmodule Udraw.Accounts.UserToken do
     end
   end
 
-  defp days_for_context("confirm"), do: @confirm_validity_in_days
-  defp days_for_context("reset_password"), do: @reset_password_validity_in_days
-
   @doc """
   Checks if the token is valid and returns its underlying lookup query.
 
-  The query returns the user found by the token, if any.
+  The query returns the user_token found by the token, if any.
 
   This is used to validate requests to change the user
-  email. It is different from `verify_email_token_query/2` precisely because
-  `verify_email_token_query/2` validates the email has not changed, which is
-  the starting point by this function.
-
+  email.
   The given token is valid if it matches its hashed counterpart in the
   database and if it has not expired (after @change_email_validity_in_days).
   The context must always start with "change:".
@@ -161,21 +152,7 @@ defmodule Udraw.Accounts.UserToken do
     end
   end
 
-  @doc """
-  Returns the token struct for the given token value and context.
-  """
-  def by_token_and_context_query(token, context) do
+  defp by_token_and_context_query(token, context) do
     from UserToken, where: [token: ^token, context: ^context]
-  end
-
-  @doc """
-  Gets all tokens for the given user for the given contexts.
-  """
-  def by_user_and_contexts_query(user, :all) do
-    from t in UserToken, where: t.user_id == ^user.id
-  end
-
-  def by_user_and_contexts_query(user, [_ | _] = contexts) do
-    from t in UserToken, where: t.user_id == ^user.id and t.context in ^contexts
   end
 end

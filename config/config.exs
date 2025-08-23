@@ -7,6 +7,19 @@
 # General application configuration
 import Config
 
+config :udraw, :scopes,
+  user: [
+    default: true,
+    module: Udraw.Accounts.Scope,
+    assign_key: :current_scope,
+    access_path: [:user, :id],
+    schema_key: :user_id,
+    schema_type: :binary_id,
+    schema_table: :users,
+    test_data_fixture: Udraw.AccountsFixtures,
+    test_setup_helper: :register_and_log_in_user
+  ]
+
 config :udraw,
   ecto_repos: [Udraw.Repo],
   generators: [timestamp_type: :utc_datetime],
@@ -39,21 +52,20 @@ config :esbuild,
   version: "0.17.11",
   udraw: [
     args:
-      ~w(js/app.js css/udraw.css vendor/udraw/js/udraw.js --bundle --target=es2017 --outdir=../priv/static/assets --loader:.js=jsx --loader:.css=css --loader:.png=file --loader:.jpg=file --loader:.ttf=file --loader:.woff=file --loader:.eot=file --loader:.woff2=file --loader:.svg=file --alias:@=.),
+      ~w(js/app.js css/udraw.css vendor/udraw/js/udraw.js --bundle --target=es2017 --outdir=../priv/static/assets/js --loader:.js=jsx --loader:.css=css --loader:.png=file --loader:.jpg=file --loader:.ttf=file --loader:.woff=file --loader:.eot=file --loader:.woff2=file --loader:.svg=file --alias:@=.),
     cd: Path.expand("../assets", __DIR__),
     env: %{"NODE_PATH" => [Path.expand("../deps", __DIR__), Mix.Project.build_path()]}
   ]
 
 # Configure tailwind (the version is required)
 config :tailwind,
-  version: "3.4.3",
+  version: "4.1.7",
   udraw: [
     args: ~w(
-      --config=tailwind.config.js
-      --input=css/app.css
-      --output=../priv/static/assets/app.css
+      --input=assets/css/app.css
+      --output=priv/static/assets/css/app.css
     ),
-    cd: Path.expand("../assets", __DIR__)
+    cd: Path.expand("..", __DIR__)
   ]
 
 # Configures Elixir's Logger
