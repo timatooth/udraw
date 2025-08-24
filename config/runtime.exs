@@ -104,9 +104,8 @@ if config_env() == :prod do
   # are not using SMTP. Here is an example of the configuration:
   #
   config :udraw, Udraw.Mailer,
-    adapter: Swoosh.Adapters.Sendgrid,
-    api_key: System.get_env("SENDGRID_API_KEY"),
-    compress: true
+    adapter: Swoosh.Adapters.Brevo,
+    api_key: System.get_env("BREVO_API_KEY")
 
   #
   # For this example you need include a HTTP client required by Swoosh API client.

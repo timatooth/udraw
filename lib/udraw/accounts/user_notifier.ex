@@ -9,7 +9,7 @@ defmodule Udraw.Accounts.UserNotifier do
     email =
       new()
       |> to(recipient)
-      |> from({"uDraw Me", "dev@udraw.me"})
+      |> from({"udraw", "dev@udraw.me"})
       |> subject(subject)
       |> text_body(body)
 
