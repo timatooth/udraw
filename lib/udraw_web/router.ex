@@ -17,6 +17,7 @@ defmodule UdrawWeb.Router do
     plug(:accepts, ["json", "image/png"])
     plug(:cors_plug)
     plug(:fetch_session)
+    plug :fetch_current_scope_for_user
   end
 
   pipeline :tile_radius_check do

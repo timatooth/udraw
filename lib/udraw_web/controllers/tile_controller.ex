@@ -17,7 +17,7 @@ defmodule UdrawWeb.TileController do
   end
 
   def put_tile(conn, %{"name" => "main", "zoom" => "1"} = params) do
-    current_user = conn.assigns[:current_user]
+    current_user = conn.assigns[:current_scope]
 
     if current_user do
       key = build_key(params)

@@ -203,7 +203,7 @@ const updateDirtyTiles = () => {
             
             tileSource.tileCollection[tileKey].canvas = ofc;
             tileSource.tileCollection[tileKey].dirty = false;
-            saveTileAt(tile.x, tile.y, ofc);
+            saveTileAt(1, tile.x, tile.y, ofc);
         }
     });
 };
@@ -343,8 +343,7 @@ const handleDrawing = (client, x, y) => {
     for (let i = -(client.state.size / 2) - shadow; i < (client.state.size / 2) + shadow; i += 1) {
         const tileX = Math.floor((x + client.offsetX + i) / tileSize);
         const tileY = Math.floor((y + client.offsetY + i) / tileSize);
-        const key = `${tileX}/${tileY}`;
-
+        const key = `1/${tileX}/${tileY}`;
         tileSource.tileCollection[key].dirty = true;
     }
 
