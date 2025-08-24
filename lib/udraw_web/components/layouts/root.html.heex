@@ -7,7 +7,7 @@
     <.live_title default="Udraw" suffix=" · Multiplayer Drawing">
       {assigns[:page_title]}
     </.live_title>
-    
+   <link phx-track-static rel="stylesheet" href={~p"/assets/css/udraw.css"} /> 
     <link phx-track-static rel="stylesheet" href={~p"/assets/css/app.css"} />
     <script defer phx-track-static type="text/javascript" src={~p"/assets/js/app.js"}>
     </script>
@@ -31,12 +31,12 @@
       })();
     </script>
 
-    <link phx-track-static rel="stylesheet" href={~p"/assets/css/udraw.css"} />
+    
     
     
     
   </head>
-  <body class="bg-white">
+  <body>
     <ul class="menu menu-horizontal w-full relative z-10 flex items-center gap-4 px-4 sm:px-6 lg:px-8 justify-end">
       <%= if @current_scope do %>
         <li>

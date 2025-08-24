@@ -49,17 +49,17 @@ config :udraw, Udraw.Mailer, adapter: Swoosh.Adapters.Local
 
 # Configure esbuild (the version is required)
 config :esbuild,
-  version: "0.17.11",
+  version: "0.25.9",
   udraw: [
     args:
-      ~w(js/app.js css/udraw.css vendor/udraw/js/udraw.js --bundle --target=es2017 --outdir=../priv/static/assets/js --loader:.js=jsx --loader:.css=css --loader:.png=file --loader:.jpg=file --loader:.ttf=file --loader:.woff=file --loader:.eot=file --loader:.woff2=file --loader:.svg=file --alias:@=.),
+      ~w(js/app.js css/udraw.css vendor/udraw/js/udraw.js --bundle --target=es2017 --outdir=../priv/static/assets --loader:.js=jsx --loader:.css=css --loader:.png=file --loader:.jpg=file --loader:.ttf=file --loader:.woff=file --loader:.eot=file --loader:.woff2=file --loader:.svg=file),
     cd: Path.expand("../assets", __DIR__),
     env: %{"NODE_PATH" => [Path.expand("../deps", __DIR__), Mix.Project.build_path()]}
   ]
 
 # Configure tailwind (the version is required)
 config :tailwind,
-  version: "4.1.7",
+  version: "4.1.12",
   udraw: [
     args: ~w(
       --input=assets/css/app.css
