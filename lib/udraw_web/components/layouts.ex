@@ -47,13 +47,13 @@ defmodule UdrawWeb.Layouts do
           </p>
         </div>
         <div class="flex items-center gap-4 font-semibold leading-6 text-zinc-900">
-        Udraw is cool
+          Udraw is cool
         </div>
       </div>
     </header>
     <main class="px-4 py-20 sm:px-6 lg:px-8">
       <div class="mx-auto max-w-2xl">
-      {render_slot(@inner_block)}
+        {render_slot(@inner_block)}
       </div>
     </main>
 

@@ -2,7 +2,6 @@ defmodule UdrawWeb.TileControllerTest do
   use UdrawWeb.ConnCase, async: true
 
   describe "GET tiles" do
-
     test "Getting a known tile", %{conn: conn} do
       conn = get(conn, ~p"/api/canvases/main/1/0/0.png")
 

@@ -46,18 +46,18 @@ defmodule Udraw.S3Adapter do
   end
 end
 
-
 defmodule Udraw.MockS3Adapter do
   def save_tile_at("main", "1", "1", y, _data) do
     case y do
       "1.png" ->
         {:ok, "dummy_key"}
+
       "9.png" ->
         {:error, :tile_not_found}
+
       "13.png" ->
         {:error, :tile_save_error}
     end
-
   end
 
   def get_tile_at("main", "1", "0", "0.png") do
@@ -65,7 +65,7 @@ defmodule Udraw.MockS3Adapter do
   end
 
   def get_tile_at("main", "1", "9", "-9.png") do
-      {:error, :tile_not_found}
+    {:error, :tile_not_found}
   end
 
   # unlucky number for testing aws s3 errors
