@@ -1,0 +1,81 @@
+<mjml>
+  <mj-head>
+    <mj-font name="Poppins" href="https://fonts.googleapis.com/css?family=Poppins:400,600" />
+    <mj-attributes>
+      <mj-all font-family="Poppins, Helvetica, sans-serif" />
+      <mj-text align="center" font-size="16px" color="#333333" />
+      <mj-section padding="0px" />
+      <mj-column padding="0px" />
+    </mj-attributes>
+    <mj-style>
+      .collage-bg {
+      background: url('https://udraw.me/api/canvases/main/1/-1/1.png') no-repeat center center;
+      background-size: cover;
+      text-shadow: 2px 2px #000;
+      }
+      .flair-pattern {
+      background: linear-gradient(135deg, rgba(50, 255, 255, 0.7), rgba(240, 250, 245, 0.7)), url('https://udraw.me/api/canvases/main/1/-2/2') repeat;
+      background-size: cover;
+      }
+    </mj-style>
+  </mj-head>
+  <mj-body background-color="#fff">
+
+    <mj-section background-color="#ffffff" padding="20px">
+      <mj-column>
+        <mj-image width="280px" src="https://udraw.me/images/logo.svg" alt="udraw app Logo" />
+      </mj-column>
+    </mj-section>
+
+    <mj-section css-class="collage-bg" padding="60px 20px">
+      <mj-column>
+
+      </mj-column>
+    </mj-section>
+
+    <mj-section css-class="flair-pattern" padding="40px 20px">
+      <mj-column>
+        <mj-text font-size="22px" color="#e91e63" font-weight="bold" padding-bottom="10px">
+          Hey there, <%= @email %> 👋
+        </mj-text>
+        <mj-text color="#444444" font-size="16px" line-height="24px">
+          Whether you're a new artist or coming back for more,
+          just tap below to draw without limits ✨
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <mj-section background-color="#fff" padding="40px 20px">
+      <mj-column>
+        <mj-button href="<%= @url %>" background-color="#e91e63" color="#ffffff" font-size="24px" border-radius="10px" padding="25px" width="100%">
+          🔮 Sign In With Magic
+        </mj-button>
+        <mj-text font-style="italic" color="#999999" font-size="12px" padding-top="15px">
+          or if you prefer copy and pasting URLs, here it is!<br />
+          <i><%= @url %></i>
+        </mj-text>
+        <mj-text color="#999999" font-size="14px" padding-top="15px">
+          Your magic link is valid for about the next 15 minutes or so...
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <mj-section background-color="#fce4ec" padding="20px">
+      <mj-group>
+        <mj-column>
+          <mj-image width="80px" src="https://udraw.me/api/canvases/main/1/-1/1.png" />
+        </mj-column>
+        <mj-column>
+          <mj-image width="80px" src="https://udraw.me/api/canvases/main/1/0/1.png" />
+        </mj-column>
+        <mj-column>
+          <mj-image width="80px" src="https://udraw.me/api/canvases/main/1/1/1.png" />
+        </mj-column>
+      </mj-group>
+      <mj-text align="center" color="#e91e63" font-size="14px" padding-top="20px">
+        © <%= @current_year %> udraw · Made with ♥ by timatooth
+      </mj-text>
+    </mj-section>
+
+  </mj-body>
+</mjml>

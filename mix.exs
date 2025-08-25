@@ -72,7 +72,9 @@ defmodule Udraw.MixProject do
       {:req, "~> 0.5"},
       {:image, "~> 0.62"},
       {:tidewave, "~> 0.4", only: :dev},
-      {:igniter, "~> 0.6", only: [:dev, :test]}
+      {:igniter, "~> 0.6", only: [:dev, :test]},
+      {:floki, "~> 0.38.0"},
+      {:mjml_eex, "~> 0.12.0"}
     ]
   end
 

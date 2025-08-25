@@ -3,6 +3,7 @@ defmodule Udraw.Accounts.UserNotifier do
 
   alias Udraw.Mailer
   alias Udraw.Accounts.User
+  alias Udraw.EmailTemplates
 
   # Delivers the email using the application mailer.
   defp deliver(recipient, subject, body) do
@@ -16,6 +17,24 @@ defmodule Udraw.Accounts.UserNotifier do
     with {:ok, _metadata} <- Mailer.deliver(email) do
       {:ok, email}
     end
+  end
+
+  defp fancy_deliver(recipient, subject, html_body) do
+    email =
+      new()
+      |> to(recipient)
+      |> from({"udraw", "dev@udraw.me"})
+      |> subject(subject)
+      |> html_body(html_body)
+      |> text_body(html_to_text(html_body))
+
+    with {:ok, _metadata} <- Mailer.deliver(email) do
+      {:ok, email}
+    end
+  end
+
+  defp html_to_text(html) do
+    html |> Floki.parse_document!() |> Floki.find("body") |> Floki.text()
   end
 
   @doc """
@@ -49,20 +68,8 @@ defmodule Udraw.Accounts.UserNotifier do
   end
 
   defp deliver_magic_link_instructions(user, url) do
-    deliver(user.email, "Log in instructions", """
-
-    ==============================
-
-    Hi #{user.email},
-
-    You can log into your account by visiting the URL below:
-
-    #{url}
-
-    If you didn't request this email, please ignore this.
-
-    ==============================
-    """)
+    html = EmailTemplates.MagicLink.render_html(user.email, url)
+    fancy_deliver(user.email, "Your udraw magic logic link", html)
   end
 
   defp deliver_confirmation_instructions(user, url) do
