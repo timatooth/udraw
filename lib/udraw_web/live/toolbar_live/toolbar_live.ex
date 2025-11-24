@@ -115,8 +115,6 @@ defmodule UdrawWeb.ToolbarLive do
   end
 
   def handle_event("update_tool_stuff", %{"_target" => ["opacity"]} = params, socket) do
-    IO.puts(1 / String.to_integer(params["opacity"]))
-
     {:noreply,
      assign(socket,
        tool_state:

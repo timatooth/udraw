@@ -80,7 +80,7 @@ defmodule UdrawWeb.TileController do
 
     case Udraw.TileCacheServer.get_tile(key) do
       {:ok, data} ->
-        send_resp(conn, 200, data)
+        handle_tile_response(conn, data)
 
       {:error, :tile_not_found} ->
         Logger.debug("Cache miss for #{key}")
@@ -92,16 +92,39 @@ defmodule UdrawWeb.TileController do
     case @adapter.get_tile_at(params["name"], params["zoom"], params["x"], params["y"]) do
       {:ok, data} ->
         Udraw.TileCacheServer.put_tile(build_key(params), data)
-
-        conn
-        |> put_resp_content_type("image/png")
-        |> send_resp(200, data)
+        handle_tile_response(conn, data)
 
       {:error, :tile_not_found} ->
         send_resp(conn, 204, "")
 
       {:error, :tile_fetch_error} ->
         send_resp(conn, 500, @red_square_png)
+    end
+  end
+
+  defp handle_tile_response(conn, data) do
+    etag_value = :crypto.hash(:sha256, data) |> Base.encode64()
+
+    conn =
+      conn
+      |> put_resp_header("cache-control", "public, max-age=5, must-revalidate")
+      |> put_resp_header("etag", etag_value)
+
+    case Plug.Conn.get_req_header(conn, "if-none-match") do
+      [client_etag] when client_etag != "" ->
+        # The client can send multiple etags, so we'll check if ours is in the list.
+        if String.contains?(client_etag, etag_value) do
+          send_resp(conn, 304, "")
+        else
+          conn
+          |> put_resp_content_type("image/png")
+          |> send_resp(200, data)
+        end
+
+      _ ->
+        conn
+        |> put_resp_content_type("image/png")
+        |> send_resp(200, data)
     end
   end
 end
