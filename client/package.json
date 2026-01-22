@@ -21,7 +21,7 @@
   },
   "homepage": "https://github.com/timatooth/udraw#readme",
   "devDependencies": {
-    "esbuild": "0.24.0"
+    "esbuild": "0.25.0"
   },
   "dependencies": {
     "peerjs": "^1.5.4",
